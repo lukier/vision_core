@@ -1,0 +1,9 @@
+#set(VisionCore_FOUND TRUE)
+
+include("${CMAKE_CURRENT_LIST_DIR}/VisionCoreTargets.cmake")
+if(@CORE_HAVE_CEREAL@)
+    find_package(cereal QUIET)
+endif()
+get_target_property(VisionCore_INT_INCLUDE_DIRS VisionCore INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(VisionCore_DEFINITIONS VisionCore INTERFACE_COMPILE_DEFINITIONS)
+set(VisionCore_INCLUDE_DIRS "@VISIONCORE_INCLUDE_DIRS@" ${VisionCore_INT_INCLUDE_DIRS})

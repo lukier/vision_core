@@ -38,10 +38,25 @@
 
 #include <Platform.hpp>
 #include <math/Statistics.hpp>
+#include <sophus/so3.hpp>
 
 namespace core
 {
  
+template<typename Derived>
+EIGEN_DEVICE_FUNC inline Eigen::Matrix<typename Sophus::SO3GroupBase<Derived>::Scalar, 3, 1> toEulerAngles(const Sophus::SO3GroupBase<Derived>& m)
+{
+    Eigen::Matrix<typename Sophus::SO3GroupBase<Derived>::Scalar, 3, 1> ret;
+    
+    const typename Sophus::SO3GroupBase<Derived>::Transformation& rm = m.matrix();
+    
+    ret(0) = atan2(rm(2,1), rm(2,2)); // theta_x
+    ret(1) = atan2(-rm(2,0), sqrt(rm(2,1) * rm(2,1) + rm(2,2) * rm(2,2))); // theta_y
+    ret(2) = atan2(rm(1,0), rm(0,0)); // theta_z
+    
+    return ret;
+}
+    
 /**
  * Constrain angle to 0..2pi.
  */    

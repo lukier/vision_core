@@ -717,6 +717,18 @@ EIGEN_DEVICE_FUNC inline float clamp(float f, float a, float b)
     return fmaxf(a, fminf(f, b));
 }
 
+// lerp
+EIGEN_DEVICE_FUNC inline double lerp(double a, double b, double t)
+{
+    return a + t*(b-a);
+}
+
+// clamp
+EIGEN_DEVICE_FUNC inline double clamp(double f, double a, double b)
+{
+    return fmaxf(a, fminf(f, b));
+}
+
 // negate
 EIGEN_DEVICE_FUNC inline int2 operator-(int2 &a)
 {

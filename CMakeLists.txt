@@ -124,6 +124,7 @@ MemoryPolicyHost.hpp
 MemoryPolicy.hpp
 MemoryPolicyOpenCL.hpp
 Platform.hpp
+SophusInterpolations.hpp
 buffers/Buffer1D.hpp
 buffers/Buffer2D.hpp
 buffers/Buffer3D.hpp
@@ -290,7 +291,7 @@ write_basic_package_version_file(
 # ------------------------------------------------------------------------------
 export(EXPORT ${PROJECT_NAME}Targets FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake") 
 set(VISIONCORE_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
-set(CORE_HAVE_CEREAL ${cereal_FOUND})
+set(FORCE_NO_GLBINDING ${FORCE_NO_GLBINDING})
 configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
 set(ConfigPackageLocation lib/cmake/${PROJECT_NAME})
 install(EXPORT ${PROJECT_NAME}Targets FILE ${PROJECT_NAME}Targets.cmake DESTINATION ${ConfigPackageLocation})

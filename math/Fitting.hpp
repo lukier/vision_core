@@ -95,18 +95,19 @@ public:
     
     void getPlane(const CovarianceMatrixT& cm, const VectorT& mean_point, PlaneT& p, T& curvature) const
     {
+#if 0 // TODO FIXME
         T eigen_value;
         EIGEN_ALIGN16 VectorT eigen_vector;
         using std::fabs;
         
         Eigen::EigenSolver<Eigen::Matrix<T,3,3>> es(cm);
         
-        p.normal() = es.eigenvectors();
+        p.normal() = es.eigenvectors()(0);
         
         T eig_sum = cm.coeff(0) + cm.coeff(4) + cm.coeff(8);
         if(eig_sum != T(0.0))
         {
-            curvature = fabs(es.eigenvalues() / eig_sum);
+            curvature = fabs(es.eigenvalues()(0) / eig_sum);
         }
         else
         {
@@ -114,7 +115,8 @@ public:
         }
         
         // Hessian form (D = nc . p_plane (centroid here) + p)
-        p.offset() = T(-1.0) * es.eigenvectors().dot(mean_point); // NOTE: check -1 here
+        p.offset() = T(-1.0) * es.eigenvectors()(0).dot(mean_point); // NOTE: check -1 here
+#endif
         
     }
 private:

@@ -42,7 +42,14 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
-#ifdef CORE_ENABLE_CEREAL
+#include <sophus/so2.hpp>
+#include <sophus/so3.hpp>
+#include <sophus/se2.hpp>
+#include <sophus/se3.hpp>
+#include <sophus/rxso3.hpp>
+#include <sophus/sim3.hpp>
+
+#ifdef CORE_HAVE_CEREAL
 namespace Eigen
 {
  
@@ -145,6 +152,145 @@ void save(Archive & archive, Eigen::AutoDiffScalar<ADT> const & m, std::uint32_t
     
 }
 
-#endif // CORE_ENABLE_CEREAL
+namespace Sophus
+{
+
+/**
+ * SO2
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, SO2GroupBase<Derived>& m, std::uint32_t const version)
+{
+    typename SO2GroupBase<Derived>::Point cplx;
+    archive(cplx);
+    m.setComplex(cplx);
+}
+  
+template<typename Archive, typename Derived>
+void save(Archive & archive, SO2GroupBase<Derived> const & m, std::uint32_t const version)
+{
+    archive(m.unit_complex());
+}
+
+/**
+ * SO3
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, SO3GroupBase<Derived>& m, std::uint32_t const version)
+{
+    Eigen::Quaternion<typename SO3GroupBase<Derived>::Scalar> quaternion;
+    archive(cereal::make_nvp("Quaternion", quaternion));
+    m.setQuaternion(quaternion);
+}
+  
+template<typename Archive, typename Derived>
+void save(Archive & archive, SO3GroupBase<Derived> const & m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Quaternion", m.unit_quaternion()));
+}
+
+/**
+ * SE2
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, SE2GroupBase<Derived>& m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.so2()));
+}
+  
+template<typename Archive, typename Derived>
+void save(Archive & archive, SE2GroupBase<Derived> const & m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.so2()));
+}
+
+/**
+ * SE3
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, SE3GroupBase<Derived>& m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.so3()));
+}
+  
+template<typename Archive, typename Derived>
+void save(Archive & archive, SE3GroupBase<Derived> const & m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.so3()));
+}
+
+/**
+ * RxSO3
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, RxSO3GroupBase<Derived>& m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Quaternion", m.quaternion()));
+}
+  
+template<typename Archive, typename Derived>
+void save(Archive & archive, RxSO3GroupBase<Derived> const & m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Quaternion", m.quaternion()));
+}
+
+/**
+ * Sim3
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, Sim3GroupBase<Derived>& m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.rxso3()));
+}
+  
+template<typename Archive, typename Derived>
+void save(Archive & archive, Sim3GroupBase<Derived> const & m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.rxso3()));
+}
+
+}
+
+#endif // CORE_HAVE_CEREAL
+
+// let's put ostreams here
+namespace Sophus
+{
+
+template<typename Derived>
+inline std::ostream& operator<<(std::ostream& os, const SO2GroupBase<Derived>& p)
+{
+    os << "(" << p.log() << ")"; 
+    return os;
+}
+
+template<typename Derived>
+inline std::ostream& operator<<(std::ostream& os, const SO3GroupBase<Derived>& p)
+{
+    os << "(" << p.unit_quaternion().x() << "," << p.unit_quaternion().y() << "," << p.unit_quaternion().z() << "|" << p.unit_quaternion().w() << ")"; 
+    return os;
+}
+
+template<typename Derived>
+inline std::ostream& operator<<(std::ostream& os, const SE2GroupBase<Derived>& p)
+{
+    os << "[t = " << p.translation()(0) << "," << p.translation()(1) << " | r = " << p.so2() << ")";
+    return os;
+}
+
+template<typename Derived>
+inline std::ostream& operator<<(std::ostream& os, const SE3GroupBase<Derived>& p)
+{
+    os << "[t = " << p.translation()(0) << "," << p.translation()(1) << "," << p.translation()(2) << " | r = " << p.so3() << ")";
+    return os;
+}
+
+}
 
 #endif // EIGEN_SERIALIZERS_HPP

@@ -51,10 +51,7 @@
 #include <glog/logging.h>
 
 #include <math/Fitting.hpp>
-
-#include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
+#include <EigenSerializers.hpp>
 
 class Test_Fitting : public ::testing::Test
 {
@@ -70,37 +67,22 @@ public:
     }
 };
 
-static void onMouse( int event, int x, int y, int, void* )
-{
-    if( event != cv::EVENT_LBUTTONDOWN )
-        return;
-    
-    LOG(INFO) << "Point " << x << " , " << y;
-}
 
 TEST_F(Test_Fitting, Dummy) 
 {
-    cv::namedWindow("Test");
-    cv::setMouseCallback( "Test", onMouse, 0 );
+    typedef double Scalar;
+    typedef core::PlaneFitting<Scalar> PFT;
     
-    cv::Mat img = cv::imread("/home/lukier/test_image_new_cam.png", cv::IMREAD_GRAYSCALE);
+    PFT pf;
     
-    const Eigen::Vector2d pt1(407.0,455.0);
-    const Eigen::Vector2d pt2(795.0,460.0);
-    const Eigen::Vector2d pt3(612.0,832.0);
+    pf(Eigen::Matrix<Scalar,3,1>(-1.0f,-2.0f,0.0f));
+    pf(Eigen::Matrix<Scalar,3,1>(3.0f,1.0f,4.0f));
+    pf(Eigen::Matrix<Scalar,3,1>(0.0f,-1.0f,2.0f));
     
-    const core::CircleT<double> c = core::circleFrom3Points(pt1, pt2, pt3);
+    typename PFT::PlaneT p1;
+    Scalar cur1;
     
-    LOG(INFO) << "Circle: " << c;
+    bool ok1 = pf.getPlane(p1, cur1);
     
-    cv::circle(img, cv::Point2f(c.coeff()(0), c.coeff()(1)), c.radius()*1.025, cv::Scalar(255,0,0));
-    cv::circle(img, cv::Point2f(c.coeff()(0), c.coeff()(1)), 544.0*0.975, cv::Scalar(255,0,0));
-    
-    while(1)
-    {
-        cv::imshow("Test", img);
-        
-        int key = cv::waitKey(-1);
-        if(key == 'q') { break; }
-    }
+    LOG(INFO) << "Eigen: " << ok1 << " = " << p1 << " / " << cur1;
 }

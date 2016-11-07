@@ -293,4 +293,16 @@ inline std::ostream& operator<<(std::ostream& os, const SE3GroupBase<Derived>& p
 
 }
 
+namespace Eigen
+{
+
+template <typename _Scalar, int _AmbientDim, int _Options>
+inline std::ostream& operator<<(std::ostream& os, const Hyperplane<_Scalar,_AmbientDim,_Options>& p)
+{
+    os << "Hyperplane(" << p.normal() << " , " << p.offset() << ")";
+    return os;
+}
+
+}
+
 #endif // EIGEN_SERIALIZERS_HPP

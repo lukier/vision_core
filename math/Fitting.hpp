@@ -72,12 +72,13 @@ public:
     {
         stats(x);
     }
-    
+
     bool getPlane(PlaneT& p, T& curvature) const
     {
         return getPlane(stats, p, curvature);
     }
-    
+
+private:
     bool getPlane(const StatsT& ss, PlaneT& p, T& curvature) const
     {
         if(ss.count() < 3)
@@ -95,19 +96,19 @@ public:
     
     void getPlane(const CovarianceMatrixT& cm, const VectorT& mean_point, PlaneT& p, T& curvature) const
     {
-#if 0 // TODO FIXME
-        T eigen_value;
-        EIGEN_ALIGN16 VectorT eigen_vector;
-        using std::fabs;
+        using Eigen::numext::fabs;
+
+        Eigen::SelfAdjointEigenSolver<CovarianceMatrixT> es(cm);
         
-        Eigen::EigenSolver<Eigen::Matrix<T,3,3>> es(cm);
+        const T eigen_value = es.eigenvalues()(0);
+        const VectorT eigen_vector = -es.eigenvectors().col(0); // note -1 here
         
-        p.normal() = es.eigenvectors()(0);
+        p.normal() = eigen_vector;
         
         T eig_sum = cm.coeff(0) + cm.coeff(4) + cm.coeff(8);
         if(eig_sum != T(0.0))
         {
-            curvature = fabs(es.eigenvalues()(0) / eig_sum);
+            curvature = fabs(eigen_value / eig_sum);
         }
         else
         {
@@ -115,11 +116,8 @@ public:
         }
         
         // Hessian form (D = nc . p_plane (centroid here) + p)
-        p.offset() = T(-1.0) * es.eigenvectors()(0).dot(mean_point); // NOTE: check -1 here
-#endif
-        
+        p.offset() = T(-1.0) * eigen_vector.dot(mean_point); // NOTE: check -1 here
     }
-private:
     
     core::MultivariateStats<VectorT> stats;
 };

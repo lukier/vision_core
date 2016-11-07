@@ -49,7 +49,7 @@ set(${PROJECT_NAME}_VERSION 1.0.0)
 # ------------------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD 11) 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter -Wno-unused-private-field -Wno-unused-variable)
+add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter -Wno-unused-variable)
 
 # ------------------------------------------------------------------------------
 # Ready for testing

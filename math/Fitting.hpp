@@ -101,7 +101,7 @@ private:
         Eigen::SelfAdjointEigenSolver<CovarianceMatrixT> es(cm);
         
         const T eigen_value = es.eigenvalues()(0);
-        const VectorT eigen_vector = -es.eigenvectors().col(0); // note -1 here
+        const VectorT eigen_vector = es.eigenvectors().col(0); 
         
         p.normal() = eigen_vector;
         
@@ -116,7 +116,7 @@ private:
         }
         
         // Hessian form (D = nc . p_plane (centroid here) + p)
-        p.offset() = T(-1.0) * eigen_vector.dot(mean_point); // NOTE: check -1 here
+        p.offset() = T(1.0) * eigen_vector.dot(mean_point); 
     }
     
     core::MultivariateStats<VectorT> stats;

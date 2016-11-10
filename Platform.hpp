@@ -36,11 +36,17 @@
 #ifndef CORE_PLATFORM_HPP
 #define CORE_PLATFORM_HPP
 
+#ifdef __OPENCL_VERSION__
+#define CORE_UNDER_OPENCL
+#endif // __OPENCL_VERSION__
+
+#ifndef CORE_UNDER_OPENCL
 #include <cstdint>
 #include <cstddef>
 #include <cmath>
 #include <limits>
 #include <iosfwd>
+#endif // CORE_UNDER_OPENCL
 
 #if defined(__CUDACC__) // NVCC
 #define CORE_ALIGN(n) __align__(n)
@@ -71,7 +77,7 @@
 // OpenCL
 // ---------------------------------------------------------------------------
 #ifdef CORE_HAVE_OPENCL
-#include <CL/cl.hpp>
+#include <CL/cl2.hpp>
 #endif // CORE_HAVE_OPENCL
 
 // ---------------------------------------------------------------------------

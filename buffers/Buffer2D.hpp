@@ -402,7 +402,7 @@ public:
 
     inline void copyFrom(const cl::CommandQueue& queue, const Image2DView<T,TargetDeviceOpenCL>& img, const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
     {
-        cl::size_t<3> origin, region;
+        std::array<std::size_t,3> origin, region;
         origin[0] = 0;
         origin[1] = 0;
         origin[2] = 0;
@@ -580,7 +580,7 @@ public:
     
     inline void copyFrom(const cl::CommandQueue& queue, const Image2DView<T,TargetDeviceOpenCL>& img, const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
     {
-        cl::size_t<3> origin, region;
+        std::array<std::size_t,3> origin, region;
         origin[0] = 0;
         origin[1] = 0;
         origin[2] = 0;

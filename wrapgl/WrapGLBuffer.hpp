@@ -288,11 +288,11 @@ private:
 
 namespace core
 {
-template<typename T, typename Target = TargetDeviceCUDA>
+template<typename T, typename Target>
 class Buffer1DFromOpenGL;
-template<typename T, typename Target = TargetDeviceCUDA>
+template<typename T, typename Target>
 class Buffer2DFromOpenGL;
-template<typename T, typename Target = TargetDeviceCUDA>
+template<typename T, typename Target>
 class Buffer3DFromOpenGL;
 }
 

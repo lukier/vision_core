@@ -63,6 +63,8 @@ public:
     typedef typename StatsT::CovarianceType CovarianceMatrixT;
     typedef Eigen::Hyperplane<T,3> PlaneT;
     
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
     PlaneFitting() { reset(); }
     
     inline void reset() { stats.reset(); }
@@ -154,6 +156,8 @@ public:
     typedef Eigen::Matrix<T,3,1> VectorT;
     typedef Eigen::Matrix<T,3,3> MatrixT;
     
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
     inline void reset() 
     { 
         sample_count = 0;
@@ -196,11 +200,9 @@ public:
         MatrixT r = u * s * v.transpose();
         VectorT t = mean2 - r*mean1;
         
-        Eigen::Transform<T,3,Eigen::Affine> ret;
-        ret(0,0) = r(0,0); ret(0,1) = r(0,1); ret(0,2) = r(0,2); ret(0,3) = t(0);
-        ret(1,0) = r(1,0); ret(1,1) = r(1,1); ret(1,2) = r(1,2); ret(1,3) = t(1);
-        ret(2,0) = r(2,0); ret(2,1) = r(2,1); ret(2,2) = r(2,2); ret(2,3) = t(2);
-        ret(3,0) = T(0.0); ret(3,1) = T(0.0); ret(3,2) = T(0.0); ret(3,3) = T(0.0);
+        Eigen::Transform<T,3,Eigen::Affine> ret(Eigen::Matrix<T,4,4>::Zero());
+        ret.block<3,3>(0,0) = r;
+        ret.block<3,1>(0,3) = t;
         
         return ret;
     }

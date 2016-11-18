@@ -58,6 +58,8 @@ class AxisAlignedBoundingBox : public Eigen::AlignedBox<T,3>
 {
     typedef Eigen::AlignedBox<T,3> BaseT;
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
     EIGEN_DEVICE_FUNC inline AxisAlignedBoundingBox() : BaseT()
     {   
     }

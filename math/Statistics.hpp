@@ -67,6 +67,8 @@ public:
     static constexpr int Cols = 1;
     static constexpr int Dimension = Rows * Cols;
     
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
     EIGEN_DEVICE_FUNC inline RunningStats()
     {
         reset();
@@ -154,6 +156,8 @@ public:
     static constexpr int Rows = _Rows;
     static constexpr int Cols = _Cols;
     static constexpr int Dimension = Rows * Cols;
+    
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
     EIGEN_DEVICE_FUNC inline RunningStats()
     {
@@ -247,6 +251,8 @@ public:
     typedef _Scalar Scalar;
     static constexpr std::size_t Dimensions = Rows;
     
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
     EIGEN_DEVICE_FUNC inline MultivariateStats()
     {
         reset();
@@ -329,6 +335,8 @@ template<typename Derived, typename BaseType>
 class PearsonProductMomentBase
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
     EIGEN_DEVICE_FUNC void reset()
     {
         stats_x.reset();
@@ -365,6 +373,8 @@ class PearsonProductMoment : public PearsonProductMomentBase<PearsonProductMomen
 public:    
     typedef T BaseType;
     typedef core::Polynomial<BaseType,1> PolynomialT;
+    
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
     EIGEN_DEVICE_FUNC inline PearsonProductMoment()
     {
@@ -410,6 +420,8 @@ class PearsonProductMoment<Eigen::Matrix<_Scalar, _Rows, _Cols> > : public Pears
 public:
     typedef Eigen::Matrix<_Scalar, _Rows, _Cols> BaseType;    
     typedef core::Polynomial<BaseType,1> PolynomialT;
+    
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
     EIGEN_DEVICE_FUNC inline PearsonProductMoment()
     {

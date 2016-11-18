@@ -110,6 +110,8 @@ public:
     typedef T Scalar;
     typedef typename PointStatsT::VectorType PointT;
     
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
     EIGEN_DEVICE_FUNC inline CircularMean()
     {
         reset();

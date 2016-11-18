@@ -36,22 +36,18 @@
 #ifndef CORE_PLATFORM_HPP
 #define CORE_PLATFORM_HPP
 
-#ifdef __OPENCL_VERSION__
-#define CORE_UNDER_OPENCL
-#endif // __OPENCL_VERSION__
-
-#ifndef CORE_UNDER_OPENCL
 #include <cstdint>
 #include <cstddef>
 #include <cmath>
 #include <limits>
 #include <iosfwd>
-#endif // CORE_UNDER_OPENCL
 
 #if defined(__CUDACC__) // NVCC
 #define CORE_ALIGN(n) __align__(n)
+#define CORE_ALIGN_PACK(n) __align__(n) // ??
 #elif defined(__GNUC__) // GCC
 #define CORE_ALIGN(n) __attribute__((aligned(n)))
+#define CORE_ALIGN_PACK(n) __attribute__((packed,aligned(n)))
 #elif defined(_MSC_VER) // MSVC
 #define CORE_ALIGN(n) __declspec(align(n))
 #else
@@ -1140,6 +1136,7 @@ GENERATE_CUDATYPE_OPERATOR(double1)
 GENERATE_CUDATYPE_OPERATOR(double2)
 GENERATE_CUDATYPE_OPERATOR(double3)
 GENERATE_CUDATYPE_OPERATOR(double4)
+#undef GENERATE_CUDATYPE_OPERATOR
 
 // ---------------------------------------------------------------------------
 // NOTE Why include Cereal here?

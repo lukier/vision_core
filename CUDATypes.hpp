@@ -208,12 +208,12 @@ namespace core
     } uchar1;
     
     
-    typedef struct __attribute__((packed, aligned(2))) 
+    typedef struct CORE_ALIGN_PACK(2)
     {
         signed char x, y;
     } char2;
     
-    typedef struct __attribute__((packed, aligned(2))) 
+    typedef struct CORE_ALIGN_PACK(2)
     {
         unsigned char x, y;
     } uchar2;
@@ -228,12 +228,12 @@ namespace core
         unsigned char x, y, z;
     } uchar3;
     
-    typedef struct __attribute__((packed, aligned(4)))
+    typedef struct CORE_ALIGN_PACK(4)
     {
         signed char x, y, z, w;
     } char4;
     
-    typedef struct __attribute__((packed, aligned(4)))
+    typedef struct CORE_ALIGN_PACK(4)
     {
         unsigned char x, y, z, w;
     } uchar4;
@@ -248,12 +248,12 @@ namespace core
         unsigned short x;
     } ushort1;
     
-    typedef struct __attribute__((packed, aligned(4)))
+    typedef struct CORE_ALIGN_PACK(4)
     {
         short x, y;
     } short2;
     
-    typedef struct __attribute__((packed, aligned(4))) 
+    typedef struct CORE_ALIGN_PACK(4) 
     {
         unsigned short x, y;
     } ushort2;
@@ -268,12 +268,12 @@ namespace core
         unsigned short x, y, z;
     } ushort3;
     
-    typedef struct __attribute__((packed, aligned(8))) 
+    typedef struct CORE_ALIGN_PACK(8)
     {
         short x, y, z, w;
     } short4;
     
-    typedef struct __attribute__((packed, aligned(8))) 
+    typedef struct CORE_ALIGN_PACK(8)
     {
         unsigned short x, y, z, w;
     } ushort4;
@@ -288,12 +288,12 @@ namespace core
         unsigned int x;
     } uint1;
     
-    typedef struct __attribute__((packed, aligned(8))) 
+    typedef struct CORE_ALIGN_PACK(8)
     {
         int x, y;
     } int2;
     
-    typedef struct __attribute__((packed, aligned(8))) 
+    typedef struct CORE_ALIGN_PACK(8)
     {
         unsigned int x, y;
     } uint2;
@@ -308,12 +308,12 @@ namespace core
         unsigned int x, y, z;
     } uint3;
     
-    typedef struct __attribute__((packed, aligned(16))) 
+    typedef struct CORE_ALIGN_PACK(16)
     {
         int x, y, z, w;
     } int4;
     
-    typedef struct __attribute__((packed, aligned(16))) 
+    typedef struct CORE_ALIGN_PACK(16)
     {
         unsigned int x, y, z, w;
     } uint4;
@@ -328,12 +328,12 @@ namespace core
         unsigned long x;
     } ulong1;
     
-    typedef struct __attribute__((packed, aligned((2*sizeof(long int)))))  
+    typedef struct CORE_ALIGN_PACK((2*sizeof(long int)))
     {
         long int x, y;
     } long2;
     
-    typedef struct __attribute__((packed, aligned((2*sizeof(unsigned long int)))))  
+    typedef struct CORE_ALIGN_PACK((2*sizeof(unsigned long int))) 
     {
         unsigned long int x, y;
     } ulong2;
@@ -348,12 +348,12 @@ namespace core
         unsigned long int x, y, z;
     } ulong3;
     
-    typedef struct __attribute__((packed, aligned(16))) 
+    typedef struct CORE_ALIGN_PACK(16)
     {
         long int x, y, z, w;
     } long4;
     
-    typedef struct __attribute__((packed, aligned(16))) 
+    typedef struct CORE_ALIGN_PACK(16)
     {
         unsigned long int x, y, z, w;
     } ulong4;
@@ -363,7 +363,7 @@ namespace core
         float x;
     } float1;
     
-    typedef struct __attribute__((packed, aligned(8)))
+    typedef struct CORE_ALIGN_PACK(8)
     {
         float x; float y; 
     } float2;
@@ -373,7 +373,7 @@ namespace core
         float x, y, z;
     } float3;
     
-    typedef struct __attribute__((packed, aligned(16)))
+    typedef struct CORE_ALIGN_PACK(16)
     {
         float x, y, z, w;
     } float4;
@@ -388,12 +388,12 @@ namespace core
         unsigned long long int x;
     } ulonglong1;
     
-    typedef struct __attribute__((packed, aligned(16))) 
+    typedef struct CORE_ALIGN_PACK(16)
     {
         long long int x, y;
     } longlong2;
     
-    typedef struct __attribute__((packed, aligned(16))) 
+    typedef struct CORE_ALIGN_PACK(16)
     {
         unsigned long long int x, y;
     } ulonglong2;
@@ -408,12 +408,12 @@ namespace core
         unsigned long long int x, y, z;
     } ulonglong3;
     
-    typedef struct __attribute__((packed, aligned(16)))
+    typedef struct CORE_ALIGN_PACK(16)
     {
         long long int x, y, z ,w;
     } longlong4;
     
-    typedef struct __attribute__((packed, aligned(16))) 
+    typedef struct CORE_ALIGN_PACK(16) 
     {
         unsigned long long int x, y, z, w;
     } ulonglong4;
@@ -423,7 +423,7 @@ namespace core
         double x;
     } double1;
     
-    typedef struct __attribute__((packed, aligned(16)))
+    typedef struct CORE_ALIGN_PACK(16)
     {
         double x, y;
     } double2;
@@ -433,7 +433,7 @@ namespace core
         double x, y, z;
     } double3;
     
-    typedef struct __attribute__((packed, aligned(16)))
+    typedef struct CORE_ALIGN_PACK(16)
     {
         double x, y, z, w;
     } double4;

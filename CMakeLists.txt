@@ -86,8 +86,10 @@ find_package(Sophus REQUIRED QUIET)
 find_package(TBB REQUIRED QUIET)
 
 find_package(CUDA QUIET)
-CUDA_SELECT_NVCC_ARCH_FLAGS(CUDA_NVCC_ARCH_FLAGS Auto)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_ARCH_FLAGS};--expt-relaxed-constexpr;-std=c++11;-use_fast_math;-O2;-Xcompiler;-rdynamic)
+if(CUDA_FOUND)
+    CUDA_SELECT_NVCC_ARCH_FLAGS(CUDA_NVCC_ARCH_FLAGS Auto)
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_ARCH_FLAGS};--expt-relaxed-constexpr;-std=c++11;-use_fast_math;-O2;-Xcompiler;-rdynamic)
+endif()
 find_package(OpenCL QUIET)
 
 find_package(OpenCV QUIET)

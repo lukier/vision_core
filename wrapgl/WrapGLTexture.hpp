@@ -299,7 +299,7 @@ public:
 namespace core
 {    
 
-template<typename T, typename Target = TargetDeviceCUDA>
+template<typename T, typename Target>
 class GPUTexture2DFromOpenGL { };
 
 }

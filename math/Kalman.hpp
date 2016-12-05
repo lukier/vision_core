@@ -33,14 +33,17 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_KALMAN_HPP
-#define CORE_KALMAN_HPP
+#ifndef CORE_MATH_KALMAN_HPP
+#define CORE_MATH_KALMAN_HPP
 
 #include <Platform.hpp>
 
 #include <Eigen/LU>
 
 namespace core
+{
+    
+namespace math
 {
     
 #if 0 // TODO FIXME
@@ -190,6 +193,9 @@ public:
     
 };
 #endif
+
 }
 
-#endif // CORE_KALMAN_HPP
+}
+
+#endif // CORE_MATH_KALMAN_HPP

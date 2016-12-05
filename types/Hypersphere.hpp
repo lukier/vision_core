@@ -33,8 +33,8 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_HYPERSPHERE_HPP
-#define CORE_HYPERSPHERE_HPP
+#ifndef CORE_TYPES_HYPERSPHERE_HPP
+#define CORE_TYPES_HYPERSPHERE_HPP
 
 #include <Platform.hpp>
 
@@ -44,10 +44,14 @@
 
 namespace core
 {
+    
+namespace types
+{
+    
 template<typename _Scalar, int _Dimension = 0> class Hypersphere;
 
-template <typename T> using CircleT = core::Hypersphere<T,1>;
-template <typename T> using SphereT = core::Hypersphere<T,2>;
+template <typename T> using CircleT = core::types::Hypersphere<T,1>;
+template <typename T> using SphereT = core::types::Hypersphere<T,2>;
 
 namespace internal
 {
@@ -89,12 +93,14 @@ struct helper_volume<T,0>
 
 }
 
+}
+
 namespace Eigen 
 {
     namespace internal 
     {
         template<typename _Scalar, int _Dimension>
-        struct traits<core::Hypersphere<_Scalar,_Dimension> > 
+        struct traits<core::types::Hypersphere<_Scalar,_Dimension> > 
         {
             static constexpr int Dimension = _Dimension;
             typedef _Scalar Scalar;
@@ -102,7 +108,7 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Dimension, int _Options>
-        struct traits<Map<core::Hypersphere<_Scalar,_Dimension>, _Options> > : traits<core::Hypersphere<_Scalar, _Dimension> > 
+        struct traits<Map<core::types::Hypersphere<_Scalar,_Dimension>, _Options> > : traits<core::types::Hypersphere<_Scalar, _Dimension> > 
         {
             static constexpr int Dimension = _Dimension;
             typedef _Scalar Scalar;
@@ -110,7 +116,7 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Dimension, int _Options>
-        struct traits<Map<const core::Hypersphere<_Scalar,_Dimension>, _Options> > : traits<const core::Hypersphere<_Scalar, _Dimension> > 
+        struct traits<Map<const core::types::Hypersphere<_Scalar,_Dimension>, _Options> > : traits<const core::types::Hypersphere<_Scalar, _Dimension> > 
         {
             static constexpr int Dimension = _Dimension;
             typedef _Scalar Scalar;
@@ -121,6 +127,9 @@ namespace Eigen
 }
 
 namespace core
+{
+    
+namespace types
 {
 
 template<typename Derived>
@@ -247,7 +256,7 @@ public:
     typedef typename Eigen::internal::traits<Hypersphere>::Scalar Scalar;    
     typedef typename Eigen::internal::traits<Hypersphere>::CoeffType CoeffType;
     
-    friend class core::HypersphereBase<Hypersphere<_Scalar,_Dimension>>;
+    friend class core::types::HypersphereBase<Hypersphere<_Scalar,_Dimension>>;
     
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
@@ -295,22 +304,24 @@ inline std::ostream& operator<<(std::ostream& os, const Hypersphere<_Scalar,_Dim
     
 }
 
+}
+
 namespace Eigen 
 {
 /**
  * Specialisation of Eigen::Map for Hypersphere.
  */
 template<typename _Scalar, int _Dimension, int _Options>
-class Map<core::Hypersphere<_Scalar,_Dimension>, _Options> : public core::HypersphereBase<Map<core::Hypersphere<_Scalar,_Dimension>, _Options> > 
+class Map<core::types::Hypersphere<_Scalar,_Dimension>, _Options> : public core::types::HypersphereBase<Map<core::types::Hypersphere<_Scalar,_Dimension>, _Options> > 
 {
-    typedef core::HypersphereBase<Map<core::Hypersphere<_Scalar,_Dimension>, _Options> > Base;
+    typedef core::types::HypersphereBase<Map<core::types::Hypersphere<_Scalar,_Dimension>, _Options> > Base;
     
 public:
     static constexpr int Dimension = Eigen::internal::traits<Map>::Dimension;
     typedef typename Eigen::internal::traits<Map>::Scalar Scalar;    
     typedef typename Eigen::internal::traits<Map>::CoeffType CoeffType;
     
-    friend class core::HypersphereBase<Map<core::Hypersphere<_Scalar,_Dimension>, _Options> >;
+    friend class core::types::HypersphereBase<Map<core::types::Hypersphere<_Scalar,_Dimension>, _Options> >;
     
     EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
     
@@ -333,16 +344,16 @@ protected:
  * Specialisation of Eigen::Map for const Hypersphere.
  */
 template<typename _Scalar, int _Dimension, int _Options>
-class Map<const core::Hypersphere<_Scalar,_Dimension>, _Options> : public core::HypersphereBase<Map<const core::Hypersphere<_Scalar,_Dimension>, _Options> > 
+class Map<const core::types::Hypersphere<_Scalar,_Dimension>, _Options> : public core::types::HypersphereBase<Map<const core::types::Hypersphere<_Scalar,_Dimension>, _Options> > 
 {
-    typedef core::HypersphereBase<Map<const core::Hypersphere<_Scalar,_Dimension>, _Options> > Base;
+    typedef core::types::HypersphereBase<Map<const core::types::Hypersphere<_Scalar,_Dimension>, _Options> > Base;
     
 public:
     static constexpr int Dimension = Eigen::internal::traits<Map>::Dimension;
     typedef typename Eigen::internal::traits<Map>::Scalar Scalar;    
     typedef typename Eigen::internal::traits<Map>::CoeffType CoeffType;
         
-    friend class core::HypersphereBase<Map<const core::Hypersphere<_Scalar,_Dimension>, _Options> >;
+    friend class core::types::HypersphereBase<Map<const core::types::Hypersphere<_Scalar,_Dimension>, _Options> >;
     
     EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
     
@@ -360,4 +371,4 @@ protected:
 
 }
 
-#endif // CORE_HYPERSPHERE_HPP
+#endif // CORE_TYPES_HYPERSPHERE_HPP

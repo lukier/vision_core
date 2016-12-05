@@ -33,13 +33,16 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_LIANG_BARSKY_HPP
-#define CORE_LIANG_BARSKY_HPP
+#ifndef CORE_MATH_LIANG_BARSKY_HPP
+#define CORE_MATH_LIANG_BARSKY_HPP
 
 #include <Platform.hpp>
 
 
 namespace core
+{
+    
+namespace math
 {
     
 template<typename T>
@@ -126,4 +129,6 @@ private:
 
 }
 
-#endif // CORE_LIANG_BARSKY_HPP
+}
+
+#endif // CORE_MATH_LIANG_BARSKY_HPP

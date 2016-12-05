@@ -33,12 +33,18 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_PIXEL_CONVERT_HPP
-#define CORE_PIXEL_CONVERT_HPP
+#ifndef CORE_IMAGE_CONVERT_HPP
+#define CORE_IMAGE_CONVERT_HPP
 
 #include <Platform.hpp>
 
+#include <buffers/Buffer1D.hpp>
+#include <buffers/Buffer2D.hpp>
+
 namespace core
+{
+    
+namespace image
 {
 
 template<typename To, typename Ti> EIGEN_DEVICE_FUNC inline To convertPixel(Ti p) { return p; }
@@ -126,6 +132,14 @@ template<> EIGEN_DEVICE_FUNC inline float3 convertPixel(Eigen::Vector4f p) { ret
 template<> EIGEN_DEVICE_FUNC inline float4 convertPixel(Eigen::Vector4f p) { return make_float4(p(0), p(1), p(2), p(3)); }
 template<> EIGEN_DEVICE_FUNC inline Eigen::Vector3f convertPixel(Eigen::Vector4f p) { return Eigen::Vector3f(p(0), p(1), p(2)); }
 
+/**
+ * Convert 2D buffer between element types.
+ */
+template<typename T_IN, typename T_OUT, typename Target>
+void convertBuffer(const core::Buffer2DView<T_IN, Target>& buf_in, core::Buffer2DView<T_OUT, Target>& buf_out);
+
 }
 
-#endif // CORE_PIXEL_CONVERT_HPP
+}
+
+#endif // CORE_IMAGE_CONVERT_HPP

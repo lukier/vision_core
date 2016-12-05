@@ -33,14 +33,17 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_DIVERGENCE_HPP
-#define CORE_DIVERGENCE_HPP
+#ifndef CORE_MATH_DIVERGENCE_HPP
+#define CORE_MATH_DIVERGENCE_HPP
 
 #include <Platform.hpp>
 
 #include <buffers/Buffer2D.hpp>
 
 namespace core 
+{
+    
+namespace math
 {
 
 EIGEN_DEVICE_FUNC inline float projectUnitBall(float val, float maxrad = 1.0f)
@@ -132,4 +135,6 @@ EIGEN_DEVICE_FUNC inline Eigen::Vector2f TGVDivA(const Buffer2DView<Eigen::Vecto
 
 }
 
-#endif // CORE_DIVERGENCE_HPP
+}
+
+#endif // CORE_MATH_DIVERGENCE_HPP

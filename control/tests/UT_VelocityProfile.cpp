@@ -69,5 +69,5 @@ public:
 
 TEST_F(Test_VelocityProfile, Dummy)
 {    
-    core::TrapezoidalVelocityProfile<float> vpr;
+    core::control::TrapezoidalVelocityProfile<float> vpr;
 }

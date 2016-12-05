@@ -32,8 +32,8 @@
  * Gaussian distribution.
  * ****************************************************************************
  */
-#ifndef CORE_GAUSSIAN_HPP
-#define CORE_GAUSSIAN_HPP
+#ifndef CORE_TYPES_GAUSSIAN_HPP
+#define CORE_TYPES_GAUSSIAN_HPP
 
 #include <Platform.hpp>
 
@@ -41,8 +41,11 @@
 
 namespace core
 {
-template<typename T> class Gaussian;
-template<typename _Scalar, int _Dimension = 1> class MultivariateGaussian;
+namespace types
+{
+    template<typename T> class Gaussian;
+    template<typename _Scalar, int _Dimension = 1> class MultivariateGaussian;
+}
 }
 
 namespace Eigen 
@@ -51,7 +54,7 @@ namespace Eigen
     {
         // Gaussian of scalars or Eigens
         template<typename T>
-        struct traits< core::Gaussian<T> > 
+        struct traits< core::types::Gaussian<T> > 
         {
             static constexpr int Rows = 1;
             static constexpr int Cols = 1;
@@ -61,7 +64,7 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Rows, int _Cols>
-        struct traits<core::Gaussian<Matrix<_Scalar, _Rows, _Cols> > > 
+        struct traits<core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols> > > 
         {
             static constexpr int Rows = _Rows;
             static constexpr int Cols = _Cols;
@@ -71,7 +74,7 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Rows, int _Cols, int _Options>
-        struct traits<Map<core::Gaussian<Matrix<_Scalar, _Rows, _Cols> >, _Options> > : traits<core::Gaussian<Matrix<_Scalar, _Rows, _Cols> > >
+        struct traits<Map<core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols> >, _Options> > : traits<core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols> > >
         {
             static constexpr int Rows = _Rows;
             static constexpr int Cols = _Cols;
@@ -81,7 +84,7 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Rows, int _Cols, int _Options>
-        struct traits<Map<const core::Gaussian<Matrix<_Scalar, _Rows, _Cols> >, _Options> > : traits<const core::Gaussian<Matrix<_Scalar, _Rows, _Cols> > > 
+        struct traits<Map<const core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols> >, _Options> > : traits<const core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols> > > 
         {
             static constexpr int Rows = _Rows;
             static constexpr int Cols = _Cols;
@@ -92,7 +95,7 @@ namespace Eigen
         
         // Multivariate
         template<typename _Scalar, int _Dimension>
-        struct traits<core::MultivariateGaussian<_Scalar,_Dimension> > 
+        struct traits<core::types::MultivariateGaussian<_Scalar,_Dimension> > 
         {
             static constexpr int Dimension = _Dimension;
             typedef _Scalar Scalar;
@@ -101,7 +104,7 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Dimension, int _Options>
-        struct traits<Map<core::MultivariateGaussian<_Scalar,_Dimension>, _Options> > : traits<core::MultivariateGaussian<_Scalar, _Dimension> > 
+        struct traits<Map<core::types::MultivariateGaussian<_Scalar,_Dimension>, _Options> > : traits<core::types::MultivariateGaussian<_Scalar, _Dimension> > 
         {
             static constexpr int Dimension = _Dimension;
             typedef _Scalar Scalar;
@@ -110,7 +113,7 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Dimension, int _Options>
-        struct traits<Map<const core::MultivariateGaussian<_Scalar,_Dimension>, _Options> > : traits<const core::MultivariateGaussian<_Scalar, _Dimension> > 
+        struct traits<Map<const core::types::MultivariateGaussian<_Scalar,_Dimension>, _Options> > : traits<const core::types::MultivariateGaussian<_Scalar, _Dimension> > 
         {
             static constexpr int Dimension = _Dimension;
             typedef _Scalar Scalar;
@@ -122,6 +125,9 @@ namespace Eigen
 }
 
 namespace core
+{
+    
+namespace types
 {
 
 /**
@@ -477,7 +483,7 @@ public:
     typedef typename Eigen::internal::traits<MultivariateGaussian>::CovarianceType CovarianceType;
     typedef const typename Eigen::internal::traits<MultivariateGaussian>::CovarianceType ConstCovarianceType;
     
-    friend class core::MultivariateGaussianBase<MultivariateGaussian<_Scalar,_Dimension>>;
+    friend class core::types::MultivariateGaussianBase<MultivariateGaussian<_Scalar,_Dimension>>;
     
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
@@ -523,6 +529,8 @@ inline std::ostream& operator<<(std::ostream& os, const MultivariateGaussian<_Sc
     os << "MultivariateGaussian(" << p.mean() << "," << p.covariance() <<  ")";
     return os;
 }
+
+}
     
 }
 
@@ -532,17 +540,17 @@ namespace Eigen
  * Specialisation of Eigen::Map for Gaussian.
  */
 template<typename _Scalar, int _Rows, int _Cols, int _Options>
-class Map<core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options> : public core::GaussianDispatchingBase<Map<core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<Map<core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>>::Dimension> 
+class Map<core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options> : public core::types::GaussianDispatchingBase<Map<core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<Map<core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>>::Dimension> 
 {
-    typedef core::GaussianDispatchingBase<Map<core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<Map<core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>>::Dimension> Base;
+    typedef core::types::GaussianDispatchingBase<Map<core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<Map<core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>>::Dimension> Base;
 public:
     static constexpr int Dimension = Eigen::internal::traits<Map>::Dimension;
     typedef typename Eigen::internal::traits<Map>::Scalar Scalar;    
     typedef typename Eigen::internal::traits<Map>::MeanType MeanType;
     typedef const typename Eigen::internal::traits<Map>::MeanType ConstMeanType;
     
-    friend class core::GaussianDispatchingBase<Map<core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<Map<core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>>::Dimension>;
-    friend class core::GaussianBase<Map<core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options> >;
+    friend class core::types::GaussianDispatchingBase<Map<core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<Map<core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>>::Dimension>;
+    friend class core::types::GaussianBase<Map<core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options> >;
     
     EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
 #if 0
@@ -571,16 +579,16 @@ protected:
  * Specialisation of Eigen::Map for const Gaussian.
  */
 template<typename _Scalar, int _Rows, int _Cols, int _Options>
-class Map<const core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options> : public core::GaussianDispatchingBase<Map<const core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<const core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>>::Dimension> 
+class Map<const core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options> : public core::types::GaussianDispatchingBase<Map<const core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<const core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>>::Dimension> 
 {
-    typedef core::GaussianDispatchingBase<Map<const core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<const core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>>::Dimension>  Base;
+    typedef core::types::GaussianDispatchingBase<Map<const core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<const core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>>::Dimension>  Base;
 public:
     static constexpr int Dimension = Eigen::internal::traits<Map>::Dimension;
     typedef typename Eigen::internal::traits<Map>::Scalar Scalar;    
     typedef const typename Eigen::internal::traits<Map>::MeanType ConstMeanType;
     
-    friend class core::GaussianDispatchingBase<Map<const core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<const core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>>::Dimension>;
-    friend class core::GaussianBase<Map<const core::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options> >;
+    friend class core::types::GaussianDispatchingBase<Map<const core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options>, Eigen::internal::traits<const core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>>::Dimension>;
+    friend class core::types::GaussianBase<Map<const core::types::Gaussian<Matrix<_Scalar, _Rows, _Cols>>, _Options> >;
     
     EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
 #if 0
@@ -606,9 +614,9 @@ protected:
  * Specialisation of Eigen::Map for Multivariate Gaussian.
  */
 template<typename _Scalar, int _Dimension, int _Options>
-class Map<core::MultivariateGaussian<_Scalar,_Dimension>, _Options> : public core::MultivariateGaussianBase<Map<core::MultivariateGaussian<_Scalar,_Dimension>, _Options> > 
+class Map<core::types::MultivariateGaussian<_Scalar,_Dimension>, _Options> : public core::types::MultivariateGaussianBase<Map<core::types::MultivariateGaussian<_Scalar,_Dimension>, _Options> > 
 {
-    typedef core::MultivariateGaussianBase<Map<core::MultivariateGaussian<_Scalar,_Dimension>, _Options>> Base;
+    typedef core::types::MultivariateGaussianBase<Map<core::types::MultivariateGaussian<_Scalar,_Dimension>, _Options>> Base;
     
 public:
     static constexpr int Dimension = Eigen::internal::traits<Map>::Dimension;
@@ -618,7 +626,7 @@ public:
     typedef typename Eigen::internal::traits<Map>::CovarianceType CovarianceType;
     typedef const typename Eigen::internal::traits<Map>::CovarianceType ConstCovarianceType;
     
-    friend class core::MultivariateGaussianBase<Map<core::MultivariateGaussian<_Scalar,_Dimension>, _Options> >;
+    friend class core::types::MultivariateGaussianBase<Map<core::types::MultivariateGaussian<_Scalar,_Dimension>, _Options> >;
     
     EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
 #if 0
@@ -647,9 +655,9 @@ protected:
  * Specialisation of Eigen::Map for const Multivariate Gaussian.
  */
 template<typename _Scalar, int _Dimension, int _Options>
-class Map<const core::MultivariateGaussian<_Scalar,_Dimension>, _Options> : public core::MultivariateGaussianBase<Map<const core::MultivariateGaussian<_Scalar,_Dimension>, _Options> > 
+class Map<const core::types::MultivariateGaussian<_Scalar,_Dimension>, _Options> : public core::types::MultivariateGaussianBase<Map<const core::types::MultivariateGaussian<_Scalar,_Dimension>, _Options> > 
 {
-    typedef core::MultivariateGaussianBase<Map<const core::MultivariateGaussian<_Scalar,_Dimension>, _Options> > Base;
+    typedef core::types::MultivariateGaussianBase<Map<const core::types::MultivariateGaussian<_Scalar,_Dimension>, _Options> > Base;
     
 public:
     static constexpr int Dimension = Eigen::internal::traits<Map>::Dimension;
@@ -659,7 +667,7 @@ public:
     typedef typename Eigen::internal::traits<Map>::CovarianceType CovarianceType;
     typedef const typename Eigen::internal::traits<Map>::CovarianceType ConstCovarianceType;
     
-    friend class core::MultivariateGaussianBase<Map<const core::MultivariateGaussian<_Scalar,_Dimension>, _Options> >;
+    friend class core::types::MultivariateGaussianBase<Map<const core::types::MultivariateGaussian<_Scalar,_Dimension>, _Options> >;
     
     EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
 #if 0
@@ -683,4 +691,4 @@ protected:
 
 }
 
-#endif // CORE_GAUSSIAN_HPP
+#endif // CORE_TYPES_GAUSSIAN_HPP

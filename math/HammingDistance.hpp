@@ -33,13 +33,17 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_HAMMINGDISTANCE_HPP
-#define CORE_HAMMINGDISTANCE_HPP
+#ifndef CORE_MATH_HAMMINGDISTANCE_HPP
+#define CORE_MATH_HAMMINGDISTANCE_HPP
 
 #include <Platform.hpp>
 
 namespace core
 {
+
+namespace math
+{
+    
 namespace internal
 {
     template<typename T>
@@ -136,4 +140,6 @@ EIGEN_DEVICE_FUNC static inline unsigned hammingDistance(const ulonglong4 p, con
 
 }
 
-#endif // CORE_HAMMINGDISTANCE_HPP
+}
+
+#endif // CORE_MATH_HAMMINGDISTANCE_HPP

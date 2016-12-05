@@ -33,14 +33,17 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_SDF_HPP
-#define CORE_SDF_HPP
+#ifndef CORE_TYPES_SDF_HPP
+#define CORE_TYPES_SDF_HPP
 
 #include <Platform.hpp>
 
 namespace core
 {
 
+namespace types
+{
+    
 template<typename T = float>    
 struct CORE_ALIGN(8) SDF
 {
@@ -89,4 +92,6 @@ EIGEN_DEVICE_FUNC inline SDF<T> operator+(const SDF<T>& lhs, const SDF<T>& rhs)
     
 }
 
-#endif // CORE_SDF_HPP
+}
+
+#endif // CORE_TYPES_SDF_HPP

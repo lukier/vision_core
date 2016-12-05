@@ -33,8 +33,8 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_AXIS_ALIGNED_BOUNDING_BOX_HPP
-#define CORE_AXIS_ALIGNED_BOUNDING_BOX_HPP
+#ifndef CORE_TYPES_AXIS_ALIGNED_BOUNDING_BOX_HPP
+#define CORE_TYPES_AXIS_ALIGNED_BOUNDING_BOX_HPP
 
 #include <Platform.hpp>
 
@@ -42,6 +42,9 @@
 #include <Eigen/Geometry>
 
 namespace core
+{
+    
+namespace types
 {
 
 template<typename T>
@@ -196,4 +199,6 @@ inline std::ostream& operator<<(std::ostream& os, const AxisAlignedBoundingBox<T
 
 }
 
-#endif // CORE_AXIS_ALIGNED_BOUNDING_BOX_HPP
+}
+
+#endif // CORE_TYPES_AXIS_ALIGNED_BOUNDING_BOX_HPP

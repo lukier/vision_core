@@ -33,12 +33,15 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_ENDIAN_HPP
-#define CORE_ENDIAN_HPP
+#ifndef CORE_TYPES_ENDIAN_HPP
+#define CORE_TYPES_ENDIAN_HPP
 
 #include <Platform.hpp>
 
 namespace core
+{
+    
+namespace types
 {
 
 enum class Endianness
@@ -108,4 +111,6 @@ private:
     
 }
 
-#endif // CORE_ENDIAN_HPP
+}
+
+#endif // CORE_TYPES_ENDIAN_HPP

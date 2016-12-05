@@ -33,12 +33,15 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_COSTVOLUMEELEMENT_HPP
-#define CORE_COSTVOLUMEELEMENT_HPP
+#ifndef CORE_TYPES_COSTVOLUMEELEMENT_HPP
+#define CORE_TYPES_COSTVOLUMEELEMENT_HPP
 
 #include <Platform.hpp>
 
 namespace core
+{
+    
+namespace types
 {
 
 template<typename T>    
@@ -90,4 +93,6 @@ struct CORE_ALIGN(8) CostVolumeElement
     
 }
 
-#endif // CORE_COSTVOLUMEELEMENT_HPP
+}
+
+#endif // CORE_TYPES_COSTVOLUMEELEMENT_HPP

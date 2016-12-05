@@ -40,6 +40,9 @@
 
 namespace core
 {
+    
+namespace math
+{
 
 template<typename T>
 EIGEN_DEVICE_FUNC inline void cartesianToPolar(const T& x, const T& y, T& r, T& theta)
@@ -109,4 +112,6 @@ EIGEN_DEVICE_FUNC inline Eigen::Matrix<T,3,1> sphericalToCartesian(const Eigen::
 
 }
 
-#endif // CORE_POLAR_SPHERICAL_HPP
+}
+
+#endif // CORE_MATH_POLAR_SPHERICAL_HPP

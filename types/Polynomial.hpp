@@ -33,8 +33,8 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_POLYNOMIAL_HPP
-#define CORE_POLYNOMIAL_HPP
+#ifndef CORE_TYPES_POLYNOMIAL_HPP
+#define CORE_TYPES_POLYNOMIAL_HPP
 
 #include <Platform.hpp>
 
@@ -42,14 +42,16 @@
 
 namespace core
 {
+namespace types
+{
 template<typename _Scalar, int _Rank = 0> class Polynomial;
 
-template <typename T> using LineT = core::Polynomial<T,1>;
-template <typename T> using QuadraticT = core::Polynomial<T,2>;
-template <typename T> using CubicT = core::Polynomial<T,3>;
-template <typename T> using QuarticT = core::Polynomial<T,4>;
-template <typename T> using QuinticT = core::Polynomial<T,5>;
-
+template <typename T> using LineT = core::types::Polynomial<T,1>;
+template <typename T> using QuadraticT = core::types::Polynomial<T,2>;
+template <typename T> using CubicT = core::types::Polynomial<T,3>;
+template <typename T> using QuarticT = core::types::Polynomial<T,4>;
+template <typename T> using QuinticT = core::types::Polynomial<T,5>;
+}
 }
 
 namespace Eigen 
@@ -57,7 +59,7 @@ namespace Eigen
     namespace internal 
     {
         template<typename _Scalar, int _Rank>
-        struct traits<core::Polynomial<_Scalar,_Rank> > 
+        struct traits<core::types::Polynomial<_Scalar,_Rank> > 
         {
             static constexpr int Rank = _Rank;
             typedef _Scalar Scalar;
@@ -65,7 +67,7 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Rank, int _Options>
-        struct traits<Map<core::Polynomial<_Scalar,_Rank>, _Options> > : traits<core::Polynomial<_Scalar, _Rank> > 
+        struct traits<Map<core::types::Polynomial<_Scalar,_Rank>, _Options> > : traits<core::types::Polynomial<_Scalar, _Rank> > 
         {
             static constexpr int Rank = _Rank;
             typedef _Scalar Scalar;
@@ -73,7 +75,7 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Rank, int _Options>
-        struct traits<Map<const core::Polynomial<_Scalar,_Rank>, _Options> > : traits<const core::Polynomial<_Scalar, _Rank> > 
+        struct traits<Map<const core::types::Polynomial<_Scalar,_Rank>, _Options> > : traits<const core::types::Polynomial<_Scalar, _Rank> > 
         {
             static constexpr int Rank = _Rank;
             typedef _Scalar Scalar;
@@ -86,6 +88,9 @@ namespace Eigen
 namespace core
 {
 
+namespace types
+{
+    
 template<typename Derived>
 class PolynomialBase
 {
@@ -263,7 +268,7 @@ public:
     typedef typename Eigen::internal::traits<Polynomial>::Scalar Scalar;    
     typedef typename Eigen::internal::traits<Polynomial>::CoeffType CoeffType;
     
-    friend class core::PolynomialBase<Polynomial<_Scalar,_Rank>>;
+    friend class core::types::PolynomialBase<Polynomial<_Scalar,_Rank>>;
     
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
@@ -340,6 +345,8 @@ inline std::ostream& operator<<(std::ostream& os, const Polynomial<_Scalar,_Rank
     }
     return os;
 }
+
+}
     
 }
 
@@ -349,16 +356,16 @@ namespace Eigen
  * Specialisation of Eigen::Map for Polynomial.
  */
 template<typename _Scalar, int _Rank, int _Options>
-class Map<core::Polynomial<_Scalar,_Rank>, _Options> : public core::PolynomialBase<Map<core::Polynomial<_Scalar,_Rank>, _Options> > 
+class Map<core::types::Polynomial<_Scalar,_Rank>, _Options> : public core::types::PolynomialBase<Map<core::types::Polynomial<_Scalar,_Rank>, _Options> > 
 {
-    typedef core::PolynomialBase<Map<core::Polynomial<_Scalar,_Rank>, _Options> > Base;
+    typedef core::types::PolynomialBase<Map<core::types::Polynomial<_Scalar,_Rank>, _Options> > Base;
     
 public:
     static constexpr int Rank = Eigen::internal::traits<Map>::Rank;
     typedef typename Eigen::internal::traits<Map>::Scalar Scalar;    
     typedef typename Eigen::internal::traits<Map>::CoeffType CoeffType;
     
-    friend class core::PolynomialBase<Map<core::Polynomial<_Scalar,_Rank>, _Options> >;
+    friend class core::types::PolynomialBase<Map<core::types::Polynomial<_Scalar,_Rank>, _Options> >;
     
     EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
     
@@ -387,16 +394,16 @@ protected:
  * Specialisation of Eigen::Map for const Polynomial.
  */
 template<typename _Scalar, int _Rank, int _Options>
-class Map<const core::Polynomial<_Scalar,_Rank>, _Options> : public core::PolynomialBase<Map<const core::Polynomial<_Scalar,_Rank>, _Options> > 
+class Map<const core::types::Polynomial<_Scalar,_Rank>, _Options> : public core::types::PolynomialBase<Map<const core::types::Polynomial<_Scalar,_Rank>, _Options> > 
 {
-    typedef core::PolynomialBase<Map<const core::Polynomial<_Scalar,_Rank>, _Options> > Base;
+    typedef core::types::PolynomialBase<Map<const core::types::Polynomial<_Scalar,_Rank>, _Options> > Base;
     
 public:
     static constexpr int Rank = Eigen::internal::traits<Map>::Rank;
     typedef typename Eigen::internal::traits<Map>::Scalar Scalar;    
     typedef typename Eigen::internal::traits<Map>::CoeffType CoeffType;
         
-    friend class core::PolynomialBase<Map<const core::Polynomial<_Scalar,_Rank>, _Options> >;
+    friend class core::types::PolynomialBase<Map<const core::types::Polynomial<_Scalar,_Rank>, _Options> >;
     
     EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
     

@@ -33,12 +33,15 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_LOSS_FUNCTIONS_HPP
-#define CORE_LOSS_FUNCTIONS_HPP
+#ifndef CORE_MATH_LOSS_FUNCTIONS_HPP
+#define CORE_MATH_LOSS_FUNCTIONS_HPP
 
 #include <Platform.hpp>
 
 namespace core
+{
+    
+namespace math
 {
     
 template<typename T>
@@ -106,4 +109,6 @@ EIGEN_DEVICE_FUNC static inline T lossL2(T x)
     
 }
 
-#endif // CORE_LOSS_FUNCTIONS_HPP
+}
+
+#endif // CORE_MATH_LOSS_FUNCTIONS_HPP

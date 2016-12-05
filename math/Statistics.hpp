@@ -33,8 +33,8 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_STATISTICS_HPP
-#define CORE_STATISTICS_HPP
+#ifndef CORE_MATH_STATISTICS_HPP
+#define CORE_MATH_STATISTICS_HPP
 
 #include <Platform.hpp>
 
@@ -53,7 +53,8 @@
 namespace core
 {
 
-// ******************** RUNNING GAUSSIAN STATS *******************************
+namespace math
+{
     
 /**
  * Running mean, variation, std. deviation, count and min,max.
@@ -137,7 +138,7 @@ public:
     EIGEN_DEVICE_FUNC inline T min_value() const { return minV; }
     EIGEN_DEVICE_FUNC inline T max_value() const { return maxV; }
     
-    EIGEN_DEVICE_FUNC inline Gaussian<T> gaussian() const { return Gaussian<T>(mean(), variance()); }
+    EIGEN_DEVICE_FUNC inline core::types::Gaussian<T> gaussian() const { return core::types::Gaussian<T>(mean(), variance()); }
 private:
     std::size_t cnt;
     T sumX, sumXX;
@@ -228,7 +229,7 @@ public:
     EIGEN_DEVICE_FUNC inline VectorType min_value() const { return minV; }
     EIGEN_DEVICE_FUNC inline VectorType max_value() const { return maxV; }
     
-    EIGEN_DEVICE_FUNC inline Gaussian<VectorType> gaussian() const { return Gaussian<VectorType>(mean(), variance()); }
+    EIGEN_DEVICE_FUNC inline core::types::Gaussian<VectorType> gaussian() const { return core::types::Gaussian<VectorType>(mean(), variance()); }
 private:
     std::size_t cnt;
     VectorType sumX, sumXX, minV, maxV;
@@ -316,7 +317,7 @@ public:
     EIGEN_DEVICE_FUNC inline VectorType min_value() const { return minV; }
     EIGEN_DEVICE_FUNC inline VectorType max_value() const { return maxV; }
     
-    EIGEN_DEVICE_FUNC inline MultivariateGaussian<Scalar,Rows> gaussian() const { return MultivariateGaussian<Scalar,Rows>(mean(), covariance()); }
+    EIGEN_DEVICE_FUNC inline core::types::MultivariateGaussian<Scalar,Rows> gaussian() const { return core::types::MultivariateGaussian<Scalar,Rows>(mean(), covariance()); }
 private:
     std::size_t cnt;
     VectorType sumX, minV, maxV;
@@ -372,7 +373,7 @@ class PearsonProductMoment : public PearsonProductMomentBase<PearsonProductMomen
     typedef PearsonProductMomentBase<PearsonProductMoment<T>, T> Base;
 public:    
     typedef T BaseType;
-    typedef core::Polynomial<BaseType,1> PolynomialT;
+    typedef core::types::Polynomial<BaseType,1> PolynomialT;
     
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
@@ -419,7 +420,7 @@ class PearsonProductMoment<Eigen::Matrix<_Scalar, _Rows, _Cols> > : public Pears
     typedef PearsonProductMomentBase<PearsonProductMoment<Eigen::Matrix<_Scalar, _Rows, _Cols> > , Eigen::Matrix<_Scalar, _Rows, _Cols>> Base;
 public:
     typedef Eigen::Matrix<_Scalar, _Rows, _Cols> BaseType;    
-    typedef core::Polynomial<BaseType,1> PolynomialT;
+    typedef core::types::Polynomial<BaseType,1> PolynomialT;
     
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
@@ -462,4 +463,6 @@ public:
     
 }
 
-#endif // CORE_STATISTICS_HPP
+}
+
+#endif // CORE_MATH_STATISTICS_HPP

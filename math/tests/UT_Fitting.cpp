@@ -71,7 +71,7 @@ public:
 TEST_F(Test_Fitting, Dummy) 
 {
     typedef double Scalar;
-    typedef core::PlaneFitting<Scalar> PFT;
+    typedef core::math::PlaneFitting<Scalar> PFT;
     
     PFT pf;
     

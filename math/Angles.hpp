@@ -33,14 +33,17 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_ANGLES_HPP
-#define CORE_ANGLES_HPP
+#ifndef CORE_MATH_ANGLES_HPP
+#define CORE_MATH_ANGLES_HPP
 
 #include <Platform.hpp>
 #include <math/Statistics.hpp>
 #include <sophus/so3.hpp>
 
 namespace core
+{
+    
+namespace math
 {
  
 template<typename Derived>
@@ -125,7 +128,7 @@ public:
     EIGEN_DEVICE_FUNC inline void operator()(const T& x)
     {
         PointT pt;
-        core::polarToCartesian(T(1.0), x, pt(0), pt(1));
+        core::math::polarToCartesian(T(1.0), x, pt(0), pt(1));
         stats(pt);
     }
     
@@ -139,12 +142,14 @@ private:
     EIGEN_DEVICE_FUNC inline T getAngle(const PointT& pt) const 
     { 
         T r, theta;
-        core::cartesianToPolar(pt(0),pt(1),r,theta);
+        core::math::cartesianToPolar(pt(0),pt(1),r,theta);
         return theta;
     }
     PointStatsT stats;
 };
+
+}
     
 }
 
-#endif // CORE_ANGLES_HPP
+#endif // CORE_MATH_ANGLES_HPP

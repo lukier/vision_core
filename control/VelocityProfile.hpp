@@ -33,12 +33,15 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_VELOCITY_PROFILE_HPP
-#define CORE_VELOCITY_PROFILE_HPP
+#ifndef CORE_CONTROL_VELOCITY_PROFILE_HPP
+#define CORE_CONTROL_VELOCITY_PROFILE_HPP
 
 #include <Platform.hpp>
 
 namespace core
+{
+    
+namespace control
 {
 
 /**
@@ -266,4 +269,6 @@ public:
     
 }
 
-#endif // CORE_TRAPEZOIDAL_VELOCITY_HPP
+}
+
+#endif // CORE_CONTROL_VELOCITY_PROFILE_HPP

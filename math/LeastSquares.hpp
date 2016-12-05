@@ -33,13 +33,16 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_LEAST_SQUARES_HPP
-#define CORE_LEAST_SQUARES_HPP
+#ifndef CORE_MATH_LEAST_SQUARES_HPP
+#define CORE_MATH_LEAST_SQUARES_HPP
 
 #include <Platform.hpp>
 #include <Eigen/Cholesky>
 
 namespace core
+{
+    
+namespace math
 {
 
 // TODO eigenify
@@ -103,4 +106,6 @@ public:
 
 }
 
-#endif // CORE_LEAST_SQUARES_HPP
+}
+
+#endif // CORE_MATH_LEAST_SQUARES_HPP

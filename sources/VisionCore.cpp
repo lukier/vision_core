@@ -51,8 +51,16 @@
 #include <buffers/Volume.hpp>
 #include <control/PID.hpp>
 #include <control/VelocityProfile.hpp>
+#include <image/BufferOps.hpp>
+#include <image/ColorMap.hpp>
+#include <image/ConnectedComponents.hpp>
+#include <image/Convolution.hpp>
+#include <image/Filters.hpp>
+#include <image/Fourier.hpp>
 #include <image/ImagePatch.hpp>
 #include <image/PixelConvert.hpp>
+#include <io/ImageIO.hpp>
+#include <io/PLYModel.hpp>
 #include <math/Angles.hpp>
 #include <math/DenavitHartenberg.hpp>
 #include <math/Divergence.hpp>

@@ -84,6 +84,7 @@ message("Project: ${PROJECT_NAME} / ${${PROJECT_NAME}_VERSION}, build type: ${CM
 find_package(Eigen3 REQUIRED QUIET)
 find_package(Sophus REQUIRED QUIET)
 find_package(TBB REQUIRED QUIET)
+find_package(Boost COMPONENTS system REQUIRED QUIET)
 
 find_package(CUDA QUIET)
 if(CUDA_FOUND)
@@ -107,6 +108,41 @@ endif()
 find_package(Vulkan QUIET)
 find_package(FREEGLUT QUIET)
 find_package(X11 QUIET)
+
+# ------------------------------------------------------------------------------
+# Fix for old-school stuff in FindCUDA.cmake
+# ------------------------------------------------------------------------------
+macro(MYCUDA_ADD_LIBRARY cuda_target)
+  CUDA_ADD_CUDA_INCLUDE_ONCE()
+  # Separate the sources from the options
+  CUDA_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _options ${ARGN})
+  CUDA_BUILD_SHARED_LIBRARY(_cuda_shared_flag ${ARGN})
+  # Create custom commands and targets for each file.
+  CUDA_WRAP_SRCS( ${cuda_target} OBJ _generated_files ${_sources}
+    ${_cmake_options} ${_cuda_shared_flag} OPTIONS ${_options})
+
+  # Compute the file name of the intermedate link file used for separable
+  # compilation.
+  CUDA_COMPUTE_SEPARABLE_COMPILATION_OBJECT_FILE_NAME(link_file ${cuda_target} "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+
+  # Add the library.
+  add_library(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
+
+  # Add a link phase for the separable compilation if it has been enabled.  If
+  # it has been enabled then the ${cuda_target}_SEPARABLE_COMPILATION_OBJECTS
+  # variable will have been defined.
+  CUDA_LINK_SEPARABLE_COMPILATION_OBJECTS("${link_file}" ${cuda_target} "${_options}" "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+
+  target_link_libraries(${cuda_target} PUBLIC ${CUDA_LIBRARIES})
+
+  if(CUDA_SEPARABLE_COMPILATION)
+    target_link_libraries(${cuda_target} PUBLIC ${CUDA_cudadevrt_LIBRARY})
+  endif()
+
+  # We need to set the linker language based on what the expected generated file
+  # would be. CUDA_C_OR_CXX is computed based on CUDA_HOST_COMPILATION_CPP.
+  set_target_properties(${cuda_target} PROPERTIES LINKER_LANGUAGE ${CUDA_C_OR_CXX})
+endmacro()
 
 # ------------------------------------------------------------------------------
 # Our headers
@@ -140,8 +176,16 @@ buffers/ReductionSum2D.hpp
 buffers/Volume.hpp
 control/PID.hpp
 control/VelocityProfile.hpp
+image/BufferOps.hpp
+image/ColorMap.hpp
+image/ConnectedComponents.hpp
+image/Convolution.hpp
+image/Filters.hpp
+image/Fourier.hpp
 image/ImagePatch.hpp
 image/PixelConvert.hpp
+io/PLYModel.hpp
+io/ImageIO.hpp
 math/Angles.hpp
 math/DenavitHartenberg.hpp
 math/Divergence.hpp
@@ -175,10 +219,32 @@ wrapgl/WrapGLCommon.hpp
 
 set(SOURCES
 sources/VisionCore.cpp
+image/sources/BufferOpsCPU.cpp
+image/sources/ColorMapCPU.cpp
+image/sources/ConnectedComponents.cpp
+image/sources/ConvolutionCPU.cpp
+image/sources/FiltersCPU.cpp
+image/sources/FourierCPU.cpp
+image/sources/PixelConvertCPU.cpp
+io/sources/PLYModel.cpp
+io/sources/ImageIO.cpp
 wrapgl/sources/WrapGLCommon.cpp
 wrapgl/sources/WrapGLFramebuffer.cpp
 wrapgl/sources/WrapGLBuffer.cpp
 )
+
+set(KERNEL_SOURCES
+image/kernels/BufferOpsGPU.cu
+image/kernels/ColorMapGPU.cu
+image/kernels/ConvolutionGPU.cu
+image/kernels/FiltersGPU.cu
+image/kernels/FourierGPU.cu
+image/kernels/PixelConvertGPU.cu
+)
+
+if(CUDA_FOUND)
+    list(APPEND SOURCES math/sources/Random.cpp)
+endif()
 
 if(glbinding_FOUND)
     if(FREEGLUT_FOUND)
@@ -193,7 +259,12 @@ endif()
 # ------------------------------------------------------------------------------
 # Build
 # ------------------------------------------------------------------------------
-add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
+if(CUDA_FOUND)
+    mycuda_add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES} ${KERNEL_SOURCES})
+else()
+    add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
+endif()
+
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:>
@@ -201,9 +272,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     
 target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${Sophus_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${Boost_LIBRARIES})
 
 if(CUDA_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${CUDA_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${CUDA_curand_LIBRARY} ${CUDA_CUFFT_LIBRARIES})
     target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_INCLUDE_DIRS})
     target_compile_definitions(${PROJECT_NAME} PUBLIC CORE_HAVE_CUDA)
 endif()
@@ -257,6 +331,7 @@ if(BUILD_TESTS)
     add_subdirectory(buffers/tests)
     add_subdirectory(control/tests)
     add_subdirectory(image/tests)
+    add_subdirectory(io/tests)
     add_subdirectory(math/tests)
     add_subdirectory(types/tests)
     add_subdirectory(wrapgl/tests)
@@ -265,7 +340,7 @@ endif()
 # ------------------------------------------------------------------------------
 # Installation - library
 # ------------------------------------------------------------------------------
-generate_export_header(${PROJECT_NAME})
+generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_export.h)
 set_property(TARGET ${PROJECT_NAME} PROPERTY VERSION ${${PROJECT_NAME}_VERSION})
 set_property(TARGET ${PROJECT_NAME} PROPERTY SOVERSION 1)
 set_property(TARGET ${PROJECT_NAME} PROPERTY INTERFACE_${PROJECT_NAME}_MAJOR_VERSION 1)
@@ -297,5 +372,5 @@ set(FORCE_NO_GLBINDING ${FORCE_NO_GLBINDING})
 configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
 set(ConfigPackageLocation lib/cmake/${PROJECT_NAME})
 install(EXPORT ${PROJECT_NAME}Targets FILE ${PROJECT_NAME}Targets.cmake DESTINATION ${ConfigPackageLocation})
-install(FILES ${PROJECT_NAME}Config.cmake "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION ${ConfigPackageLocation})
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION ${ConfigPackageLocation})
 export(PACKAGE ${PROJECT_NAME})

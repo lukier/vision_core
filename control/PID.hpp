@@ -33,12 +33,15 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_PID_HPP
-#define CORE_PID_HPP
+#ifndef CORE_CONTROL_PID_HPP
+#define CORE_CONTROL_PID_HPP
 
 #include <Platform.hpp>
 
 namespace core
+{
+    
+namespace control
 {
     
 template<typename T, typename TT = T>
@@ -78,4 +81,6 @@ private:
     
 }
 
-#endif // CORE_PID_HPP
+}
+
+#endif // CORE_CONTROL_PID_HPP

@@ -33,12 +33,15 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_DENAVIT_HARTENBERG_HPP
-#define CORE_DENAVIT_HARTENBERG_HPP
+#ifndef CORE_MATH_DENAVIT_HARTENBERG_HPP
+#define CORE_MATH_DENAVIT_HARTENBERG_HPP
 
 #include <Platform.hpp>
 
 namespace core
+{
+    
+namespace math
 {
 
 /**
@@ -65,4 +68,6 @@ EIGEN_DEVICE_FUNC void generateDenavitHartenberg(Scalar dn, Scalar thetan, Scala
     
 }
 
-#endif // CORE_DENAVIT_HARTENBERG_HPP
+}
+
+#endif // CORE_MATH_DENAVIT_HARTENBERG_HPP

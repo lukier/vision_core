@@ -34,8 +34,8 @@
  */
 
 
-#ifndef CORE_LOCAL_PARAM_SE3_HPP
-#define CORE_LOCAL_PARAM_SE3_HPP
+#ifndef CORE_MATH_LOCAL_PARAM_SE3_HPP
+#define CORE_MATH_LOCAL_PARAM_SE3_HPP
 
 #include <ceres/local_parameterization.h>
 #include <ceres/autodiff_local_parameterization.h>
@@ -45,6 +45,9 @@
 /// @todo: update for new Sophus
 
 namespace core
+{
+    
+namespace math
 {
 
 class LocalParameterizationSE3 : public ceres::LocalParameterization 
@@ -141,4 +144,6 @@ typedef ceres::AutoDiffLocalParameterization<AutoDiffLocalParameterizationSE3,
 
 }
 
-#endif // CORE_LOCAL_PARAM_SE3_HPP
+}
+
+#endif // CORE_MATH_LOCAL_PARAM_SE3_HPP

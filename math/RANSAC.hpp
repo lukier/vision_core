@@ -33,8 +33,8 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_RANSAC_HPP
-#define CORE_RANSAC_HPP
+#ifndef CORE_MATH_RANSAC_HPP
+#define CORE_MATH_RANSAC_HPP
 
 #include <algorithm>
 #include <vector>
@@ -43,6 +43,9 @@
 #include <limits>
 
 namespace core
+{
+    
+namespace math
 {
 
 template<typename t_model, typename t_data>
@@ -134,6 +137,8 @@ protected:
     const DataContainerT& data;
     std::size_t minimum_set_size;
 };
+
+}
 
 }
 

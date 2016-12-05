@@ -33,8 +33,8 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_FITTING_HPP
-#define CORE_FITTING_HPP
+#ifndef CORE_MATH_FITTING_HPP
+#define CORE_MATH_FITTING_HPP
 
 #include <Platform.hpp>
 
@@ -49,6 +49,9 @@
 #include <types/Hypersphere.hpp>
 
 namespace core
+{
+    
+namespace math
 {
 
 /**
@@ -121,14 +124,14 @@ private:
         p.offset() = T(1.0) * eigen_vector.dot(mean_point); 
     }
     
-    core::MultivariateStats<VectorT> stats;
+    core::math::MultivariateStats<VectorT> stats;
 };
 
 /**
  * Circle from 3 points.
  */
 template<typename T>
-EIGEN_DEVICE_FUNC static inline CircleT<T> circleFrom3Points(const Eigen::Matrix<T,2,1>& p1, const Eigen::Matrix<T,2,1>& p2, const Eigen::Matrix<T,2,1>& p3)
+EIGEN_DEVICE_FUNC static inline core::types::CircleT<T> circleFrom3Points(const Eigen::Matrix<T,2,1>& p1, const Eigen::Matrix<T,2,1>& p2, const Eigen::Matrix<T,2,1>& p3)
 {
     T ma = (p2(1) - p1(1))/(p2(0) - p1(0));
     T mb = (p3(1) - p2(1))/(p3(0) - p2(0));
@@ -136,7 +139,7 @@ EIGEN_DEVICE_FUNC static inline CircleT<T> circleFrom3Points(const Eigen::Matrix
     T cx = (ma*mb * (p1(1) - p3(1)) + mb * (p1(0) + p2(0)) - ma * (p2(0) + p3(0)))/(2 * (mb - ma));
     T cy = (mb*p3(1)+(mb-ma)*p2(1)-ma*p1(1)+p3(0)-p1(0))/(2*(mb-ma));
     
-    CircleT<T> ret;
+    core::types::CircleT<T> ret;
     
     ret.coeff() << cx , cy;
     ret.radius() = ret(p1);
@@ -215,4 +218,6 @@ private:
    
 }
 
-#endif // CORE_PROJECTION_MATRICES_HPP
+}
+
+#endif // CORE_MATH_FITTING_HPP

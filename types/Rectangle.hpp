@@ -33,14 +33,17 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_RECTANGLE_BOX
-#define CORE_RECTANGLE_BOX
+#ifndef CORE_TYPES_RECTANGLE_BOX
+#define CORE_TYPES_RECTANGLE_BOX
 
 #include <Platform.hpp>
 
 namespace core
 {
+namespace types
+{
     template<typename _Scalar> class Rectangle;
+}
 }
 
 namespace Eigen 
@@ -48,21 +51,21 @@ namespace Eigen
     namespace internal 
     {
         template<typename _Scalar>
-        struct traits<core::Rectangle<_Scalar> > 
+        struct traits<core::types::Rectangle<_Scalar> > 
         {
             typedef _Scalar Scalar;
             typedef Matrix<Scalar,4,1> CoeffType;
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<core::Rectangle<_Scalar>, _Options> > : traits<core::Rectangle<_Scalar> > 
+        struct traits<Map<core::types::Rectangle<_Scalar>, _Options> > : traits<core::types::Rectangle<_Scalar> > 
         {
             typedef _Scalar Scalar;
             typedef Map<Matrix<Scalar,4,1>, _Options> CoeffType;
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<const core::Rectangle<_Scalar>, _Options> > : traits<const core::Rectangle<_Scalar> > 
+        struct traits<Map<const core::types::Rectangle<_Scalar>, _Options> > : traits<const core::types::Rectangle<_Scalar> > 
         {
             typedef _Scalar Scalar;
             typedef Map<const Matrix<Scalar,4,1>, _Options> CoeffType;
@@ -73,6 +76,9 @@ namespace Eigen
 namespace core
 {
 
+namespace types
+{
+    
 template<typename Derived>
 class RectangleBase
 {
@@ -230,7 +236,7 @@ public:
     typedef typename Eigen::internal::traits<Rectangle>::Scalar Scalar;    
     typedef typename Eigen::internal::traits<Rectangle>::CoeffType CoeffType;
     
-    friend class core::RectangleBase<Rectangle<_Scalar>>;
+    friend class core::types::RectangleBase<Rectangle<_Scalar>>;
     
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
@@ -274,6 +280,8 @@ inline std::ostream& operator<<(std::ostream& os, const Rectangle<T>& p)
     os << "Rectangle(" << p.x1() << "," << p.y1() << " | " << p.x2() << "," << p.y2() <<  ")";
     return os;
 }
+
+}
     
 }
 
@@ -283,15 +291,15 @@ namespace Eigen
  * Specialisation of Eigen::Map for Rectangle.
  */
 template<typename _Scalar, int _Options>
-class Map<core::Rectangle<_Scalar>, _Options> : public core::RectangleBase<Map<core::Rectangle<_Scalar>, _Options> > 
+class Map<core::types::Rectangle<_Scalar>, _Options> : public core::types::RectangleBase<Map<core::types::Rectangle<_Scalar>, _Options> > 
 {
-    typedef core::RectangleBase<Map<core::Rectangle<_Scalar>, _Options> > Base;
+    typedef core::types::RectangleBase<Map<core::types::Rectangle<_Scalar>, _Options> > Base;
     
 public:
     typedef typename Eigen::internal::traits<Map>::Scalar Scalar;    
     typedef typename Eigen::internal::traits<Map>::CoeffType CoeffType;
     
-    friend class core::RectangleBase<Map<core::Rectangle<_Scalar>, _Options> >;
+    friend class core::types::RectangleBase<Map<core::types::Rectangle<_Scalar>, _Options> >;
     
     EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
     
@@ -310,15 +318,15 @@ protected:
  * Specialisation of Eigen::Map for const Rectangle.
  */
 template<typename _Scalar, int _Options>
-class Map<const core::Rectangle<_Scalar>, _Options> : public core::RectangleBase<Map<const core::Rectangle<_Scalar>, _Options> > 
+class Map<const core::types::Rectangle<_Scalar>, _Options> : public core::types::RectangleBase<Map<const core::types::Rectangle<_Scalar>, _Options> > 
 {
-    typedef core::RectangleBase<Map<const core::Rectangle<_Scalar>, _Options> > Base;
+    typedef core::types::RectangleBase<Map<const core::types::Rectangle<_Scalar>, _Options> > Base;
     
 public:
     typedef typename Eigen::internal::traits<Map>::Scalar Scalar;    
     typedef typename Eigen::internal::traits<Map>::CoeffType CoeffType;
     
-    friend class core::RectangleBase<Map<const core::Rectangle<_Scalar>, _Options> >;
+    friend class core::types::RectangleBase<Map<const core::types::Rectangle<_Scalar>, _Options> >;
     
     EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
     
@@ -334,4 +342,4 @@ protected:
     
 }
 
-#endif // CORE_RECTANGLE_BOX
+#endif // CORE_TYPES_RECTANGLE_BOX

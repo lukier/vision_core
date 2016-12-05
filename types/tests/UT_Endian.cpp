@@ -70,8 +70,8 @@ public:
 
 TEST_F(Test_Endian, Dummy) 
 {
-    core::EndianWrapper<uint32_t> ewpre(0x44556677);
-    core::EndianWrapper<uint32_t> ew(ewpre);
+    core::types::EndianWrapper<uint32_t> ewpre(0x44556677);
+    core::types::EndianWrapper<uint32_t> ew(ewpre);
     //ew.set<core::Endianness::Big>(0x99887766);
     LOG(INFO) << "We have: " << (boost::format("0x%08X") % ew.get<>());
 }

@@ -33,15 +33,28 @@
  * ****************************************************************************
  */
 
-#ifndef CORE_RANDOM_HPP
-#define CORE_RANDOM_HPP
+#ifndef CORE_MATH_RANDOM_HPP
+#define CORE_MATH_RANDOM_HPP
 
 #include <Platform.hpp>
 
 #include <cstdlib>
 #include <ctime>
 
+#include <type_traits>
+#include <buffers/Buffer1D.hpp>
+#include <buffers/Buffer2D.hpp>
+#include <buffers/Image2D.hpp>
+#include <buffers/Buffer3D.hpp>
+
+#include <types/Gaussian.hpp>
+
+typedef struct curandGenerator_st *curandGenerator_t;
+
 namespace core
+{
+    
+namespace math
 {
 
 class Random
@@ -90,6 +103,29 @@ public:
     }
 };
 
+template<typename Target>
+struct RandomGenerator
+{
+    RandomGenerator(uint64_t seed);
+    ~RandomGenerator();
+    
+    curandGenerator_t handle;
+};
+
+template<typename T, typename Target>
+void generateRandom(RandomGenerator<Target>& gen, core::Buffer1DView<T,Target>& bufout, const core::types::Gaussian<typename core::type_traits<T>::ChannelType>& gauss);
+
+template<typename T, typename Target>
+void generateRandom(RandomGenerator<Target>& gen, core::Buffer2DView<T,Target>& bufout, const core::types::Gaussian<typename core::type_traits<T>::ChannelType>& gauss);
+
+template<typename T, typename Target>
+void generateRandom(RandomGenerator<Target>& gen, core::Buffer1DView<T,Target>& bufout, const typename core::type_traits<T>::ChannelType& mean, const typename core::type_traits<T>::ChannelType& stddev);
+
+template<typename T, typename Target>
+void generateRandom(RandomGenerator<Target>& gen, core::Buffer2DView<T,Target>& bufout, const typename core::type_traits<T>::ChannelType& mean, const typename core::type_traits<T>::ChannelType& stddev);
+
 }
 
-#endif // CORE_RANDOM_HPP
+}
+
+#endif // CORE_MATH_RANDOM_HPP

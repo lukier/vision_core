@@ -50,7 +50,9 @@
 // google logger
 #include <glog/logging.h>
 
+#include <buffers/Buffer1D.hpp>
 #include <math/Statistics.hpp>
+#include <math/Random.hpp>
 
 class Test_Statistics : public ::testing::Test
 {
@@ -66,7 +68,7 @@ public:
     }
 };
 
-TEST_F(Test_Statistics, Dummy) 
+TEST_F(Test_Statistics, AllanDeviation) 
 {
-
+    
 }

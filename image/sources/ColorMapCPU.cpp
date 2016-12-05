@@ -46,6 +46,25 @@ float3 core::image::getColorMapValue(ColorMap cm, const T& vmin, const T& vmax, 
 std::size_t getColorMapSizeForwarder(core::image::ColorMap cm) { return getColorMapSize(cm); }
 
 template<typename T, typename TOUT, typename Target>
+void core::image::createColorMap(ColorMap cm, const core::Buffer1DView<T,Target>& img_in, const T& vmin, const T& vmax, core::Buffer1DView<TOUT,Target>& img_out)
+{
+    const std::size_t cms = getColorMapSize(cm);
+    const float3* data = getColorMapData(cm);
+    
+    core::launchParallelFor(img_in.size(), [&](std::size_t x)
+    {
+        if(img_in.inBounds(x) && img_out.inBounds(x))
+        {
+            const T& val_in = img_in(x);
+            TOUT& val_out = img_out(x);
+            
+            float3 result = getColorMapValuePreload(cms, data, vmin, vmax, val_in);
+            val_out = ConvertToTarget<TOUT>::run(result);
+        }
+    });
+}
+
+template<typename T, typename TOUT, typename Target>
 void core::image::createColorMap(ColorMap cm, const core::Buffer2DView<T,Target>& img_in, const T& vmin, const T& vmax, core::Buffer2DView<TOUT,Target>& img_out)
 {
     const std::size_t cms = getColorMapSize(cm);
@@ -65,7 +84,10 @@ void core::image::createColorMap(ColorMap cm, const core::Buffer2DView<T,Target>
 }
 
 #define GENERATE_IMPL(TIN,TOUT)\
+template void core::image::createColorMap<TIN,TOUT,core::TargetHost>(ColorMap cm, const core::Buffer1DView<TIN,core::TargetHost>& img_in, const TIN& vmin, const TIN& vmax, core::Buffer1DView<TOUT,core::TargetHost>& img_out); \
 template void core::image::createColorMap<TIN,TOUT,core::TargetHost>(ColorMap cm, const core::Buffer2DView<TIN,core::TargetHost>& img_in, const TIN& vmin, const TIN& vmax, core::Buffer2DView<TOUT,core::TargetHost>& img_out);
 
 GENERATE_IMPL(float,float3)
 GENERATE_IMPL(float,float4)
+GENERATE_IMPL(float,Eigen::Vector3f)
+GENERATE_IMPL(float,Eigen::Vector4f)

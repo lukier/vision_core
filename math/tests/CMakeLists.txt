@@ -46,7 +46,7 @@ set(TEST_SOURCES
 #UT_CordSystems.cpp
 #UT_DenavitHartenberg.cpp
 #UT_Divergence.cpp
-UT_Fitting.cpp
+#UT_Fitting.cpp
 #UT_HammingDistance.cpp
 #UT_Kalman.cpp
 #UT_LeastSquares.cpp
@@ -55,7 +55,7 @@ UT_Fitting.cpp
 #UT_PolarSpherical.cpp
 #UT_Random.cpp
 #UT_RANSAC.cpp
-#UT_Statistics.cpp
+UT_Statistics.cpp
 #UT_TinySolver.cpp
 )
 

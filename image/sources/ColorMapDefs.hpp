@@ -101,6 +101,8 @@ struct ConvertToTarget;
 
 template<> struct ConvertToTarget<float3> { static EIGEN_DEVICE_FUNC inline float3 run(const float3& v) { return v; } };
 template<> struct ConvertToTarget<float4> { static EIGEN_DEVICE_FUNC inline float4 run(const float3& v) { return make_float4(v.x,v.y,v.z,1.0f); } };
+template<> struct ConvertToTarget<Eigen::Vector3f> { static EIGEN_DEVICE_FUNC inline Eigen::Vector3f run(const float3& v) { return Eigen::Vector3f(v.x,v.y,v.z); } };
+template<> struct ConvertToTarget<Eigen::Vector4f> { static EIGEN_DEVICE_FUNC inline Eigen::Vector4f run(const float3& v) { return Eigen::Vector4f(v.x,v.y,v.z,1.0f); } };
 
 template<typename T>
 EIGEN_DEVICE_FUNC inline float3 getColorMapValuePreload(std::size_t cms, const float3* data, const T& vmin, const T& vmax, const T& val)

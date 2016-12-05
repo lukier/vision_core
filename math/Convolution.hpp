@@ -29,13 +29,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * ****************************************************************************
- * Fourier Transform.
+ * Convolution.
  * ****************************************************************************
  */
 
+#ifndef CORE_MATH_CONVOLUTION_HPP
+#define CORE_MATH_CONVOLUTION_HPP
+
 #include <Platform.hpp>
-#include <LaunchUtils.hpp>
 
-#include <image/Fourier.hpp>
+#include <buffers/Buffer1D.hpp>
+#include <buffers/Buffer2D.hpp>
 
-// TODO FIXME FFTW backend here
+namespace core
+{
+
+namespace math
+{
+    
+template<typename T, typename Target, typename T2>
+void convolve(const core::Buffer1DView<T,Target>& img_in, core::Buffer1DView<T,Target>& img_out, const T2& kern);    
+    
+template<typename T, typename Target, typename T2>
+void convolve(const core::Buffer2DView<T,Target>& img_in, core::Buffer2DView<T,Target>& img_out, const T2& kern);
+
+}
+    
+}
+
+
+#endif // CORE_MATH_CONVOLUTION_HPP

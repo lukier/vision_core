@@ -70,19 +70,5 @@ public:
 
 TEST_F(Test_Fitting, Dummy) 
 {
-    typedef double Scalar;
-    typedef core::math::PlaneFitting<Scalar> PFT;
     
-    PFT pf;
-    
-    pf(Eigen::Matrix<Scalar,3,1>(-1.0f,-2.0f,0.0f));
-    pf(Eigen::Matrix<Scalar,3,1>(3.0f,1.0f,4.0f));
-    pf(Eigen::Matrix<Scalar,3,1>(0.0f,-1.0f,2.0f));
-    
-    typename PFT::PlaneT p1;
-    Scalar cur1;
-    
-    bool ok1 = pf.getPlane(p1, cur1);
-    
-    LOG(INFO) << "Eigen: " << ok1 << " = " << p1 << " / " << cur1;
 }

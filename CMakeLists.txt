@@ -108,6 +108,7 @@ endif()
 find_package(Vulkan QUIET)
 find_package(FREEGLUT QUIET)
 find_package(X11 QUIET)
+find_package(FFTW QUIET)
 
 # ------------------------------------------------------------------------------
 # Fix for old-school stuff in FindCUDA.cmake
@@ -179,17 +180,17 @@ control/VelocityProfile.hpp
 image/BufferOps.hpp
 image/ColorMap.hpp
 image/ConnectedComponents.hpp
-image/Convolution.hpp
 image/Filters.hpp
-image/Fourier.hpp
 image/ImagePatch.hpp
 image/PixelConvert.hpp
 io/PLYModel.hpp
 io/ImageIO.hpp
 math/Angles.hpp
+math/Convolution.hpp
 math/DenavitHartenberg.hpp
 math/Divergence.hpp
 math/Fitting.hpp
+math/Fourier.hpp
 math/HammingDistance.hpp
 math/Kalman.hpp
 math/LeastSquares.hpp
@@ -222,12 +223,11 @@ sources/VisionCore.cpp
 image/sources/BufferOpsCPU.cpp
 image/sources/ColorMapCPU.cpp
 image/sources/ConnectedComponents.cpp
-image/sources/ConvolutionCPU.cpp
 image/sources/FiltersCPU.cpp
-image/sources/FourierCPU.cpp
 image/sources/PixelConvertCPU.cpp
 io/sources/PLYModel.cpp
 io/sources/ImageIO.cpp
+math/sources/ConvolutionCPU.cpp
 wrapgl/sources/WrapGLCommon.cpp
 wrapgl/sources/WrapGLFramebuffer.cpp
 wrapgl/sources/WrapGLBuffer.cpp
@@ -236,10 +236,10 @@ wrapgl/sources/WrapGLBuffer.cpp
 set(KERNEL_SOURCES
 image/kernels/BufferOpsGPU.cu
 image/kernels/ColorMapGPU.cu
-image/kernels/ConvolutionGPU.cu
 image/kernels/FiltersGPU.cu
-image/kernels/FourierGPU.cu
 image/kernels/PixelConvertGPU.cu
+math/kernels/ConvolutionGPU.cu
+math/kernels/FourierGPU.cu
 )
 
 if(CUDA_FOUND)
@@ -254,6 +254,10 @@ if(glbinding_FOUND)
     if(X11_FOUND)
         list(APPEND SOURCES wrapgl/sources/context_x11.cpp wrapgl/sources/context_windowless.cpp)
     endif()
+endif()
+
+if(FFTW_FOUND)
+    list(APPEND SOURCES math/sources/FourierCPU.cpp)
 endif()
 
 # ------------------------------------------------------------------------------
@@ -321,6 +325,10 @@ endif()
 if(VULKAN_FOUND)
     target_include_directories(${PROJECT_NAME} PUBLIC ${VULKAN_INCLUDE_DIR})
     target_link_libraries(${PROJECT_NAME} PUBLIC ${VULKAN_LIBRARY})
+endif()
+if(FFTW_FOUND)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${FFTW_INCLUDES})
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${FFTW_LIBRARIES})
 endif()
 
 # ------------------------------------------------------------------------------

@@ -41,6 +41,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+#include <buffers/Buffer1D.hpp>
+#include <buffers/Buffer2D.hpp>
 #include <types/Polynomial.hpp>
 #include <types/Gaussian.hpp>
 #include <math/PolarSpherical.hpp>
@@ -323,6 +325,106 @@ private:
     VectorType sumX, minV, maxV;
     CovarianceType sumXX;
 };
+
+// ******************** ALLAN VARIANCE *******************************
+// From: http://www.leapsecond.com/tools/adev_lib.c
+
+template<typename InputIterator>
+typename std::iterator_traits<InputIterator>::value_type allanDeviation(std::size_t tau, InputIterator itbegin, InputIterator itend, bool isoverlapping = false, std::size_t* terms = nullptr)
+{
+    typedef typename std::iterator_traits<InputIterator>::value_type T;
+    using namespace std;
+    
+    std::size_t n = 0;
+    T sum = T(0.0);
+    const std::size_t stride = isoverlapping ? 1 : tau;
+    
+    for ( ; (itbegin + 2 * tau) < itend ; itbegin += stride) 
+    {
+        const T v = *(itbegin + 2 * tau) - T(2.0) * *(itbegin + tau) + *itbegin;
+        sum += v * v;
+        n += 1;
+    }
+    
+    sum /= T(2.0);
+    
+    if(terms != nullptr) { *terms = n; }
+    
+    if (n < 3) { return T(0.0); }
+    
+    return sqrt(sum / n) / tau;
+}
+
+template<typename InputIterator>
+typename std::iterator_traits<InputIterator>::value_type hadamardDeviation(std::size_t tau, InputIterator itbegin, InputIterator itend, bool isoverlapping = false, std::size_t* terms = nullptr)
+{
+    typedef typename std::iterator_traits<InputIterator>::value_type T;
+    using namespace std;
+    
+    std::size_t n = 0;
+    T sum = T(0.0);
+    const std::size_t stride = isoverlapping ? 1 : tau;
+    
+    for ( ; (itbegin + 3 * tau) < itend; itbegin += stride) 
+    {
+        const T v = *(itbegin + 3 * tau) - T(3.0) * *(itbegin + 2 * tau) + T(3.0) * *(itbegin + tau) - *itbegin;
+        sum += v * v;
+        n += 1;
+    }
+    
+    sum /= T(6.0);
+    
+    if(terms != nullptr) { *terms = n; }
+    
+    if (n < 3) { return T(0.0); }
+    
+    return sqrt(sum / n) / tau;
+}
+
+template<typename InputIterator>
+typename std::iterator_traits<InputIterator>::value_type modifiedAllanDeviation(std::size_t tau, InputIterator itbegin, 
+                                                                                InputIterator itend, std::size_t* terms = nullptr)
+{
+    typedef typename std::iterator_traits<InputIterator>::value_type T;
+    using namespace std;
+    
+    std::size_t n = 0;
+    T sum = T(0.0), v = T(0.0);
+    
+    InputIterator orgbegin = itbegin;
+    
+    for ( ; (itbegin + 2 * tau) < itend && (std::size_t)std::distance(orgbegin, itbegin) < tau; ++itbegin) 
+    {
+        v += *(itbegin + 2 * tau) - T(2.0) * *(itbegin + tau) + *itbegin;
+    }
+    
+    sum += v * v;
+    n += 1;
+    
+    itbegin = orgbegin;
+    
+    for ( ; (itbegin + 3 * tau) < itend; ++itbegin) 
+    {
+        v += *(itbegin + 3 * tau) - T(3.0) * *(itbegin + 2 * tau) + T(3.0) * *(itbegin + tau) - *itbegin;
+        sum += v * v;
+        n += 1;
+    }
+    
+    sum /= T(2.0) * T(tau) * T(tau);
+    
+    if(terms != nullptr) { *terms = n; }
+    if(n < 3) { return T(0.0); }
+    
+    return sqrt(sum / n) / tau;
+}
+
+template<typename InputIterator>
+typename std::iterator_traits<InputIterator>::value_type timeDeviation(std::size_t tau, InputIterator itbegin, InputIterator itend, std::size_t* terms = nullptr)
+{
+    typedef typename std::iterator_traits<InputIterator>::value_type T;
+    using namespace std;
+    return T(tau) * modifiedAllanDeviation(tau, itbegin, itend, terms) / sqrt(3.0);
+}
 
 // ******************** PEARSON PRODUCT MOMENT *******************************
 

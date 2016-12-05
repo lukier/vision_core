@@ -38,6 +38,7 @@
 
 #include <Platform.hpp>
 #include <MemoryPolicy.hpp>
+#include <vector>
 
 namespace core
 {
@@ -170,7 +171,7 @@ public:
     {
         return (const T*)BaseT::rawPtr();
     }
-    
+        
     EIGEN_DEVICE_FUNC inline T* ptr(std::size_t idx)
     {
         return (T*)(ptr() + idx);
@@ -201,6 +202,26 @@ public:
     {
         //return static_cast<T*>(BaseT::rawPtr())[ix];
         return operator()(ix);
+    }
+    
+    EIGEN_DEVICE_FUNC inline const T& get(std::size_t ix) const
+    {
+        return operator()(ix);
+    }
+    
+    EIGEN_DEVICE_FUNC inline const T& getWithClampedRange(int x) const
+    {
+        return operator()(BaseT::indexClamped(x));
+    }
+    
+    EIGEN_DEVICE_FUNC inline const T& getWithCircularRange(int x) const
+    {
+        return operator()(BaseT::indexCircular(x));
+    }
+    
+    EIGEN_DEVICE_FUNC inline const T& getWithReflectedRange(int x) const
+    {
+        return operator()(BaseT::indexReflected(x));
     }
 };
 
@@ -233,6 +254,9 @@ public:
     inline Buffer1DView(Buffer1DView<T,TargetType>&& img) : BaseT(std::move(img)) { }
     
     inline Buffer1DView(typename TargetType::template PointerType<T> optr, std::size_t s) : BaseT(optr, s) { }
+    
+    template<typename AllocT>
+    inline Buffer1DView(std::vector<T,AllocT>& vec) : BaseT(vec.data(), vec.size()) { }
     
     inline Buffer1DView<T,TargetType>& operator=(const Buffer1DView<T,TargetType>& img)
     {

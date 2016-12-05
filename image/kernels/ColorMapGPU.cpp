@@ -40,7 +40,47 @@
 __device__ __constant__ float3 CurrentColorMap[256];
 
 template<typename T, typename TOUT, typename Target>
-__global__ void Kernel_createColorMap(std::size_t cms, const core::Buffer2DView<T,Target> img_in, const T vmin, const T vmax, core::Buffer2DView<TOUT,Target> img_out)
+__global__ void Kernel_createColorMap1D(std::size_t cms, const core::Buffer1DView<T,Target> img_in, const T vmin, const T vmax, core::Buffer1DView<TOUT,Target> img_out)
+{
+    // current point
+    const unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
+    
+    if(img_in.inBounds((int)x)) // is valid
+    {
+        const T& val_in = img_in(x); 
+        TOUT& val_out = img_out(x);
+        
+        float3 result = getColorMapValuePreload(cms, CurrentColorMap, vmin, vmax, val_in);
+        val_out = ConvertToTarget<TOUT>::run(result);
+    }
+}
+
+template<typename T, typename TOUT, typename Target>
+void core::image::createColorMap(ColorMap cm, const core::Buffer1DView<T,Target>& img_in, const T& vmin, const T& vmax, core::Buffer1DView<TOUT,Target>& img_out)
+{
+    const std::size_t cms = getColorMapSizeForwarder(cm);
+    const float3* data = getColorMapData(cm);
+    
+    // copy a lot to constant memory
+    cudaError err = cudaMemcpyToSymbol(CurrentColorMap, data, cms * sizeof(float3));
+    if( err != cudaSuccess ) 
+    {
+        throw core::CUDAException(err, "Unable to cudaMemcpyToSymbol");
+    }
+    
+    dim3 gridDim, blockDim;
+    core::InitDimFromLinearBuffer(blockDim, gridDim, img_out);
+    
+    // run kernel
+    Kernel_createColorMap1D<T, TOUT, Target><<<gridDim,blockDim>>>(cms, img_in, vmin, vmax, img_out);
+    
+    // wait for it
+    err = cudaDeviceSynchronize();
+    if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
+}
+
+template<typename T, typename TOUT, typename Target>
+__global__ void Kernel_createColorMap2D(std::size_t cms, const core::Buffer2DView<T,Target> img_in, const T vmin, const T vmax, core::Buffer2DView<TOUT,Target> img_out)
 {
     // current point
     const unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
@@ -73,7 +113,7 @@ void core::image::createColorMap(ColorMap cm, const core::Buffer2DView<T,Target>
     core::InitDimFromOutputImageOver(blockDim, gridDim, img_in);
     
     // run kernel
-    Kernel_createColorMap<T, TOUT, Target><<<gridDim,blockDim>>>(cms, img_in, vmin, vmax, img_out);
+    Kernel_createColorMap2D<T, TOUT, Target><<<gridDim,blockDim>>>(cms, img_in, vmin, vmax, img_out);
     
     // wait for it
     err = cudaDeviceSynchronize();
@@ -81,7 +121,10 @@ void core::image::createColorMap(ColorMap cm, const core::Buffer2DView<T,Target>
 }
 
 #define GENERATE_IMPL(TIN,TOUT)\
+template void core::image::createColorMap<TIN,TOUT,core::TargetDeviceCUDA>(ColorMap cm, const core::Buffer1DView<TIN,core::TargetDeviceCUDA>& img_in, const TIN& vmin, const TIN& vmax, core::Buffer1DView<TOUT,core::TargetDeviceCUDA>& img_out); \
 template void core::image::createColorMap<TIN,TOUT,core::TargetDeviceCUDA>(ColorMap cm, const core::Buffer2DView<TIN,core::TargetDeviceCUDA>& img_in, const TIN& vmin, const TIN& vmax, core::Buffer2DView<TOUT,core::TargetDeviceCUDA>& img_out);
 
 GENERATE_IMPL(float,float3)
 GENERATE_IMPL(float,float4)
+GENERATE_IMPL(float,Eigen::Vector3f)
+GENERATE_IMPL(float,Eigen::Vector4f)

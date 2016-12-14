@@ -27,7 +27,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # ------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.7)
+if(POLICY_CMP0058)
+    cmake_policy(SET CMP0058 OLD) # Workaround for Ninja + FindCUDA
+endif()
+if(POLICY_CMP0007)
+    cmake_policy(SET CMP0007 OLD) # Workaround FindCUDA
+endif()
 
 # ------------------------------------------------------------------------------
 # Default build configuration
@@ -55,7 +61,8 @@ add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter -Wno-unused-va
 # Ready for testing
 # ------------------------------------------------------------------------------
 option(BUILD_TESTS "Enable to build unit tests" ON)
-if(BUILD_TESTS)
+find_package(GTest QUIET)
+if(BUILD_TESTS AND GTest_FOUND)
   enable_testing()
     
   # Code Coverage Build Type
@@ -85,26 +92,26 @@ find_package(Eigen3 REQUIRED QUIET)
 find_package(Sophus REQUIRED QUIET)
 find_package(TBB REQUIRED QUIET)
 find_package(Boost COMPONENTS system REQUIRED QUIET)
+find_package(glbinding REQUIRED QUIET)
+find_package(globjects REQUIRED QUIET)
 
 find_package(CUDA QUIET)
 if(CUDA_FOUND)
     CUDA_SELECT_NVCC_ARCH_FLAGS(CUDA_NVCC_ARCH_FLAGS Auto)
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_ARCH_FLAGS};--expt-relaxed-constexpr;-std=c++11;-use_fast_math;-O2;-Xcompiler;-rdynamic)
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_ARCH_FLAGS};--expt-relaxed-constexpr;-std=c++11;-use_fast_math;-O2)
+    if((CMAKE_BUILD_TYPE MATCHES Debug) OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo))
+        list(APPEND CUDA_NVCC_FLAGS -Xcompiler;-rdynamic;-lineinfo)
+    endif()
+    message("CUDA Flags: ${CUDA_NVCC_FLAGS}")
 endif()
 find_package(OpenCL QUIET)
+if(OpenCL_FOUND)
+    message("OpenCL Version: ${OpenCL_VERSION_MAJOR}.${OpenCL_VERSION_MINOR}")
+endif()
 
 find_package(OpenCV QUIET)
 find_package(Ceres QUIET)
 find_package(cereal QUIET)
-
-if(NOT FORCE_NO_GLBINDING)
-    find_package(glbinding REQUIRED QUIET)
-else()
-    message("VisionCore: GLBinding disabled")
-    find_package(OpenGL REQUIRED QUIET)
-    find_package(GLEW REQUIRED QUIET)
-endif()
-
 find_package(Vulkan QUIET)
 find_package(FREEGLUT QUIET)
 find_package(X11 QUIET)
@@ -113,7 +120,7 @@ find_package(FFTW QUIET)
 # ------------------------------------------------------------------------------
 # Fix for old-school stuff in FindCUDA.cmake
 # ------------------------------------------------------------------------------
-macro(MYCUDA_ADD_LIBRARY cuda_target)
+macro(TARGET_CUDA_ADD_LIBRARY cuda_target)
   CUDA_ADD_CUDA_INCLUDE_ONCE()
   # Separate the sources from the options
   CUDA_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _options ${ARGN})
@@ -144,11 +151,6 @@ macro(MYCUDA_ADD_LIBRARY cuda_target)
   # would be. CUDA_C_OR_CXX is computed based on CUDA_HOST_COMPILATION_CPP.
   set_target_properties(${cuda_target} PROPERTIES LINKER_LANGUAGE ${CUDA_C_OR_CXX})
 endmacro()
-
-# ------------------------------------------------------------------------------
-# Our headers
-# ------------------------------------------------------------------------------
-include_directories(.)
 
 # ---------------------------------------------
 # List of sources
@@ -264,7 +266,7 @@ endif()
 # Build
 # ------------------------------------------------------------------------------
 if(CUDA_FOUND)
-    mycuda_add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES} ${KERNEL_SOURCES})
+    target_cuda_add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES} ${KERNEL_SOURCES})
 else()
     add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 endif()
@@ -285,9 +287,8 @@ if(CUDA_FOUND)
     target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_INCLUDE_DIRS})
     target_compile_definitions(${PROJECT_NAME} PUBLIC CORE_HAVE_CUDA)
 endif()
-if(OPENCL_FOUND)
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${OpenCL_LIBRARY})
-    target_include_directories(${PROJECT_NAME} PUBLIC ${OpenCL_INCLUDE_DIR})
+if(OpenCL_FOUND)
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenCL::OpenCL)
     target_compile_definitions(${PROJECT_NAME} PUBLIC CORE_HAVE_OPENCL CL_HPP_MINIMUM_OPENCL_VERSION=120 CL_HPP_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0 CL_HPP_ENABLE_EXCEPTIONS)
 endif()
 if(TBB_FOUND)
@@ -312,9 +313,10 @@ endif()
 if(glbinding_FOUND)
     target_compile_definitions(${PROJECT_NAME} PUBLIC WRAPGL_HAVE_GLBINDING)
     target_link_libraries(${PROJECT_NAME} PUBLIC glbinding)
-else()
-    target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
+    
+    if(globjects_FOUND)
+        target_link_libraries(${PROJECT_NAME} PUBLIC globjects)
+    endif()
 endif()
 if(FREEGLUT_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE ${FREEGLUT_LIBRARIES})
@@ -322,9 +324,8 @@ endif()
 if(X11_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE ${X11_LIBRARIES})
 endif()
-if(VULKAN_FOUND)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${VULKAN_INCLUDE_DIR})
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${VULKAN_LIBRARY})
+if(Vulkan_FOUND)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan::Vulkan)
 endif()
 if(FFTW_FOUND)
     target_include_directories(${PROJECT_NAME} PRIVATE ${FFTW_INCLUDES})
@@ -334,7 +335,7 @@ endif()
 # ------------------------------------------------------------------------------
 # Unit Tests
 # ------------------------------------------------------------------------------
-if(BUILD_TESTS)
+if(BUILD_TESTS AND GTest_FOUND)
     add_subdirectory(tests)
     add_subdirectory(buffers/tests)
     add_subdirectory(control/tests)
@@ -375,8 +376,6 @@ write_basic_package_version_file(
 # Installation - Export Targets
 # ------------------------------------------------------------------------------
 export(EXPORT ${PROJECT_NAME}Targets FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake") 
-set(VISIONCORE_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
-set(FORCE_NO_GLBINDING ${FORCE_NO_GLBINDING})
 configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
 set(ConfigPackageLocation lib/cmake/${PROJECT_NAME})
 install(EXPORT ${PROJECT_NAME}Targets FILE ${PROJECT_NAME}Targets.cmake DESTINATION ${ConfigPackageLocation})

@@ -112,8 +112,8 @@ public:
     {
         ViewT::memptr = 0;
         ViewT::xsize = s;
-        typename TargetDeviceCUDA::template PointerType<T> ptr = 0;
-        TargetDeviceCUDA::template AllocateMem<T>(&ptr, ViewT::xsize);
+        typename TargetDeviceCUDA<T>::PointerType ptr = 0;
+        TargetDeviceCUDA<T>::AllocateMem(&ptr, ViewT::xsize);
         ViewT::memptr = ptr;
     }
     
@@ -126,7 +126,7 @@ public:
     {
         if(ViewT::memptr != 0)
         {
-            TargetDeviceCUDA::template DeallocatePitchedMem<T>(ViewT::memptr);
+            TargetDeviceCUDA<T>::DeallocatePitchedMem(ViewT::memptr);
         }
     }
     
@@ -269,9 +269,9 @@ public:
         for(std::size_t l = 0; l < LevelCount ; ++l ) 
         {
             dim3 gridDim = core::calculateGridDim(blockDim, w >> l, h >> l);
-            typename TargetDeviceCUDA::template PointerType<T> ptr = 0;
+            typename TargetDeviceCUDA<T>::PointerType ptr = 0;
             const std::size_t lin_size = gridDim.x * gridDim.y * gridDim.z;
-            TargetDeviceCUDA::template AllocateMem<T>(&ptr, lin_size);
+            TargetDeviceCUDA<T>::AllocateMem(&ptr, lin_size);
             ViewT::rbufs[l] = core::HostReductionSum2DView<T>((T*)ptr, lin_size);
         }
     }
@@ -295,7 +295,7 @@ public:
     {
         for(std::size_t l = 0; l < LevelCount ; ++l)
         {
-            TargetDeviceCUDA::template DeallocatePitchedMem<T>((typename TargetDeviceCUDA::template PointerType<T>)ViewT::rbufs[l].ptr());
+            TargetDeviceCUDA<T>::DeallocatePitchedMem((typename TargetDeviceCUDA<T>::PointerType)ViewT::rbufs[l].ptr());
         }
     }
     

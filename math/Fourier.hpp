@@ -243,72 +243,72 @@ struct PersistentFFT
     virtual void execute() = 0;
 };
 
-template<typename T_INPUT, typename T_OUTPUT, typename Target>
+template<typename T_INPUT, typename T_OUTPUT, template<typename> class Target>
 void fft(const core::Buffer1DView<T_INPUT, Target>& buf_in, 
          core::Buffer1DView<T_OUTPUT, Target>& buf_out, bool forward = true);
 
-template<typename T_INPUT, typename T_OUTPUT, typename Target>
+template<typename T_INPUT, typename T_OUTPUT, template<typename> class Target>
 void fft(const core::Buffer2DView<T_INPUT, Target>& buf_in, 
          core::Buffer2DView<T_OUTPUT, Target>& buf_out, bool forward = true);
 
-template<typename T_INPUT, typename T_OUTPUT, typename Target>
+template<typename T_INPUT, typename T_OUTPUT, template<typename> class Target>
 std::unique_ptr<PersistentFFT> makeFFT(const core::Buffer1DView<T_INPUT, Target>& buf_in, 
                                        core::Buffer1DView<T_OUTPUT, Target>& buf_out, bool forward = true);
 
-template<typename T_INPUT, typename T_OUTPUT, typename Target>
+template<typename T_INPUT, typename T_OUTPUT, template<typename> class Target>
 std::unique_ptr<PersistentFFT> makeFFT(const core::Buffer2DView<T_INPUT, Target>& buf_in, 
                                        core::Buffer2DView<T_OUTPUT, Target>& buf_out, bool forward = true);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void splitComplex(const core::Buffer1DView<T_COMPLEX, Target>& buf_in, 
                   core::Buffer1DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_real, 
                   core::Buffer1DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_imag);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void splitComplex(const core::Buffer2DView<T_COMPLEX, Target>& buf_in, 
                   core::Buffer2DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_real, 
                   core::Buffer2DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_imag);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void joinComplex(const core::Buffer1DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_real, 
                  const core::Buffer1DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_imag, 
                  core::Buffer1DView<T_COMPLEX, Target>& buf_out);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void joinComplex(const core::Buffer2DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_real, 
                  const core::Buffer2DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_imag, 
                  core::Buffer2DView<T_COMPLEX, Target>& buf_out);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void magnitude(const core::Buffer1DView<T_COMPLEX, Target>& buf_in, 
                core::Buffer1DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_out);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void magnitude(const core::Buffer2DView<T_COMPLEX, Target>& buf_in, 
                core::Buffer2DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_out);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void phase(const core::Buffer1DView<T_COMPLEX, Target>& buf_in, 
            core::Buffer1DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_out);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void phase(const core::Buffer2DView<T_COMPLEX, Target>& buf_in, 
            core::Buffer2DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_out);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void convertToComplex(const core::Buffer1DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_in, 
                       core::Buffer1DView<T_COMPLEX, Target>& buf_out);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void convertToComplex(const core::Buffer2DView<typename internal::FFTTypeTraits<T_COMPLEX>::BaseType, Target>& buf_in, 
                       core::Buffer2DView<T_COMPLEX, Target>& buf_out);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void calculateCrossPowerSpectrum(const core::Buffer1DView<T_COMPLEX, Target>& buf_fft1, 
                                  const core::Buffer1DView<T_COMPLEX, Target>& buf_fft2, 
                                  core::Buffer1DView<T_COMPLEX, Target>& buf_fft_out);
 
-template<typename T_COMPLEX, typename Target>
+template<typename T_COMPLEX, template<typename> class Target>
 void calculateCrossPowerSpectrum(const core::Buffer2DView<T_COMPLEX, Target>& buf_fft1, 
                                  const core::Buffer2DView<T_COMPLEX, Target>& buf_fft2, 
                                  core::Buffer2DView<T_COMPLEX, Target>& buf_fft_out);

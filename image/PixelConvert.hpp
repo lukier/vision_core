@@ -135,7 +135,7 @@ template<> EIGEN_DEVICE_FUNC inline Eigen::Vector3f convertPixel(Eigen::Vector4f
 /**
  * Convert 2D buffer between element types.
  */
-template<typename T_IN, typename T_OUT, typename Target>
+template<typename T_IN, typename T_OUT, template<typename> class Target>
 void convertBuffer(const core::Buffer2DView<T_IN, Target>& buf_in, core::Buffer2DView<T_OUT, Target>& buf_out);
 
 }

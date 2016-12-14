@@ -47,8 +47,11 @@ namespace math
 {
  
 template<typename Derived>
-EIGEN_DEVICE_FUNC inline Eigen::Matrix<typename Sophus::SO3GroupBase<Derived>::Scalar, 3, 1> toEulerAngles(const Sophus::SO3GroupBase<Derived>& m)
+static EIGEN_DEVICE_FUNC inline Eigen::Matrix<typename Sophus::SO3GroupBase<Derived>::Scalar, 3, 1> toEulerAngles(const Sophus::SO3GroupBase<Derived>& m)
 {
+    using std::atan2;
+    using std::sqrt; // TODO might use Eigen::numext instead
+    
     Eigen::Matrix<typename Sophus::SO3GroupBase<Derived>::Scalar, 3, 1> ret;
     
     const typename Sophus::SO3GroupBase<Derived>::Transformation& rm = m.matrix();
@@ -59,13 +62,23 @@ EIGEN_DEVICE_FUNC inline Eigen::Matrix<typename Sophus::SO3GroupBase<Derived>::S
     
     return ret;
 }
+
+template<typename T>
+static EIGEN_DEVICE_FUNC inline Sophus::SO3Group<T> rotationBetweenTwoVectors(const Eigen::Matrix<T,3,1>& v1, const Eigen::Matrix<T,3,1>& v2)
+{
+    const Eigen::Matrix<T,3,1> cab = v1.cross(v2);
+    const typename Sophus::SO3Group<T>::Transformation hcab = Sophus::SO3Group<T>::hat(cab);
+    return Sophus::SO3Group<T>(Sophus::SO3Group<T>::Transformation::Identity() + hcab + (hcab * hcab) * ( (1.0f - v1.dot(v2))/(cab.squaredNorm()) ));
+}
     
 /**
  * Constrain angle to 0..2pi.
  */    
 template<typename T>
-static inline T constrainAngle(T x)
+static EIGEN_DEVICE_FUNC inline T constrainAngle(T x)
 {
+    using std::fmod; // TODO might use Eigen::numext instead
+    
     x = fmod(x, T(2.0*M_PI) );
     
     if (x < T(0.0))
@@ -80,8 +93,10 @@ static inline T constrainAngle(T x)
  * Substract angles and keep the range in 0..2pi.
  */
 template<typename T>
-static inline T angleDiff(T a,T b)
+static EIGEN_DEVICE_FUNC inline T angleDiff(T a,T b)
 {
+    using std::fmod; // TODO might use Eigen::numext instead
+    
     T dif = fmod(b - a + T(M_PI), T(2.0*M_PI));
     
     if (dif < T(0.0))
@@ -96,7 +111,7 @@ static inline T angleDiff(T a,T b)
  * Calculate mid angle and keep the range in 0..2pi.
  */
 template<typename T>
-static inline T bisectAngle(T a,T b)
+static EIGEN_DEVICE_FUNC inline T bisectAngle(T a,T b)
 {
     return constrainAngle<T>(a + angleDiff<T>(a,b) * T(0.5));
 }

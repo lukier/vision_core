@@ -43,12 +43,11 @@
 namespace core
 {
 
-template<typename T, typename Target = TargetHost>
+template<typename T, template<typename = T> class Target = TargetHost>
 class GPUVariableView
 {
 public:
     typedef T ValueType;
-    typedef Target TargetType;
     
 #ifndef CORE_CUDA_KERNEL_SPACE
     EIGEN_DEVICE_FUNC inline GPUVariableView() : memptr(0) { }
@@ -61,12 +60,12 @@ public:
 
     }
     
-    EIGEN_DEVICE_FUNC inline GPUVariableView( const GPUVariableView<T>& img ) : memptr(img.memptr)
+    EIGEN_DEVICE_FUNC inline GPUVariableView( const GPUVariableView<T,Target>& img ) : memptr(img.memptr)
     {
         
     }
     
-    EIGEN_DEVICE_FUNC inline GPUVariableView( GPUVariableView<T>&& img ) : memptr(img.memptr)
+    EIGEN_DEVICE_FUNC inline GPUVariableView( GPUVariableView<T,Target>&& img ) : memptr(img.memptr)
     {
         // This object will take over managing data (if Management = Manage)
         img.memptr = 0;
@@ -77,20 +76,20 @@ public:
         
     }
     
-    EIGEN_DEVICE_FUNC inline GPUVariableView<T>& operator=(const GPUVariableView<T>& other)
+    EIGEN_DEVICE_FUNC inline GPUVariableView<T,Target>& operator=(const GPUVariableView<T,Target>& other)
     {
         memptr = (void*)other.ptr();
         return *this;
     }
     
-    EIGEN_DEVICE_FUNC inline GPUVariableView<T>& operator=(GPUVariableView<T>&& img)
+    EIGEN_DEVICE_FUNC inline GPUVariableView<T,Target>& operator=(GPUVariableView<T,Target>&& img)
     {
         memptr = img.memptr;
         img.memptr = 0;
         return *this;
     }
     
-    inline void swap(GPUVariableView<T>& other)
+    inline void swap(GPUVariableView<T,Target>& other)
     {
         std::swap(other.memptr, memptr);
     }
@@ -138,10 +137,10 @@ public:
 #endif // CORE_HAVE_CUDA
     
 protected:
-    typename Target::template PointerType<T> memptr;
+    typename Target<T>::PointerType memptr;
 };
 
-template<typename T, typename Target = TargetHost>
+template<typename T, template<typename = T> class Target = TargetHost>
 class GPUVariableManaged : public GPUVariableView<T,Target>
 {
 public:
@@ -149,34 +148,34 @@ public:
     
     inline GPUVariableManaged()
     {
-        typename Target::template PointerType<T> ptr = 0;
-        Target::template AllocateMem<T>(&ptr, 1);
+        typename Target<T>::PointerType ptr = 0;
+        Target<T>::AllocateMem(&ptr, 1);
         ViewT::memptr = ptr;
     }
     
     inline GPUVariableManaged(T cpu_value)
     {
-        typename Target::template PointerType<T> ptr = 0;
-        Target::template AllocateMem<T>(&ptr, 1);
+        typename Target<T>::PointerType ptr = 0;
+        Target<T>::AllocateMem(&ptr, 1);
         ViewT::memptr = ptr;
         ViewT::fromHost(cpu_value);
     }
     
     inline ~GPUVariableManaged()
     {
-        Target::template DeallocatePitchedMem<T>(ViewT::memptr);
+        Target<T>::DeallocatePitchedMem(ViewT::memptr);
     }
     
-    GPUVariableManaged(const GPUVariableManaged<T>& img) = delete;
+    GPUVariableManaged(const GPUVariableManaged<T,Target>& img) = delete;
     
-    inline GPUVariableManaged(GPUVariableManaged<T>&& img) : ViewT(std::move(img))
+    inline GPUVariableManaged(GPUVariableManaged<T,Target>&& img) : ViewT(std::move(img))
     {
         
     }
     
-    GPUVariableManaged<T>& operator=(const GPUVariableManaged<T>& img) = delete;
+    GPUVariableManaged<T,Target>& operator=(const GPUVariableManaged<T,Target>& img) = delete;
     
-    inline GPUVariableManaged<T>& operator=(GPUVariableManaged<T>&& img)
+    inline GPUVariableManaged<T,Target>& operator=(GPUVariableManaged<T,Target>&& img)
     {
         ViewT::operator=(std::move(img));
         return *this;

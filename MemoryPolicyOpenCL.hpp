@@ -41,10 +41,11 @@
 namespace core
 {
  
+template<typename T>
 struct TargetDeviceOpenCL
 {
-    template<typename T> using PointerType = cl::Memory*;
-    template<typename T> using TextureHandleType = int;
+    typedef cl::Memory* PointerType;
+    typedef int TextureHandleType;
 };
 
 }

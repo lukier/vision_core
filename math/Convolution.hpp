@@ -47,10 +47,10 @@ namespace core
 namespace math
 {
     
-template<typename T, typename Target, typename T2>
+template<typename T, template<typename> class Target, typename T2>
 void convolve(const core::Buffer1DView<T,Target>& img_in, core::Buffer1DView<T,Target>& img_out, const T2& kern);    
     
-template<typename T, typename Target, typename T2>
+template<typename T, template<typename> class Target, typename T2>
 void convolve(const core::Buffer2DView<T,Target>& img_in, core::Buffer2DView<T,Target>& img_out, const T2& kern);
 
 }

@@ -53,10 +53,11 @@ struct TargetTransfer { };
 
 namespace core
 {
-    
-template<typename TT> struct TargetTraits { };
+#if 0
+template<template<typename> class Target> struct TargetTraits { };
 
-template<> struct TargetTraits<TargetHost>
+template<typename ElementT>
+template<> struct TargetTraits<TargetHost<ElementT>>
 {
     static const bool IsDeviceCUDA = false;
     static const bool IsDeviceOpenCL = false;
@@ -64,33 +65,25 @@ template<> struct TargetTraits<TargetHost>
 };    
 
 #ifdef CORE_HAVE_CUDA
-template<> struct TargetTraits<TargetDeviceCUDA>
+template<typename ElementT>
+template<> struct TargetTraits<TargetDeviceCUDA<ElementT>>
 {
     static const bool IsDeviceCUDA = true;
     static const bool IsDeviceOpenCL = false;
     static const bool IsHost = false;
 };
-
-    // CUDA is preffered
-    typedef TargetDeviceCUDA TargetDeviceGPU;
-#else // CORE_HAVE_CUDA
-    // If not then OpenCL
-    #ifdef CORE_HAVE_OPENCL
-        typedef TargetDeviceOpenCL TargetDeviceGPU;
-    #else // CORE_HAVE_OPENCL - sorry, no OpenCL, no CUDA
-
-    #endif // CORE_HAVE_OPENCL
 #endif // CORE_HAVE_CUDA
         
 #ifdef CORE_HAVE_OPENCL
-template<> struct TargetTraits<TargetDeviceOpenCL>
+template<typename ElementT>
+template<> struct TargetTraits<TargetDeviceOpenCL<ElementT>>
 {
     static const bool IsDeviceCUDA = false;
     static const bool IsDeviceOpenCL = true;
     static const bool IsHost = false;
 };   
 #endif // CORE_HAVE_OPENCL
-    
+#endif
 }
 
 #endif // CORE_MEMORY_POLICY_HPP

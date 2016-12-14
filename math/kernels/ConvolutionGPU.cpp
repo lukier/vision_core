@@ -40,7 +40,7 @@
 
 #include <math/Convolution.hpp>
 
-template<typename _Scalar, typename Target, typename KernelT>
+template<typename _Scalar, template<typename> class Target, typename KernelT>
 __global__ void Kernel_convolveBuffer1D(core::Buffer1DView<_Scalar,Target> img_in, core::Buffer1DView<_Scalar,Target> img_out, KernelT kern)
 {
     // current point
@@ -65,7 +65,7 @@ __global__ void Kernel_convolveBuffer1D(core::Buffer1DView<_Scalar,Target> img_i
     }
 }
 
-template<typename _Scalar, typename Target, typename KernelT>
+template<typename _Scalar, template<typename> class Target, typename KernelT>
 __global__ void Kernel_convolveBuffer2D(core::Buffer2DView<_Scalar,Target> img_in, core::Buffer2DView<_Scalar,Target> img_out, KernelT kern)
 {
     // current point
@@ -95,10 +95,10 @@ __global__ void Kernel_convolveBuffer2D(core::Buffer2DView<_Scalar,Target> img_i
     }
 }
 
-template<typename T, typename Target, typename T2>
+template<typename T, template<typename> class Target, typename T2>
 struct ConvolutionDispatcherGPU;
 
-template<typename Target, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+template<template<typename> class Target, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
 struct ConvolutionDispatcherGPU<_Scalar, Target, Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> >
 {
     typedef Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> KernelT;
@@ -138,13 +138,13 @@ struct ConvolutionDispatcherGPU<_Scalar, Target, Eigen::Matrix<_Scalar, _Rows, _
     }
 };
 
-template<typename T, typename Target, typename T2>
+template<typename T, template<typename> class Target, typename T2>
 void core::math::convolve(const core::Buffer1DView<T,Target>& img_in, core::Buffer1DView<T,Target>& img_out, const T2& kern)
 {
     return ConvolutionDispatcherGPU<T,Target,T2>::convolve1D(img_in, img_out, kern);
 }
 
-template<typename T, typename Target, typename T2>
+template<typename T, template<typename> class Target, typename T2>
 void core::math::convolve(const core::Buffer2DView<T,Target>& img_in, core::Buffer2DView<T,Target>& img_out, const T2& kern)
 {
     return ConvolutionDispatcherGPU<T,Target,T2>::convolve2D(img_in, img_out, kern);

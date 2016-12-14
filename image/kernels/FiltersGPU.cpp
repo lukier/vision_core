@@ -42,7 +42,7 @@
 
 #include <image/Filters.hpp>
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_bilateral(const core::Buffer2DView<T,Target> img_in, core::Buffer2DView<T,Target> img_out, const T gs, const T gr, std::size_t dim)
 {
     // current point
@@ -78,7 +78,7 @@ __global__ void Kernel_bilateral(const core::Buffer2DView<T,Target> img_in, core
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::bilateral(const core::Buffer2DView<T,Target>& img_in, core::Buffer2DView<T,Target>& img_out, const T& gs, const T& gr, std::size_t dim)
 {
     dim3 gridDim, blockDim;
@@ -101,7 +101,7 @@ void core::image::bilateral(const core::Buffer2DView<T,Target>& img_in, core::Bu
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_bilateralLimited(const core::Buffer2DView<T,Target> img_in, core::Buffer2DView<T,Target> img_out, const T gs, const T gr, const T minval, std::size_t dim)
 {
     // current point
@@ -139,7 +139,7 @@ __global__ void Kernel_bilateralLimited(const core::Buffer2DView<T,Target> img_i
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::bilateral(const core::Buffer2DView<T,Target>& img_in, core::Buffer2DView<T,Target>& img_out, const T& gs, const T& gr, const T& minval, std::size_t dim)
 {
     dim3 gridDim, blockDim;

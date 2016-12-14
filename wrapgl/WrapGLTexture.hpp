@@ -299,7 +299,7 @@ public:
 namespace core
 {    
 
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target = TargetHost>
 class GPUTexture2DFromOpenGL { };
 
 }

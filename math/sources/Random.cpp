@@ -37,7 +37,7 @@
 
 #include <math/Random.hpp>
 
-template<typename Target>
+template<template<typename> class Target>
 struct TargetDispatcher { };
 
 template<>
@@ -62,7 +62,7 @@ struct TargetDispatcher<core::TargetHost>
     }
 };
 
-template<typename Target>
+template<template<typename> class Target>
 core::math::RandomGenerator<Target>::RandomGenerator(uint64_t seed)
 {
     handle = TargetDispatcher<Target>::create(CURAND_RNG_PSEUDO_DEFAULT);
@@ -76,13 +76,13 @@ core::math::RandomGenerator<Target>::RandomGenerator(uint64_t seed)
     }
 }
 
-template<typename Target>
+template<template<typename> class Target>
 core::math::RandomGenerator<Target>::~RandomGenerator()
 {
     curandDestroyGenerator(handle);
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target>
 void core::math::generateRandom(RandomGenerator<Target>& gen, core::Buffer1DView<T,Target>& bufout, const core::types::Gaussian<typename core::type_traits<T>::ChannelType>& gauss)
 {
     curandStatus_t res = curandGenerateNormal(gen.handle, bufout.ptr(), bufout.size(), gauss.mean(), gauss.stddev());
@@ -94,7 +94,7 @@ void core::math::generateRandom(RandomGenerator<Target>& gen, core::Buffer1DView
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target>
 void core::math::generateRandom(RandomGenerator<Target>& gen, core::Buffer2DView<T,Target>& bufout, const core::types::Gaussian<typename core::type_traits<T>::ChannelType>& gauss)
 {
     curandStatus_t res = curandGenerateNormal(gen.handle, bufout.ptr(), bufout.height() * bufout.pitch(), gauss.mean(), gauss.stddev());
@@ -106,7 +106,7 @@ void core::math::generateRandom(RandomGenerator<Target>& gen, core::Buffer2DView
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target>
 void core::math::generateRandom(RandomGenerator<Target>& gen, core::Buffer1DView<T,Target>& bufout, const typename core::type_traits<T>::ChannelType& mean, const typename core::type_traits<T>::ChannelType& stddev)
 {
     curandStatus_t res = curandGenerateNormal(gen.handle, bufout.ptr(), bufout.size(), mean, stddev);
@@ -118,7 +118,7 @@ void core::math::generateRandom(RandomGenerator<Target>& gen, core::Buffer1DView
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target>
 void core::math::generateRandom(RandomGenerator<Target>& gen, core::Buffer2DView<T,Target>& bufout, const typename core::type_traits<T>::ChannelType& mean, const typename core::type_traits<T>::ChannelType& stddev)
 {
     curandStatus_t res = curandGenerateNormal(gen.handle, bufout.ptr(), bufout.height() * bufout.pitch(), mean, stddev);

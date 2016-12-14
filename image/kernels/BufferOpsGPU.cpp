@@ -63,25 +63,25 @@ struct rescale_functor : public thrust::unary_function<T, T>
     T alpha, beta, clamp_min, clamp_max;
 };
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::rescaleBufferInplace(core::Buffer1DView< T, Target>& buf_in, T alpha, T beta, T clamp_min, T clamp_max)
 {
     thrust::transform(buf_in.begin(), buf_in.end(), buf_in.begin(), rescale_functor<T>(alpha, beta, clamp_min, clamp_max) );
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::rescaleBufferInplace(core::Buffer2DView<T, Target>& buf_in, T alpha, T beta, T clamp_min, T clamp_max)
 {
     rescaleBuffer(buf_in, buf_in, alpha, beta, clamp_min, clamp_max);
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::rescaleBufferInplaceMinMax(core::Buffer2DView<T, Target>& buf_in, T vmin, T vmax, T clamp_min, T clamp_max)
 {
     rescaleBuffer(buf_in, buf_in, T(1.0f) / (vmax - vmin), -vmin * (T(1.0)/(vmax - vmin)), clamp_min, clamp_max);
 }
 
-template<typename T1, typename T2, typename Target>
+template<typename T1, typename T2, template<typename> class Target>
 __global__ void Kernel_rescaleBuffer(const core::Buffer2DView<T1, Target> buf_in, 
                                      core::Buffer2DView<T2, Target> buf_out, float alpha, float beta, float clamp_min, float clamp_max)
 {
@@ -96,7 +96,7 @@ __global__ void Kernel_rescaleBuffer(const core::Buffer2DView<T1, Target> buf_in
     }
 }
 
-template<typename T1, typename T2, typename Target>
+template<typename T1, typename T2, template<typename> class Target>
 void core::image::rescaleBuffer(const core::Buffer2DView<T1, Target>& buf_in, core::Buffer2DView<T2, Target>& buf_out, float alpha, float beta, float clamp_min, float clamp_max)
 {
     dim3 gridDim, blockDim;
@@ -119,7 +119,7 @@ void core::image::rescaleBuffer(const core::Buffer2DView<T1, Target>& buf_in, co
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::normalizeBufferInplace(core::Buffer2DView< T, Target >& buf_in)
 {
     const T min_val = calcBufferMin(buf_in);
@@ -141,13 +141,13 @@ struct clamp_functor : public thrust::unary_function<T, T>
     T alpha, beta;
 };
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::clampBuffer(core::Buffer1DView<T, Target>& buf_io, T a, T b)
 {
     thrust::transform(buf_io.begin(), buf_io.end(), buf_io.begin(), clamp_functor<T>(a, b) );
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_clampBuffer(core::Buffer2DView<T, Target> buf_io, T a, T b)
 {
     // current point
@@ -160,7 +160,7 @@ __global__ void Kernel_clampBuffer(core::Buffer2DView<T, Target> buf_io, T a, T 
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::clampBuffer(core::Buffer2DView<T, Target>& buf_io, T a, T b)
 {
     dim3 gridDim, blockDim;
@@ -174,49 +174,49 @@ void core::image::clampBuffer(core::Buffer2DView<T, Target>& buf_io, T a, T b)
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMin(const core::Buffer1DView< T, Target >& buf_in)
 {
     thrust::device_ptr<T> iter = thrust::min_element(buf_in.begin(), buf_in.end());
     return iter[0];
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMax(const core::Buffer1DView< T, Target >& buf_in)
 {
     thrust::device_ptr<T> iter = thrust::max_element(buf_in.begin(), buf_in.end());
     return iter[0];
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMean(const core::Buffer1DView< T, Target >& buf_in)
 {
     T sum = thrust::reduce(buf_in.begin(), buf_in.end());
     return sum / buf_in.size();
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMin(const core::Buffer2DView< T, Target >& buf_in)
 {
     thrust::device_ptr<T> iter = thrust::min_element(buf_in.begin(), buf_in.end());
     return iter[0];
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMax(const core::Buffer2DView< T, Target >& buf_in)
 {
     thrust::device_ptr<T> iter = thrust::max_element(buf_in.begin(), buf_in.end());
     return iter[0];
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMean(const core::Buffer2DView< T, Target >& buf_in)
 {
     T sum = thrust::reduce(buf_in.begin(), buf_in.end());
     return sum / buf_in.area();
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_leaveQuarter(const core::Buffer2DView<T, Target> buf_in, core::Buffer2DView<T, Target> buf_out)
 {
     // current point
@@ -229,7 +229,7 @@ __global__ void Kernel_leaveQuarter(const core::Buffer2DView<T, Target> buf_in, 
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::leaveQuarter(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out)
 {
     dim3 gridDim, blockDim;
@@ -252,7 +252,7 @@ void core::image::leaveQuarter(const core::Buffer2DView<T, Target>& buf_in, core
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_downsampleHalf(const core::Buffer2DView<T, Target> buf_in, core::Buffer2DView<T, Target> buf_out)
 {
     // current point
@@ -268,7 +268,7 @@ __global__ void Kernel_downsampleHalf(const core::Buffer2DView<T, Target> buf_in
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::downsampleHalf(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out)
 {
     dim3 gridDim, blockDim;
@@ -291,7 +291,7 @@ void core::image::downsampleHalf(const core::Buffer2DView<T, Target>& buf_in, co
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_downsampleHalfNoInvalid(const core::Buffer2DView<T, Target> buf_in, core::Buffer2DView<T, Target> buf_out)
 {
     // current point
@@ -319,7 +319,7 @@ __global__ void Kernel_downsampleHalfNoInvalid(const core::Buffer2DView<T, Targe
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::downsampleHalfNoInvalid(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out)
 {
     dim3 gridDim, blockDim;
@@ -342,7 +342,7 @@ void core::image::downsampleHalfNoInvalid(const core::Buffer2DView<T, Target>& b
     }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 __global__ void Kernel_join2(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_in2, core::Buffer2DView<TCOMP, Target> buf_out)
 {
     // current point
@@ -355,7 +355,7 @@ __global__ void Kernel_join2(const core::Buffer2DView<typename core::type_traits
     }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 __global__ void Kernel_join3(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_in2, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_in3, core::Buffer2DView<TCOMP, Target> buf_out)
 {
     // current point
@@ -368,7 +368,7 @@ __global__ void Kernel_join3(const core::Buffer2DView<typename core::type_traits
     }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 __global__ void Kernel_join4(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_in2, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_in3, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_in4, core::Buffer2DView<TCOMP, Target> buf_out)
 {
     // current point
@@ -381,7 +381,7 @@ __global__ void Kernel_join4(const core::Buffer2DView<typename core::type_traits
     }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in2, core::Buffer2DView<TCOMP, Target>& buf_out)
 {
     assert((buf_out.width() == buf_in1.width()) && (buf_out.height() == buf_in1.height()));
@@ -398,7 +398,7 @@ void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in2, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in3, core::Buffer2DView<TCOMP, Target>& buf_out)
 {
     assert((buf_out.width() == buf_in1.width()) && (buf_out.height() == buf_in1.height()));
@@ -416,7 +416,7 @@ void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in2, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in3, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in4, core::Buffer2DView<TCOMP, Target>& buf_out)
 {
     assert((buf_out.width() == buf_in1.width()) && (buf_out.height() == buf_in1.height()));
@@ -435,7 +435,7 @@ void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 __global__ void Kernel_split2(const core::Buffer2DView<TCOMP, Target> buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_out2)
 {
     // current point
@@ -448,7 +448,7 @@ __global__ void Kernel_split2(const core::Buffer2DView<TCOMP, Target> buf_in, co
     }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 __global__ void Kernel_split3(const core::Buffer2DView<TCOMP, Target> buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_out2, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_out3)
 {
     // current point
@@ -461,7 +461,7 @@ __global__ void Kernel_split3(const core::Buffer2DView<TCOMP, Target> buf_in, co
     }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 __global__ void Kernel_split4(const core::Buffer2DView<TCOMP, Target> buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_out2, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_out3, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target> buf_out4)
 {
     // current point
@@ -474,7 +474,7 @@ __global__ void Kernel_split4(const core::Buffer2DView<TCOMP, Target> buf_in, co
     }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out2)
 {
     assert((buf_in.width() == buf_out1.width()) && (buf_in.height() == buf_out1.height()));
@@ -491,7 +491,7 @@ void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::B
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out2, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out3)
 {
     assert((buf_in.width() == buf_out1.width()) && (buf_in.height() == buf_out1.height()));
@@ -509,7 +509,7 @@ void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::B
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out2, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out3, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out4)
 {
     assert((buf_in.width() == buf_out1.width()) && (buf_in.height() == buf_out1.height()));
@@ -528,7 +528,7 @@ void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::B
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_fillBuffer1D(core::Buffer1DView<T, Target> buf_in, const typename core::type_traits<T>::ChannelType v)
 {
     // current point
@@ -540,7 +540,7 @@ __global__ void Kernel_fillBuffer1D(core::Buffer1DView<T, Target> buf_in, const 
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_fillBuffer2D(core::Buffer2DView<T, Target> buf_in, const typename core::type_traits<T>::ChannelType v)
 {
     // current point
@@ -556,7 +556,7 @@ __global__ void Kernel_fillBuffer2D(core::Buffer2DView<T, Target> buf_in, const 
 /**
  * fillBuffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::fillBuffer(core::Buffer1DView<T, Target>& buf_in, const typename core::type_traits<T>::ChannelType& v)
 {
     dim3 gridDim, blockDim;
@@ -577,7 +577,7 @@ void core::image::fillBuffer(core::Buffer1DView<T, Target>& buf_in, const typena
 /**
  * fillBuffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::fillBuffer(core::Buffer2DView<T, Target>& buf_in, const typename core::type_traits<T>::ChannelType& v)
 {
     dim3 gridDim, blockDim;
@@ -595,7 +595,7 @@ void core::image::fillBuffer(core::Buffer2DView<T, Target>& buf_in, const typena
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_invertBuffer2D(core::Buffer2DView<T, Target> buf_io)
 {
     // current point
@@ -611,7 +611,7 @@ __global__ void Kernel_invertBuffer2D(core::Buffer2DView<T, Target> buf_io)
 /**
  * Invert Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::invertBuffer(core::Buffer2DView<T, Target>& buf_io)
 {
     dim3 gridDim, blockDim;
@@ -629,7 +629,7 @@ void core::image::invertBuffer(core::Buffer2DView<T, Target>& buf_io)
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_thresholdBufferSimple(core::Buffer2DView<T, Target> buf_in, core::Buffer2DView<T, Target> buf_out, T thr, T val_below, T val_above )
 {
     // current point
@@ -653,7 +653,7 @@ __global__ void Kernel_thresholdBufferSimple(core::Buffer2DView<T, Target> buf_i
 /**
  * Threshold Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::thresholdBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out, T thr, T val_below, T val_above)
 {
     dim3 gridDim, blockDim;
@@ -671,7 +671,7 @@ void core::image::thresholdBuffer(const core::Buffer2DView<T, Target>& buf_in, c
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_thresholdBufferAdvanced(core::Buffer2DView<T, Target> buf_in, core::Buffer2DView<T, Target> buf_out, T thr, T val_below, T val_above, T minval, T maxval, bool saturation )
 {
     // current point
@@ -703,7 +703,7 @@ __global__ void Kernel_thresholdBufferAdvanced(core::Buffer2DView<T, Target> buf
 /**
  * Threshold Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::thresholdBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out, T thr, T val_below, T val_above, T minval, T maxval, bool saturation)
 {
     dim3 gridDim, blockDim;
@@ -721,7 +721,7 @@ void core::image::thresholdBuffer(const core::Buffer2DView<T, Target>& buf_in, c
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_flipXBuffer(const core::Buffer2DView<T, Target> buf_in, core::Buffer2DView<T, Target> buf_out)
 {
     // current point
@@ -741,7 +741,7 @@ __global__ void Kernel_flipXBuffer(const core::Buffer2DView<T, Target> buf_in, c
 /**
  * Flip X.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::flipXBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out)
 {
     assert((buf_in.width() == buf_out.width()) && (buf_in.height() == buf_out.height()));
@@ -757,7 +757,7 @@ void core::image::flipXBuffer(const core::Buffer2DView<T, Target>& buf_in, core:
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_flipYBuffer(const core::Buffer2DView<T, Target> buf_in, core::Buffer2DView<T, Target> buf_out)
 {
     // current point
@@ -777,7 +777,7 @@ __global__ void Kernel_flipYBuffer(const core::Buffer2DView<T, Target> buf_in, c
 /**
  * Flip Y.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::flipYBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out)
 {
     assert((buf_in.width() == buf_out.width()) && (buf_in.height() == buf_out.height()));
@@ -793,7 +793,7 @@ void core::image::flipYBuffer(const core::Buffer2DView<T, Target>& buf_in, core:
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_bufferSubstract(const core::Buffer2DView<T, Target> buf_in1, const core::Buffer2DView<T, Target> buf_in2, core::Buffer2DView<T, Target> buf_out)
 {
     // current point
@@ -806,7 +806,7 @@ __global__ void Kernel_bufferSubstract(const core::Buffer2DView<T, Target> buf_i
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::bufferSubstract(const core::Buffer2DView<T, Target>& buf_in1, const core::Buffer2DView<T, Target>& buf_in2, core::Buffer2DView<T, Target>& buf_out)
 {
     assert((buf_in1.width() == buf_out.width()) && (buf_in1.height() == buf_out.height()));
@@ -823,7 +823,7 @@ void core::image::bufferSubstract(const core::Buffer2DView<T, Target>& buf_in1, 
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_bufferSubstractL1(const core::Buffer2DView<T, Target> buf_in1, const core::Buffer2DView<T, Target> buf_in2, core::Buffer2DView<T, Target> buf_out)
 {
     // current point
@@ -836,7 +836,7 @@ __global__ void Kernel_bufferSubstractL1(const core::Buffer2DView<T, Target> buf
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::bufferSubstractL1(const core::Buffer2DView<T, Target>& buf_in1, const core::Buffer2DView<T, Target>& buf_in2, core::Buffer2DView<T, Target>& buf_out)
 {
     assert((buf_in1.width() == buf_out.width()) && (buf_in1.height() == buf_out.height()));
@@ -853,7 +853,7 @@ void core::image::bufferSubstractL1(const core::Buffer2DView<T, Target>& buf_in1
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_bufferSubstractL2(const core::Buffer2DView<T, Target> buf_in1, const core::Buffer2DView<T, Target> buf_in2, core::Buffer2DView<T, Target> buf_out)
 {
     // current point
@@ -866,7 +866,7 @@ __global__ void Kernel_bufferSubstractL2(const core::Buffer2DView<T, Target> buf
     }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::bufferSubstractL2(const core::Buffer2DView<T, Target>& buf_in1, const core::Buffer2DView<T, Target>& buf_in2, core::Buffer2DView<T, Target>& buf_out)
 {
     assert((buf_in1.width() == buf_out.width()) && (buf_in1.height() == buf_out.height()));
@@ -883,13 +883,13 @@ void core::image::bufferSubstractL2(const core::Buffer2DView<T, Target>& buf_in1
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::bufferSum(const core::Buffer1DView<T, Target>& buf_in, const T& initial)
 {
     return thrust::reduce(buf_in.begin(), buf_in.end(), initial);
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 __global__ void Kernel_bufferSum2D(const core::Buffer2DView<T, Target> buf_in, core::HostReductionSum2DView<T> reductor)
 {
     // current point
@@ -908,7 +908,7 @@ __global__ void Kernel_bufferSum2D(const core::Buffer2DView<T, Target> buf_in, c
     sumIt.reduceBlock(reductor);
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::bufferSum(const core::Buffer2DView<T, Target>& buf_in, const T& initial)
 {
     dim3 gridDim, blockDim;

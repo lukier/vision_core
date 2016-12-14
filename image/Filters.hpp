@@ -46,10 +46,10 @@ namespace core
 namespace image
 {
     
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void bilateral(const core::Buffer2DView<T,Target>& img_in, core::Buffer2DView<T,Target>& img_out, const T& gs, const T& gr, std::size_t dim = 3);
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void bilateral(const core::Buffer2DView<T,Target>& img_in, core::Buffer2DView<T,Target>& img_out, const T& gs, const T& gr, const T& minval, std::size_t dim = 3);
 
 }

@@ -42,7 +42,7 @@
 
 #include <numeric>
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::rescaleBufferInplace(core::Buffer1DView< T, Target>& buf_in, T alpha, T beta, T clamp_min, T clamp_max)
 {
     std::transform(buf_in.ptr(), buf_in.ptr() + buf_in.size(), buf_in.ptr(), [&](T val) -> T 
@@ -51,19 +51,19 @@ void core::image::rescaleBufferInplace(core::Buffer1DView< T, Target>& buf_in, T
     });
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::rescaleBufferInplace(core::Buffer2DView<T, Target>& buf_in, T alpha, T beta, T clamp_min, T clamp_max)
 {
     rescaleBuffer(buf_in, buf_in, alpha, beta, clamp_min, clamp_max);
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::rescaleBufferInplaceMinMax(core::Buffer2DView<T, Target>& buf_in, T vmin, T vmax, T clamp_min, T clamp_max)
 {
     rescaleBuffer(buf_in, buf_in, T(1.0f) / (vmax - vmin), -vmin * (T(1.0)/(vmax - vmin)), clamp_min, clamp_max);
 }
 
-template<typename T1, typename T2, typename Target>
+template<typename T1, typename T2, template<typename> class Target>
 void core::image::rescaleBuffer(const core::Buffer2DView<T1, Target>& buf_in, core::Buffer2DView<T2, Target>& buf_out, float alpha, float beta, float clamp_min, float clamp_max)
 {
     core::launchParallelFor(buf_in.width(), buf_in.height(), [&](std::size_t x, std::size_t y)
@@ -76,7 +76,7 @@ void core::image::rescaleBuffer(const core::Buffer2DView<T1, Target>& buf_in, co
     });
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::normalizeBufferInplace(core::Buffer2DView< T, Target >& buf_in)
 {
     const T min_val = calcBufferMin(buf_in);
@@ -85,7 +85,7 @@ void core::image::normalizeBufferInplace(core::Buffer2DView< T, Target >& buf_in
     rescaleBufferInplace(buf_in, T(1.0f) / (max_val - min_val), -min_val * (T(1.0)/(max_val - min_val)));
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::clampBuffer(core::Buffer1DView<T, Target>& buf_io, T a, T b)
 {
     core::launchParallelFor(buf_io.size(), [&](std::size_t idx)
@@ -97,7 +97,7 @@ void core::image::clampBuffer(core::Buffer1DView<T, Target>& buf_io, T a, T b)
     });
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::clampBuffer(core::Buffer2DView<T, Target>& buf_io, T a, T b)
 {
     core::launchParallelFor(buf_io.width(), buf_io.height(), [&](std::size_t x, std::size_t y)
@@ -109,28 +109,28 @@ void core::image::clampBuffer(core::Buffer2DView<T, Target>& buf_io, T a, T b)
     });
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMin(const core::Buffer1DView< T, Target >& buf_in)
 {
     const T* ret = std::min_element(buf_in.ptr(), buf_in.ptr() + buf_in.size());
     return *ret;
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMax(const core::Buffer1DView< T, Target >& buf_in)
 {
     const T* ret = std::max_element(buf_in.ptr(), buf_in.ptr() + buf_in.size());
     return *ret;
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMean(const core::Buffer1DView< T, Target >& buf_in)
 {
     T sum = std::accumulate(buf_in.ptr(), buf_in.ptr() + buf_in.size(), core::zero<T>());
     return sum / (T)buf_in.size();
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMin(const core::Buffer2DView< T, Target >& buf_in)
 {
     T minval = core::numeric_limits<T>::max();
@@ -146,7 +146,7 @@ T core::image::calcBufferMin(const core::Buffer2DView< T, Target >& buf_in)
     return minval;
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMax(const core::Buffer2DView< T, Target >& buf_in)
 {
     T maxval = core::numeric_limits<T>::lowest();
@@ -162,7 +162,7 @@ T core::image::calcBufferMax(const core::Buffer2DView< T, Target >& buf_in)
     return maxval;
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::calcBufferMean(const core::Buffer2DView< T, Target >& buf_in)
 {
     T sum = core::zero<T>();
@@ -178,7 +178,7 @@ T core::image::calcBufferMean(const core::Buffer2DView< T, Target >& buf_in)
     return sum / (T)buf_in.area();
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::downsampleHalf(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out)
 {
     if(!( (buf_in.width()/2 == buf_out.width()) && (buf_in.height()/2 == buf_out.height())))
@@ -195,7 +195,7 @@ void core::image::downsampleHalf(const core::Buffer2DView<T, Target>& buf_in, co
     });
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::downsampleHalfNoInvalid(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out)
 {
     if(!( (buf_in.width()/2 == buf_out.width()) && (buf_in.height()/2 == buf_out.height())))
@@ -224,7 +224,7 @@ void core::image::downsampleHalfNoInvalid(const core::Buffer2DView<T, Target>& b
     });
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::leaveQuarter(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out)
 {
     dim3 gridDim, blockDim;
@@ -240,7 +240,7 @@ void core::image::leaveQuarter(const core::Buffer2DView<T, Target>& buf_in, core
     });
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in2, core::Buffer2DView<TCOMP, Target>& buf_out)
 {
     assert((buf_out.width() == buf_in1.width()) && (buf_out.height() == buf_in1.height()));
@@ -252,7 +252,7 @@ void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP
     });
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in2, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in3, core::Buffer2DView<TCOMP, Target>& buf_out)
 {
     assert((buf_out.width() == buf_in1.width()) && (buf_out.height() == buf_in1.height()));
@@ -265,7 +265,7 @@ void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP
     });
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in2, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in3, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in4, core::Buffer2DView<TCOMP, Target>& buf_out)
 {
     assert((buf_out.width() == buf_in1.width()) && (buf_out.height() == buf_in1.height()));
@@ -279,7 +279,7 @@ void core::image::join(const core::Buffer2DView<typename core::type_traits<TCOMP
     });
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out2)
 {
     assert((buf_in.width() == buf_out1.width()) && (buf_in.height() == buf_out1.height()));
@@ -291,7 +291,7 @@ void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::B
     });
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out2, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out3)
 {
     assert((buf_in.width() == buf_out1.width()) && (buf_in.height() == buf_out1.height()));
@@ -304,7 +304,7 @@ void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::B
     });
 }
 
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out2, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out3, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out4)
 {
     assert((buf_in.width() == buf_out1.width()) && (buf_in.height() == buf_out1.height()));
@@ -321,7 +321,7 @@ void core::image::split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::B
 /**
  * fillBuffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::fillBuffer(core::Buffer1DView<T, Target>& buf_in, const typename core::type_traits<T>::ChannelType& v)
 {
     std::transform(buf_in.ptr(), buf_in.ptr() + buf_in.size(), buf_in.ptr(), [&](T val) -> T 
@@ -333,7 +333,7 @@ void core::image::fillBuffer(core::Buffer1DView<T, Target>& buf_in, const typena
 /**
  * fillBuffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::fillBuffer(core::Buffer2DView<T, Target>& buf_in, const typename core::type_traits<T>::ChannelType& v)
 {
     core::launchParallelFor(buf_in.width(), buf_in.height(), [&](std::size_t x, std::size_t y)
@@ -345,7 +345,7 @@ void core::image::fillBuffer(core::Buffer2DView<T, Target>& buf_in, const typena
 /**
  * Invert Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::invertBuffer(core::Buffer1DView<T, Target>& buf_io)
 {
     //typedef typename core::type_traits<T>::ChannelType Scalar;
@@ -359,7 +359,7 @@ void core::image::invertBuffer(core::Buffer1DView<T, Target>& buf_io)
 /**
  * Invert Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::invertBuffer(core::Buffer2DView<T, Target>& buf_io)
 {
     core::launchParallelFor(buf_io.width(), buf_io.height(), [&](std::size_t x, std::size_t y)
@@ -371,7 +371,7 @@ void core::image::invertBuffer(core::Buffer2DView<T, Target>& buf_io)
 /**
  * Threshold Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::thresholdBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out, T thr, T val_below, T val_above)
 {
     core::launchParallelFor(buf_in.width(), buf_in.height(), [&](std::size_t x, std::size_t y)
@@ -394,7 +394,7 @@ void core::image::thresholdBuffer(const core::Buffer2DView<T, Target>& buf_in, c
 /**
  * Threshold Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::thresholdBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out, T thr, T val_below, T val_above, T minval, T maxval, bool saturation)
 {
     core::launchParallelFor(buf_in.width(), buf_in.height(), [&](std::size_t x, std::size_t y)
@@ -425,7 +425,7 @@ void core::image::thresholdBuffer(const core::Buffer2DView<T, Target>& buf_in, c
 /**
  * Flip X.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::flipXBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out)
 {
     assert((buf_in.width() == buf_out.width()) && (buf_in.height() == buf_out.height()));
@@ -446,7 +446,7 @@ void core::image::flipXBuffer(const core::Buffer2DView<T, Target>& buf_in, core:
 /**
  * Flip Y.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::flipYBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out)
 {
     assert((buf_in.width() == buf_out.width()) && (buf_in.height() == buf_out.height()));
@@ -464,7 +464,7 @@ void core::image::flipYBuffer(const core::Buffer2DView<T, Target>& buf_in, core:
     });
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::bufferSubstract(const core::Buffer2DView<T, Target>& buf_in1, const core::Buffer2DView<T, Target>& buf_in2, core::Buffer2DView<T, Target>& buf_out)
 {
     assert((buf_in1.width() == buf_out.width()) && (buf_in1.height() == buf_out.height()));
@@ -479,7 +479,7 @@ void core::image::bufferSubstract(const core::Buffer2DView<T, Target>& buf_in1, 
     });
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::bufferSubstractL1(const core::Buffer2DView<T, Target>& buf_in1, const core::Buffer2DView<T, Target>& buf_in2, core::Buffer2DView<T, Target>& buf_out)
 {
     assert((buf_in1.width() == buf_out.width()) && (buf_in1.height() == buf_out.height()));
@@ -494,7 +494,7 @@ void core::image::bufferSubstractL1(const core::Buffer2DView<T, Target>& buf_in1
     });
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void core::image::bufferSubstractL2(const core::Buffer2DView<T, Target>& buf_in1, const core::Buffer2DView<T, Target>& buf_in2, core::Buffer2DView<T, Target>& buf_out)
 {
     assert((buf_in1.width() == buf_out.width()) && (buf_in1.height() == buf_out.height()));
@@ -509,7 +509,7 @@ void core::image::bufferSubstractL2(const core::Buffer2DView<T, Target>& buf_in1
     });
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::bufferSum(const core::Buffer1DView<T, Target>& buf_in, const T& initial)
 {
     return core::launchParallelReduce(buf_in.size(), initial,
@@ -523,7 +523,7 @@ T core::image::bufferSum(const core::Buffer1DView<T, Target>& buf_in, const T& i
     });
 }
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T core::image::bufferSum(const core::Buffer2DView<T, Target>& buf_in, const T& initial)
 {
     return core::launchParallelReduce(buf_in.width(), buf_in.height(), initial,

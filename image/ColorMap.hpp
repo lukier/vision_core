@@ -64,10 +64,10 @@ enum class ColorMap
     WINTER
 };
 
-template<typename T, typename TOUT, typename Target>
+template<typename T, typename TOUT, template<typename> class Target>
 void createColorMap(ColorMap cm, const core::Buffer1DView<T,Target>& img_in, const T& vmin, const T& vmax, core::Buffer1DView<TOUT,Target>& img_out);
     
-template<typename T, typename TOUT, typename Target>
+template<typename T, typename TOUT, template<typename> class Target>
 void createColorMap(ColorMap cm, const core::Buffer2DView<T,Target>& img_in, const T& vmin, const T& vmax, core::Buffer2DView<TOUT,Target>& img_out);
 
 template<typename T>

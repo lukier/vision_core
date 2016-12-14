@@ -39,7 +39,7 @@
 
 __device__ __constant__ float3 CurrentColorMap[256];
 
-template<typename T, typename TOUT, typename Target>
+template<typename T, typename TOUT, template<typename> class Target>
 __global__ void Kernel_createColorMap1D(std::size_t cms, const core::Buffer1DView<T,Target> img_in, const T vmin, const T vmax, core::Buffer1DView<TOUT,Target> img_out)
 {
     // current point
@@ -55,7 +55,7 @@ __global__ void Kernel_createColorMap1D(std::size_t cms, const core::Buffer1DVie
     }
 }
 
-template<typename T, typename TOUT, typename Target>
+template<typename T, typename TOUT, template<typename> class Target>
 void core::image::createColorMap(ColorMap cm, const core::Buffer1DView<T,Target>& img_in, const T& vmin, const T& vmax, core::Buffer1DView<TOUT,Target>& img_out)
 {
     const std::size_t cms = getColorMapSizeForwarder(cm);
@@ -79,7 +79,7 @@ void core::image::createColorMap(ColorMap cm, const core::Buffer1DView<T,Target>
     if(err != cudaSuccess) { throw core::CUDAException(err, "Error launching the kernel"); }
 }
 
-template<typename T, typename TOUT, typename Target>
+template<typename T, typename TOUT, template<typename> class Target>
 __global__ void Kernel_createColorMap2D(std::size_t cms, const core::Buffer2DView<T,Target> img_in, const T vmin, const T vmax, core::Buffer2DView<TOUT,Target> img_out)
 {
     // current point
@@ -96,7 +96,7 @@ __global__ void Kernel_createColorMap2D(std::size_t cms, const core::Buffer2DVie
     }
 }
 
-template<typename T, typename TOUT, typename Target>
+template<typename T, typename TOUT, template<typename> class Target>
 void core::image::createColorMap(ColorMap cm, const core::Buffer2DView<T,Target>& img_in, const T& vmin, const T& vmax, core::Buffer2DView<TOUT,Target>& img_out)
 {
     const std::size_t cms = getColorMapSizeForwarder(cm);

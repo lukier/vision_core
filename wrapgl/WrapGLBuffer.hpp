@@ -288,11 +288,11 @@ private:
 
 namespace core
 {
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target = TargetHost>
 class Buffer1DFromOpenGL;
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target = TargetHost>
 class Buffer2DFromOpenGL;
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target = TargetHost>
 class Buffer3DFromOpenGL;
 }
 

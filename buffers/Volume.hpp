@@ -48,7 +48,7 @@
 namespace core
 {
 
-template<typename T, typename Target = TargetHost>
+template<typename T, template<typename = T> class Target = TargetHost>
 class VolumeView : public Buffer3DView<T,Target>
 {
 public:
@@ -92,17 +92,17 @@ public:
         return *this;
     }
     
-    EIGEN_DEVICE_FUNC inline VolumeView(typename BaseType::TargetType::template PointerType<T> optr, size_t w, size_t h, size_t d) : BaseType(optr, w, h ,d)
+    EIGEN_DEVICE_FUNC inline VolumeView(typename Target<T>::PointerType optr, size_t w, size_t h, size_t d) : BaseType(optr, w, h ,d)
     {
         
     }
     
-    EIGEN_DEVICE_FUNC inline VolumeView(typename BaseType::TargetType::template PointerType<T> optr, size_t w, size_t h, size_t d, size_t opitch) : BaseType(optr, w, h, d, opitch)
+    EIGEN_DEVICE_FUNC inline VolumeView(typename Target<T>::PointerType optr, size_t w, size_t h, size_t d, size_t opitch) : BaseType(optr, w, h, d, opitch)
     {
         
     }
     
-    EIGEN_DEVICE_FUNC inline VolumeView(typename BaseType::TargetType::template PointerType<T> optr, size_t w, size_t h, size_t d, size_t opitch, size_t oimg_pitch) : BaseType(optr, w, h, d, opitch, oimg_pitch)
+    EIGEN_DEVICE_FUNC inline VolumeView(typename Target<T>::PointerType optr, size_t w, size_t h, size_t d, size_t opitch, size_t oimg_pitch) : BaseType(optr, w, h, d, opitch, oimg_pitch)
     {
         
     }
@@ -285,7 +285,7 @@ public:
     }
 };
 
-template<typename T, typename Target = TargetHost>
+template<typename T, template<typename = T> class Target = TargetHost>
 class VolumeManaged : public VolumeView<T,Target>
 {
 public:
@@ -301,9 +301,9 @@ public:
         
         std::size_t line_pitch = 0;
         std::size_t plane_pitch = 0;
-        typename Target::template PointerType<T> ptr = 0;
+        typename Target<T>::PointerType ptr = 0;
         
-        Target::template AllocatePitchedMem<T>(&ptr, &line_pitch, &plane_pitch, ViewT::xsize, ViewT::ysize, ViewT::zsize);
+        Target<T>::AllocatePitchedMem(&ptr, &line_pitch, &plane_pitch, ViewT::xsize, ViewT::ysize, ViewT::zsize);
         
         ViewT::memptr = ptr;
         ViewT::line_pitch = line_pitch;
@@ -312,7 +312,7 @@ public:
     
     inline ~VolumeManaged()
     {
-        Target::template DeallocatePitchedMem<T>(ViewT::memptr);
+        Target<T>::DeallocatePitchedMem(ViewT::memptr);
     }
     
     VolumeManaged(const VolumeManaged<T,Target>& img) = delete;

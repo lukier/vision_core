@@ -49,10 +49,10 @@ namespace core
 namespace internal
 {
 
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target>
 struct TextureFetchHelper
 {
-    EIGEN_DEVICE_FUNC static inline T get(typename Target::template TextureHandleType<T> tex, float x, float y)
+    EIGEN_DEVICE_FUNC static inline T get(typename Target<T>::TextureHandleType tex, float x, float y)
     {
         return core::zero<T>();
     }
@@ -87,7 +87,7 @@ namespace internal
 template<typename T>
 struct TextureFetchHelper<T,TargetDeviceCUDA>
 {
-    EIGEN_DEVICE_FUNC static inline T get(typename TargetDeviceCUDA::template TextureHandleType<T> tex, float x, float y)
+    EIGEN_DEVICE_FUNC static inline T get(typename TargetDeviceCUDA<T>::TextureHandleType tex, float x, float y)
     {
 #ifdef CORE_CUDA_KERNEL_SPACE    
         return ::tex2D<T>(tex,x,y);
@@ -99,7 +99,7 @@ struct TextureFetchHelper<T,TargetDeviceCUDA>
 
 template<> struct TextureFetchHelper<Eigen::Vector2f,TargetDeviceCUDA>
 {
-    EIGEN_DEVICE_FUNC static inline Eigen::Vector2f get(typename TargetDeviceCUDA::template TextureHandleType<Eigen::Vector2f> tex, float x, float y)
+    EIGEN_DEVICE_FUNC static inline Eigen::Vector2f get(typename TargetDeviceCUDA<Eigen::Vector2f>::TextureHandleType tex, float x, float y)
     {
         float4 tmp;
         // TODO FIXME __tex_2d_v4f32_f32(tex, x, y, &tmp.x, &tmp.y, &tmp.z, &tmp.w);
@@ -109,7 +109,7 @@ template<> struct TextureFetchHelper<Eigen::Vector2f,TargetDeviceCUDA>
 
 template<> struct TextureFetchHelper<Eigen::Vector4f,TargetDeviceCUDA>
 {
-    EIGEN_DEVICE_FUNC static inline Eigen::Vector4f get(typename TargetDeviceCUDA::template TextureHandleType<Eigen::Vector4f> tex, float x, float y)
+    EIGEN_DEVICE_FUNC static inline Eigen::Vector4f get(typename TargetDeviceCUDA<Eigen::Vector4f>::TextureHandleType tex, float x, float y)
     {
         float4 tmp;
         // TODO FIXME __tex_2d_v4f32_f32(tex, x, y, &tmp.x, &tmp.y, &tmp.z, &tmp.w);
@@ -128,13 +128,12 @@ template<> struct TextureFetchHelper<Eigen::Vector4f,TargetDeviceCUDA>
 namespace core
 {
 
-template<typename T, typename Target = TargetHost>
+template<typename T, template<typename = T> class Target = TargetHost>
 class GPUTexture2DView 
 {
 public:
     typedef typename core::type_traits<T>::ChannelType ValueType;
     static const int Channels = core::type_traits<T>::ChannelCount;
-    typedef Target TargetType;
     
     EIGEN_DEVICE_FUNC inline GPUTexture2DView() : tex(0) { }
     
@@ -176,16 +175,16 @@ public:
         return internal::TextureFetchHelper<T,Target>::get(tex,x,y);
     }
     
-    EIGEN_DEVICE_FUNC inline typename Target::template TextureHandleType<T>& handle() { return tex; }
-    EIGEN_DEVICE_FUNC inline const typename Target::template TextureHandleType<T>& handle() const { return tex; }
+    EIGEN_DEVICE_FUNC inline typename Target<T>::TextureHandleType& handle() { return tex; }
+    EIGEN_DEVICE_FUNC inline const typename Target<T>::TextureHandleType& handle() const { return tex; }
     
 protected:
-    typename Target::template TextureHandleType<T> tex;
+    typename Target<T>::TextureHandleType tex;
 };
 
 #ifdef CORE_HAVE_CUDA
 
-template<typename T, typename Target = TargetHost>
+template<typename T, template<typename = T> class Target = TargetDeviceCUDA>
 class GPUTexture2DFromBuffer2D : public GPUTexture2DView<T,Target>
 {
 public:

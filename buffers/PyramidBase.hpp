@@ -41,14 +41,13 @@ namespace core
 {
 
 // Power of two pyramid.
-template<template<class, class> class ViewT, typename T, std::size_t Levels, typename Target>
+template<template<class, template<typename> class> class ViewT, typename T, std::size_t Levels, template<typename = T> class Target>
 class PyramidViewBase
 {
 public:    
     typedef ViewT<T,Target> ViewType;
     static const std::size_t LevelCount = Levels;
     typedef T ValueType;
-    typedef Target TargetType;
     
     EIGEN_DEVICE_FUNC inline PyramidViewBase() { }
     

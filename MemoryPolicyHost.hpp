@@ -42,13 +42,14 @@
 
 namespace core
 {
+
+template<typename T>
 struct TargetHost
 {
-    template<typename T> using PointerType = void*;
-    template<typename T> using TextureHandleType = int;
+    typedef void* PointerType;
+    typedef int TextureHandleType;
     
-    template<typename T>
-    inline static void AllocateMem(PointerType<T>* devPtr, size_t s)
+    inline static void AllocateMem(PointerType* devPtr, size_t s)
     {
         /// @todo is there much difference?
 #ifdef CORE_HAVE_CUDA
@@ -60,8 +61,7 @@ struct TargetHost
 #endif // CORE_HAVE_CUDA
     }
     
-    template<typename T> 
-    inline static void AllocatePitchedMem(PointerType<T>* hostPtr, size_t *pitch, size_t w, size_t h)
+    inline static void AllocatePitchedMem(PointerType* hostPtr, size_t *pitch, size_t w, size_t h)
     {
         *pitch = w * sizeof(T);
         
@@ -74,8 +74,7 @@ struct TargetHost
 #endif // CORE_HAVE_CUDA
     }
 
-    template<typename T> 
-    inline static void AllocatePitchedMem(PointerType<T>* hostPtr, size_t *pitch, size_t *img_pitch, size_t w, size_t h, size_t d)
+    inline static void AllocatePitchedMem(PointerType* hostPtr, size_t *pitch, size_t *img_pitch, size_t w, size_t h, size_t d)
     {
 
         *pitch = w * sizeof(T);
@@ -92,8 +91,7 @@ struct TargetHost
         *img_pitch = *pitch * h;
     }
 
-    template<typename T> 
-    inline static void DeallocatePitchedMem(PointerType<T> hostPtr) throw()
+    inline static void DeallocatePitchedMem(PointerType hostPtr) throw()
     {
 #ifdef CORE_HAVE_CUDA
         cudaFreeHost(hostPtr);
@@ -102,32 +100,29 @@ struct TargetHost
 #endif // CORE_HAVE_CUDA
     }
     
-    template<typename T> 
-    inline static void memset(PointerType<T> ptr, int value, std::size_t count) 
+    inline static void memset(PointerType ptr, int value, std::size_t count) 
     {
         std::memset(ptr, value, count);
     }
     
-    template<typename T>
-    inline static void memset2D(PointerType<T> ptr, std::size_t pitch, int value, std::size_t width, std::size_t height)
+    inline static void memset2D(PointerType ptr, std::size_t pitch, int value, std::size_t width, std::size_t height)
     {
         std::memset(ptr, value, std::max(width,pitch) * height);
     }
     
-    template<typename T>
-    inline static void memset3D(PointerType<T> ptr, std::size_t pitch, int value, std::size_t width, std::size_t height, std::size_t depth)
+    inline static void memset3D(PointerType ptr, std::size_t pitch, int value, std::size_t width, std::size_t height, std::size_t depth)
     {
         std::memset(ptr, value, std::max(width,pitch) * height * depth);
     }
 };
 
-template<> struct TargetTransfer<TargetHost,TargetHost>
+template<typename T1, typename T2>
+struct TargetTransfer<TargetHost<T1>,TargetHost<T2>>
 {
-    typedef TargetHost TargetFrom;
-    typedef TargetHost TargetTo;
+    typedef TargetHost<T1> TargetFrom;
+    typedef TargetHost<T2> TargetTo;
     
-    template<typename T>
-    inline static void memcpy(typename TargetTo::template PointerType<T> dst, const typename TargetFrom::template PointerType<T> src, std::size_t count)
+    inline static void memcpy(typename TargetTo::PointerType dst, const typename TargetFrom::PointerType src, std::size_t count)
     {
 #ifdef CORE_HAVE_CUDA
         static constexpr cudaMemcpyKind CopyKind = cudaMemcpyHostToHost;
@@ -138,8 +133,7 @@ template<> struct TargetTransfer<TargetHost,TargetHost>
 #endif // CORE_HAVE_CUDA
     }
     
-    template<typename T>
-    inline static void memcpy2D(typename TargetTo::template PointerType<T> dst, std::size_t  dpitch, const typename TargetFrom::template PointerType<T> src, std::size_t  spitch, std::size_t  width, std::size_t  height)
+    inline static void memcpy2D(typename TargetTo::PointerType dst, std::size_t  dpitch, const typename TargetFrom::PointerType src, std::size_t  spitch, std::size_t  width, std::size_t  height)
     {
 #ifdef CORE_HAVE_CUDA
         static constexpr cudaMemcpyKind CopyKind = cudaMemcpyHostToHost;

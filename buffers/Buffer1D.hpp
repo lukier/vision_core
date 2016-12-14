@@ -46,12 +46,11 @@ namespace core
 /**
  * View on a 1D Buffer - Base.
  */    
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target>
 class Buffer1DViewBase
 {
 public:
     typedef T ValueType;
-    typedef Target TargetType;
     
 #ifndef CORE_CUDA_KERNEL_SPACE
     EIGEN_DEVICE_FUNC inline Buffer1DViewBase() : memptr(0) { }
@@ -64,23 +63,23 @@ public:
         
     }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DViewBase( const Buffer1DViewBase<T,TargetType>& img ) : memptr(img.memptr), xsize(img.xsize)
+    EIGEN_DEVICE_FUNC inline Buffer1DViewBase( const Buffer1DViewBase<T,Target>& img ) : memptr(img.memptr), xsize(img.xsize)
     {
         
     }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DViewBase( Buffer1DViewBase<T,TargetType>&& img ) : memptr(img.memptr), xsize(img.xsize)
+    EIGEN_DEVICE_FUNC inline Buffer1DViewBase( Buffer1DViewBase<T,Target>&& img ) : memptr(img.memptr), xsize(img.xsize)
     {
         // This object will take over managing data (if Management = Manage)
         img.memptr = 0;
     }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DViewBase(typename TargetType::template PointerType<T> optr, std::size_t s) : memptr(optr), xsize(s)
+    EIGEN_DEVICE_FUNC inline Buffer1DViewBase(typename Target<T>::PointerType optr, std::size_t s) : memptr(optr), xsize(s)
     {  
         
     }
         
-    EIGEN_DEVICE_FUNC inline Buffer1DViewBase<T,TargetType>& operator=(const Buffer1DViewBase<T,TargetType>& other)
+    EIGEN_DEVICE_FUNC inline Buffer1DViewBase<T,Target>& operator=(const Buffer1DViewBase<T,Target>& other)
     {
         memptr = (void*)other.rawPtr();
         xsize = other.size();
@@ -88,7 +87,7 @@ public:
         return *this;
     }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DViewBase<T,TargetType>& operator=(Buffer1DViewBase<T,TargetType>&& img)
+    EIGEN_DEVICE_FUNC inline Buffer1DViewBase<T,Target>& operator=(Buffer1DViewBase<T,Target>&& img)
     {
         memptr = img.memptr;
         xsize = img.xsize;
@@ -100,7 +99,7 @@ public:
     EIGEN_DEVICE_FUNC inline std::size_t size() const { return xsize; }
     EIGEN_DEVICE_FUNC inline std::size_t bytes() const { return xsize * sizeof(T); }
     
-    inline void swap(Buffer1DViewBase<T,TargetType>& img)
+    inline void swap(Buffer1DViewBase<T,Target>& img)
     {
         std::swap(img.memptr, memptr);
         std::swap(img.xsize, xsize);
@@ -108,8 +107,8 @@ public:
     
     EIGEN_DEVICE_FUNC inline bool isValid() const { return rawPtr() != nullptr; }
     
-    EIGEN_DEVICE_FUNC inline const typename TargetType::template PointerType<T> rawPtr() const { return memptr; }
-    EIGEN_DEVICE_FUNC inline typename TargetType::template PointerType<T> rawPtr() { return memptr; }
+    EIGEN_DEVICE_FUNC inline const typename Target<T>::PointerType rawPtr() const { return memptr; }
+    EIGEN_DEVICE_FUNC inline typename Target<T>::PointerType rawPtr() { return memptr; }
     
     EIGEN_DEVICE_FUNC inline bool inBounds(std::size_t x) const
     {
@@ -125,38 +124,36 @@ public:
     EIGEN_DEVICE_FUNC inline std::size_t indexCircular(int x) const { if(x < 0) { return x + xsize; } else if(x >= xsize) { return x - xsize; } else { return x; } }
     EIGEN_DEVICE_FUNC inline std::size_t indexReflected(int x) const { if(x < 0) { return -x-1; } else if(x >= xsize) { return 2 * xsize - x - 1; } else { return x; } }
 protected:
-    typename TargetType::template PointerType<T> memptr;
-    std::size_t                                  xsize;
+    typename Target<T>::PointerType memptr;
+    std::size_t                     xsize;
 };
 
 /**
  * Buffer 1D View - Add contents access methods.
  */
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target>
 class Buffer1DViewAccessible : public Buffer1DViewBase<T,Target>
 {
 public:
     typedef Buffer1DViewBase<T,Target> BaseT;
-    typedef typename BaseT::ValueType ValueType;
-    typedef typename BaseT::TargetType TargetType;
     
     EIGEN_DEVICE_FUNC inline Buffer1DViewAccessible() : BaseT() { }
     
     EIGEN_DEVICE_FUNC inline ~Buffer1DViewAccessible() { }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DViewAccessible(const Buffer1DViewAccessible<T,TargetType>& img) : BaseT(img) { }
+    EIGEN_DEVICE_FUNC inline Buffer1DViewAccessible(const Buffer1DViewAccessible<T,Target>& img) : BaseT(img) { }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DViewAccessible(Buffer1DViewAccessible<T,TargetType>&& img) : BaseT(std::move(img)) { }
+    EIGEN_DEVICE_FUNC inline Buffer1DViewAccessible(Buffer1DViewAccessible<T,Target>&& img) : BaseT(std::move(img)) { }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DViewAccessible(typename TargetType::template PointerType<T> optr, std::size_t s) : BaseT(optr, s) { }
+    EIGEN_DEVICE_FUNC inline Buffer1DViewAccessible(typename Target<T>::PointerType optr, std::size_t s) : BaseT(optr, s) { }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DViewAccessible<T,TargetType>& operator=(const Buffer1DViewAccessible<T,TargetType>& img)
+    EIGEN_DEVICE_FUNC inline Buffer1DViewAccessible<T,Target>& operator=(const Buffer1DViewAccessible<T,Target>& img)
     {
         BaseT::operator=(img);
         return *this;
     }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DViewAccessible<T,TargetType>& operator=(Buffer1DViewAccessible<T,TargetType>&& img)
+    EIGEN_DEVICE_FUNC inline Buffer1DViewAccessible<T,Target>& operator=(Buffer1DViewAccessible<T,Target>&& img)
     {
         BaseT::operator=(std::move(img));
         return *this;
@@ -194,13 +191,11 @@ public:
     
     EIGEN_DEVICE_FUNC inline T& operator[](std::size_t ix)
     {
-        //return static_cast<T*>(BaseT::rawPtr())[ix];
         return operator()(ix);
     }
     
     EIGEN_DEVICE_FUNC inline const T& operator[](std::size_t ix) const
     {
-        //return static_cast<T*>(BaseT::rawPtr())[ix];
         return operator()(ix);
     }
     
@@ -228,7 +223,7 @@ public:
 /**
  * View on a 1D Buffer.
  */    
-template<typename T, typename Target = TargetHost>
+template<typename T, template<typename = T> class Target = TargetHost>
 class Buffer1DView
 {
     
@@ -242,29 +237,27 @@ class Buffer1DView<T,TargetHost> : public Buffer1DViewAccessible<T,TargetHost>
 {
 public:
     typedef Buffer1DViewAccessible<T,TargetHost> BaseT;
-    typedef typename BaseT::ValueType ValueType;
-    typedef typename BaseT::TargetType TargetType;
     
     inline Buffer1DView() : BaseT() { }
     
     inline ~Buffer1DView() { }
     
-    inline Buffer1DView(const Buffer1DView<T,TargetType>& img) : BaseT(img) { }
+    inline Buffer1DView(const Buffer1DView<T,TargetHost>& img) : BaseT(img) { }
     
-    inline Buffer1DView(Buffer1DView<T,TargetType>&& img) : BaseT(std::move(img)) { }
+    inline Buffer1DView(Buffer1DView<T,TargetHost>&& img) : BaseT(std::move(img)) { }
     
-    inline Buffer1DView(typename TargetType::template PointerType<T> optr, std::size_t s) : BaseT(optr, s) { }
+    inline Buffer1DView(typename TargetHost<T>::PointerType optr, std::size_t s) : BaseT(optr, s) { }
     
     template<typename AllocT>
     inline Buffer1DView(std::vector<T,AllocT>& vec) : BaseT(vec.data(), vec.size()) { }
     
-    inline Buffer1DView<T,TargetType>& operator=(const Buffer1DView<T,TargetType>& img)
+    inline Buffer1DView<T,TargetHost>& operator=(const Buffer1DView<T,TargetHost>& img)
     {
         BaseT::operator=(img);
         return *this;
     }
     
-    inline Buffer1DView<T,TargetType>& operator=(Buffer1DView<T,TargetType>&& img)
+    inline Buffer1DView<T,TargetHost>& operator=(Buffer1DView<T,TargetHost>&& img)
     {
         BaseT::operator=(std::move(img));
         return *this;
@@ -272,15 +265,15 @@ public:
 
     inline void copyFrom(const Buffer1DView<T,TargetHost>& img)
     {
-        typedef TargetHost TargetFrom;
-        core::TargetTransfer<TargetFrom,TargetType>::template memcpy<T>(BaseT::rawPtr(), (typename TargetFrom::template PointerType<T>)img.ptr(), std::min(img.size(),BaseT::size())*sizeof(T));
+        typedef TargetHost<T> TargetFrom;
+        core::TargetTransfer<TargetFrom,TargetHost<T>>::memcpy(BaseT::rawPtr(), (typename TargetFrom::PointerType)img.ptr(), std::min(img.size(),BaseT::size())*sizeof(T));
     }
     
 #ifdef CORE_HAVE_CUDA
     inline void copyFrom(const Buffer1DView<T,TargetDeviceCUDA>& img)
     {
-        typedef TargetDeviceCUDA TargetFrom;
-        core::TargetTransfer<TargetFrom,TargetType>::template memcpy<T>(BaseT::rawPtr(), (typename TargetFrom::template PointerType<T>)img.ptr(), std::min(img.size(),BaseT::size())*sizeof(T));
+        typedef TargetDeviceCUDA<T> TargetFrom;
+        core::TargetTransfer<TargetFrom,TargetHost<T>>::memcpy(BaseT::rawPtr(), (typename TargetFrom::PointerType)img.ptr(), std::min(img.size(),BaseT::size())*sizeof(T));
     }
 #endif // CORE_HAVE_CUDA
     
@@ -293,7 +286,7 @@ public:
     
     inline void memset(unsigned char v = 0)
     {
-        TargetType::template memset<T>(BaseT::rawPtr(), v, BaseT::size() * sizeof(T));
+        TargetHost<T>::memset(BaseT::rawPtr(), v, BaseT::size() * sizeof(T));
     }
     
     inline T* begin() { return BaseT::ptr(); }
@@ -312,62 +305,58 @@ class Buffer1DView<T,TargetDeviceCUDA> : public Buffer1DViewAccessible<T,TargetD
 {
 public:
     typedef Buffer1DViewAccessible<T,TargetDeviceCUDA> BaseT;
-    typedef typename BaseT::ValueType ValueType;
-    typedef typename BaseT::TargetType TargetType;
     
     EIGEN_DEVICE_FUNC inline Buffer1DView() : BaseT() { }
     
     EIGEN_DEVICE_FUNC inline ~Buffer1DView() { }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DView(const Buffer1DView<T,TargetType>& img) : BaseT(img) { }
+    EIGEN_DEVICE_FUNC inline Buffer1DView(const Buffer1DView<T,TargetDeviceCUDA>& img) : BaseT(img) { }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DView(Buffer1DView<T,TargetType>&& img) : BaseT(std::move(img)) { }
+    EIGEN_DEVICE_FUNC inline Buffer1DView(Buffer1DView<T,TargetDeviceCUDA>&& img) : BaseT(std::move(img)) { }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DView(typename TargetType::template PointerType<T> optr, std::size_t s) : BaseT(optr, s) { }
+    EIGEN_DEVICE_FUNC inline Buffer1DView(typename TargetDeviceCUDA<T>::PointerType optr, std::size_t s) : BaseT(optr, s) { }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DView<T,TargetType>& operator=(const Buffer1DView<T,TargetType>& img)
+    EIGEN_DEVICE_FUNC inline Buffer1DView<T,TargetDeviceCUDA>& operator=(const Buffer1DView<T,TargetDeviceCUDA>& img)
     {
         BaseT::operator=(img);
         return *this;
     }
     
-    EIGEN_DEVICE_FUNC inline Buffer1DView<T,TargetType>& operator=(Buffer1DView<T,TargetType>&& img)
+    EIGEN_DEVICE_FUNC inline Buffer1DView<T,TargetDeviceCUDA>& operator=(Buffer1DView<T,TargetDeviceCUDA>&& img)
     {
         BaseT::operator=(std::move(img));
         return *this;
     }
     
-    template<typename TargetFrom>
+    template<template<typename = T> class TargetFrom>
     inline void copyFrom(const Buffer1DView<T,TargetFrom>& img)
     {
-        static_assert(std::is_same<TargetFrom,TargetDeviceOpenCL>::value != true, "Not possible to do OpenCL-CUDA copy");
-        
-        core::TargetTransfer<TargetFrom,TargetType>::template memcpy<T>(BaseT::rawPtr(), (typename TargetFrom::template PointerType<T>)img.ptr(), std::min(img.size(),BaseT::size())*sizeof(T));
+        core::TargetTransfer<TargetFrom<T>,TargetDeviceCUDA<T>>::memcpy(BaseT::rawPtr(), (typename TargetFrom<T>::PointerType)img.ptr(), std::min(img.size(),BaseT::size())*sizeof(T));
     }
     
     inline void memset(unsigned char v = 0)
     {
-        TargetType::template memset<T>(BaseT::rawPtr(), v, BaseT::size() * sizeof(T));
+        TargetDeviceCUDA<T>::memset(BaseT::rawPtr(), v, BaseT::size() * sizeof(T));
     }
 
-    EIGEN_DEVICE_FUNC inline typename core::internal::ThrustType<T,TargetType>::Ptr begin() 
+    EIGEN_DEVICE_FUNC inline typename core::internal::ThrustType<T,TargetDeviceCUDA<T>>::Ptr begin() 
     {
-        return (typename core::internal::ThrustType<T,TargetType>::Ptr)(BaseT::ptr());
+        return (typename core::internal::ThrustType<T,TargetDeviceCUDA<T>>::Ptr)(BaseT::ptr());
     }
     
-    EIGEN_DEVICE_FUNC inline typename core::internal::ThrustType<T,TargetType>::Ptr begin() const
+    EIGEN_DEVICE_FUNC inline typename core::internal::ThrustType<T,TargetDeviceCUDA<T>>::Ptr begin() const
     {
-        return (typename core::internal::ThrustType<T,TargetType>::Ptr)(const_cast<T*>(BaseT::ptr()));
+        return (typename core::internal::ThrustType<T,TargetDeviceCUDA<T>>::Ptr)(const_cast<T*>(BaseT::ptr()));
     }
 
-    EIGEN_DEVICE_FUNC inline typename core::internal::ThrustType<T,TargetType>::Ptr end() 
+    EIGEN_DEVICE_FUNC inline typename core::internal::ThrustType<T,TargetDeviceCUDA<T>>::Ptr end() 
     {
-        return (typename core::internal::ThrustType<T,TargetType>::Ptr)( BaseT::ptr() + BaseT::size() );
+        return (typename core::internal::ThrustType<T,TargetDeviceCUDA<T>>::Ptr)( BaseT::ptr() + BaseT::size() );
     }
     
-    EIGEN_DEVICE_FUNC inline typename core::internal::ThrustType<T,TargetType>::Ptr end() const
+    EIGEN_DEVICE_FUNC inline typename core::internal::ThrustType<T,TargetDeviceCUDA<T>>::Ptr end() const
     {
-        return (typename core::internal::ThrustType<T,TargetType>::Ptr)( const_cast<T*>(BaseT::ptr() + BaseT::size()) );
+        return (typename core::internal::ThrustType<T,TargetDeviceCUDA<T>>::Ptr)( const_cast<T*>(BaseT::ptr() + BaseT::size()) );
     }
 
     inline void fill(T val) 
@@ -388,26 +377,24 @@ class Buffer1DView<T,TargetDeviceOpenCL> : public Buffer1DViewBase<T,TargetDevic
 {
 public:
     typedef Buffer1DViewBase<T,TargetDeviceOpenCL> BaseT;
-    typedef typename BaseT::ValueType ValueType;
-    typedef typename BaseT::TargetType TargetType;
     
     inline Buffer1DView() : BaseT() { }
     
     inline ~Buffer1DView() { }
     
-    inline Buffer1DView(const Buffer1DView<T,TargetType>& img) : BaseT(img) { }
+    inline Buffer1DView(const Buffer1DView<T,TargetDeviceOpenCL>& img) : BaseT(img) { }
     
-    inline Buffer1DView(Buffer1DView<T,TargetType>&& img) : BaseT(std::move(img)) { }
+    inline Buffer1DView(Buffer1DView<T,TargetDeviceOpenCL>&& img) : BaseT(std::move(img)) { }
     
-    inline Buffer1DView(typename TargetType::template PointerType<T> optr, std::size_t s) : BaseT(optr, s) { }
+    inline Buffer1DView(typename TargetDeviceOpenCL<T>::PointerType optr, std::size_t s) : BaseT(optr, s) { }
     
-    inline Buffer1DView<T,TargetType>& operator=(const Buffer1DView<T,TargetType>& img)
+    inline Buffer1DView<T,TargetDeviceOpenCL>& operator=(const Buffer1DView<T,TargetDeviceOpenCL>& img)
     {
         BaseT::operator=(img);
         return *this;
     }
     
-    inline Buffer1DView<T,TargetType>& operator=(Buffer1DView<T,TargetType>&& img)
+    inline Buffer1DView<T,TargetDeviceOpenCL>& operator=(Buffer1DView<T,TargetDeviceOpenCL>&& img)
     {
         BaseT::operator=(std::move(img));
         return *this;
@@ -440,7 +427,7 @@ struct Buffer1DMapper
     template<typename T>
     static inline Buffer1DView<T,TargetHost> map(const cl::CommandQueue& queue, cl_map_flags flags, const Buffer1DView<T,TargetDeviceOpenCL>& buf, const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
     {
-        typename TargetHost::template PointerType<T> ptr = queue.enqueueMapBuffer(buf.clType(), true, flags, 0, buf.bytes(), events, event);
+        typename TargetHost<T>::PointerType ptr = queue.enqueueMapBuffer(buf.clType(), true, flags, 0, buf.bytes(), events, event);
         return Buffer1DView<T,TargetHost>(ptr, buf.size());
     }
     
@@ -458,7 +445,7 @@ struct Buffer1DMapper
 /**
  * Buffer 1D Creation.
  */
-template<typename T, typename Target = TargetHost>
+template<typename T, template<typename = T> class Target = TargetHost>
 class Buffer1DManaged { };
 
 /**
@@ -468,8 +455,7 @@ template<typename T>
 class Buffer1DManaged<T,TargetHost> : public Buffer1DView<T,TargetHost>
 {
 public:
-    typedef TargetHost Target;
-    typedef Buffer1DView<T,Target> ViewT;
+    typedef Buffer1DView<T,TargetHost> ViewT;
     
     Buffer1DManaged() = delete;
     
@@ -477,8 +463,8 @@ public:
     {
         ViewT::memptr = 0;
         ViewT::xsize = s;
-        typename Target::template PointerType<T> ptr = 0;
-        Target::template AllocateMem<T>(&ptr, ViewT::xsize);
+        typename TargetHost<T>::PointerType ptr = 0;
+        TargetHost<T>::AllocateMem(&ptr, ViewT::xsize);
         ViewT::memptr = ptr;
     }
     
@@ -486,20 +472,20 @@ public:
     {
         if(ViewT::memptr != 0)
         {
-            Target::template DeallocatePitchedMem<T>(ViewT::memptr);
+            TargetHost<T>::DeallocatePitchedMem(ViewT::memptr);
         }
     }
     
-    Buffer1DManaged(const Buffer1DManaged<T,Target>& img) = delete;
+    Buffer1DManaged(const Buffer1DManaged<T,TargetHost>& img) = delete;
     
-    inline Buffer1DManaged(Buffer1DManaged<T,Target>&& img) : ViewT(std::move(img))
+    inline Buffer1DManaged(Buffer1DManaged<T,TargetHost>&& img) : ViewT(std::move(img))
     {
         
     }
     
-    Buffer1DManaged<T,Target>& operator=(const Buffer1DManaged<T,Target>& img) = delete;
+    Buffer1DManaged<T,TargetHost>& operator=(const Buffer1DManaged<T,TargetHost>& img) = delete;
     
-    inline Buffer1DManaged<T,Target>& operator=(Buffer1DManaged<T,Target>&& img)
+    inline Buffer1DManaged<T,TargetHost>& operator=(Buffer1DManaged<T,TargetHost>&& img)
     {
         ViewT::operator=(std::move(img));
         return *this;
@@ -509,15 +495,15 @@ public:
     {
         if(ViewT::memptr != 0)
         {
-            Target::template DeallocatePitchedMem<T>(ViewT::memptr);
+            TargetHost<T>::DeallocatePitchedMem(ViewT::memptr);
             ViewT::xsize = 0;
             ViewT::memptr = 0;
         }
         
         ViewT::memptr = 0;
         ViewT::xsize = new_s;
-        typename Target::template PointerType<T> ptr = 0;
-        Target::template AllocateMem<T>(&ptr, ViewT::xsize);
+        typename TargetHost<T>::PointerType ptr = 0;
+        TargetHost<T>::AllocateMem(&ptr, ViewT::xsize);
         ViewT::memptr = ptr;
     }
     
@@ -534,8 +520,7 @@ template<typename T>
 class Buffer1DManaged<T,TargetDeviceCUDA> : public Buffer1DView<T,TargetDeviceCUDA>
 {
 public:
-    typedef TargetDeviceCUDA Target;
-    typedef Buffer1DView<T,Target> ViewT;
+    typedef Buffer1DView<T,TargetDeviceCUDA> ViewT;
     
     Buffer1DManaged() = delete;
     
@@ -543,8 +528,8 @@ public:
     {
         ViewT::memptr = 0;
         ViewT::xsize = s;
-        typename Target::template PointerType<T> ptr = 0;
-        Target::template AllocateMem<T>(&ptr, ViewT::xsize);
+        typename TargetDeviceCUDA<T>::PointerType ptr = 0;
+        TargetDeviceCUDA<T>::AllocateMem(&ptr, ViewT::xsize);
         ViewT::memptr = ptr;
     }
     
@@ -552,20 +537,20 @@ public:
     {
         if(ViewT::memptr != 0)
         {
-            Target::template DeallocatePitchedMem<T>(ViewT::memptr);
+            TargetDeviceCUDA<T>::DeallocatePitchedMem(ViewT::memptr);
         }
     }
     
-    Buffer1DManaged(const Buffer1DManaged<T,Target>& img) = delete;
+    Buffer1DManaged(const Buffer1DManaged<T,TargetDeviceCUDA>& img) = delete;
     
-    inline Buffer1DManaged(Buffer1DManaged<T,Target>&& img) : ViewT(std::move(img))
+    inline Buffer1DManaged(Buffer1DManaged<T,TargetDeviceCUDA>&& img) : ViewT(std::move(img))
     {
         
     }
     
-    Buffer1DManaged<T,Target>& operator=(const Buffer1DManaged<T,Target>& img) = delete;
+    Buffer1DManaged<T,TargetDeviceCUDA>& operator=(const Buffer1DManaged<T,TargetDeviceCUDA>& img) = delete;
     
-    inline Buffer1DManaged<T,Target>& operator=(Buffer1DManaged<T,Target>&& img)
+    inline Buffer1DManaged<T,TargetDeviceCUDA>& operator=(Buffer1DManaged<T,TargetDeviceCUDA>&& img)
     {
         ViewT::operator=(std::move(img));
         return *this;
@@ -575,15 +560,15 @@ public:
     {
         if(ViewT::memptr != 0)
         {
-            Target::template DeallocatePitchedMem<T>(ViewT::memptr);
+            TargetDeviceCUDA<T>::DeallocatePitchedMem(ViewT::memptr);
             ViewT::xsize = 0;
             ViewT::memptr = 0;
         }
         
         ViewT::memptr = 0;
         ViewT::xsize = new_s;
-        typename Target::template PointerType<T> ptr = 0;
-        Target::template AllocateMem<T>(&ptr, ViewT::xsize);
+        typename TargetDeviceCUDA<T>::PointerType ptr = 0;
+        TargetDeviceCUDA<T>::AllocateMem(&ptr, ViewT::xsize);
         ViewT::memptr = ptr;
     }
     
@@ -602,12 +587,11 @@ template<typename T>
 class Buffer1DManaged<T,TargetDeviceOpenCL> : public Buffer1DView<T,TargetDeviceOpenCL>
 {
 public:
-    typedef TargetDeviceOpenCL Target;
-    typedef Buffer1DView<T,Target> ViewT;
+    typedef Buffer1DView<T,TargetDeviceOpenCL> ViewT;
     
     Buffer1DManaged() = delete;
     
-    Buffer1DManaged(std::size_t s, const cl::Context& context, cl_mem_flags flags, typename TargetHost::template PointerType<T> hostptr = nullptr) : ViewT()
+    Buffer1DManaged(std::size_t s, const cl::Context& context, cl_mem_flags flags, typename TargetHost<T>::PointerType hostptr = nullptr) : ViewT()
     {
         ViewT::memptr = new cl::Buffer(context, flags, s * sizeof(T), hostptr);
         ViewT::xsize = s;
@@ -624,16 +608,16 @@ public:
         }
     }
     
-    Buffer1DManaged(const Buffer1DManaged<T,Target>& img) = delete;
+    Buffer1DManaged(const Buffer1DManaged<T,TargetDeviceOpenCL>& img) = delete;
     
-    inline Buffer1DManaged(Buffer1DManaged<T,Target>&& img) : ViewT(std::move(img))
+    inline Buffer1DManaged(Buffer1DManaged<T,TargetDeviceOpenCL>&& img) : ViewT(std::move(img))
     {
         
     }
     
-    Buffer1DManaged<T,Target>& operator=(const Buffer1DManaged<T,Target>& img) = delete;
+    Buffer1DManaged<T,TargetDeviceOpenCL>& operator=(const Buffer1DManaged<T,TargetDeviceOpenCL>& img) = delete;
     
-    inline Buffer1DManaged<T,Target>& operator=(Buffer1DManaged<T,Target>&& img)
+    inline Buffer1DManaged<T,TargetDeviceOpenCL>& operator=(Buffer1DManaged<T,TargetDeviceOpenCL>&& img)
     {
         ViewT::operator=(std::move(img));
         return *this;

@@ -45,7 +45,7 @@ float3 core::image::getColorMapValue(ColorMap cm, const T& vmin, const T& vmax, 
 
 std::size_t getColorMapSizeForwarder(core::image::ColorMap cm) { return getColorMapSize(cm); }
 
-template<typename T, typename TOUT, typename Target>
+template<typename T, typename TOUT, template<typename> class Target>
 void core::image::createColorMap(ColorMap cm, const core::Buffer1DView<T,Target>& img_in, const T& vmin, const T& vmax, core::Buffer1DView<TOUT,Target>& img_out)
 {
     const std::size_t cms = getColorMapSize(cm);
@@ -64,7 +64,7 @@ void core::image::createColorMap(ColorMap cm, const core::Buffer1DView<T,Target>
     });
 }
 
-template<typename T, typename TOUT, typename Target>
+template<typename T, typename TOUT, template<typename> class Target>
 void core::image::createColorMap(ColorMap cm, const core::Buffer2DView<T,Target>& img_in, const T& vmin, const T& vmax, core::Buffer2DView<TOUT,Target>& img_out)
 {
     const std::size_t cms = getColorMapSize(cm);

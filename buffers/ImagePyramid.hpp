@@ -42,7 +42,7 @@
 namespace core
 {
 
-template<typename T, std::size_t Levels, typename Target = TargetHost>
+template<typename T, std::size_t Levels, template<typename = T> class Target = TargetHost>
 class ImagePyramidView { };
 
 /**
@@ -55,24 +55,22 @@ public:
     typedef PyramidViewBase<Image2DView, T,Levels,TargetHost> BaseT;
     typedef typename BaseT::ViewType LevelT;
     static const std::size_t LevelCount = BaseT::LevelCount;
-    typedef typename BaseT::ValueType ValueType;
-    typedef typename BaseT::TargetType TargetType;
     
     EIGEN_DEVICE_FUNC inline ImagePyramidView() { }
     
     EIGEN_DEVICE_FUNC inline ~ImagePyramidView() { }
     
-    EIGEN_DEVICE_FUNC inline ImagePyramidView(const ImagePyramidView<T,LevelCount,TargetType>& pyramid) : BaseT(pyramid) { }
+    EIGEN_DEVICE_FUNC inline ImagePyramidView(const ImagePyramidView<T,LevelCount,TargetHost>& pyramid) : BaseT(pyramid) { }
     
-    EIGEN_DEVICE_FUNC inline ImagePyramidView(ImagePyramidView<T,LevelCount,TargetType>&& pyramid) : BaseT(std::move(pyramid)) { }
+    EIGEN_DEVICE_FUNC inline ImagePyramidView(ImagePyramidView<T,LevelCount,TargetHost>&& pyramid) : BaseT(std::move(pyramid)) { }
     
-    EIGEN_DEVICE_FUNC inline ImagePyramidView<T,LevelCount,TargetType>& operator=(const ImagePyramidView<T,LevelCount,TargetType>& pyramid)
+    EIGEN_DEVICE_FUNC inline ImagePyramidView<T,LevelCount,TargetHost>& operator=(const ImagePyramidView<T,LevelCount,TargetHost>& pyramid)
     {
         BaseT::operator=(pyramid);
         return *this;
     }
     
-    EIGEN_DEVICE_FUNC inline ImagePyramidView<T,LevelCount,TargetType>& operator=(ImagePyramidView<T,LevelCount,TargetType>&& pyramid)
+    EIGEN_DEVICE_FUNC inline ImagePyramidView<T,LevelCount,TargetHost>& operator=(ImagePyramidView<T,LevelCount,TargetHost>&& pyramid)
     {
         BaseT::operator=(std::move(pyramid));
         return *this;
@@ -127,24 +125,22 @@ public:
     typedef PyramidViewBase<Image2DView, T,Levels,TargetDeviceCUDA> BaseT;
     typedef typename BaseT::ViewType LevelT;
     static const std::size_t LevelCount = BaseT::LevelCount;
-    typedef typename BaseT::ValueType ValueType;
-    typedef typename BaseT::TargetType TargetType;
     
     EIGEN_DEVICE_FUNC inline ImagePyramidView() { }
     
     EIGEN_DEVICE_FUNC inline ~ImagePyramidView() { }
     
-    EIGEN_DEVICE_FUNC inline ImagePyramidView(const ImagePyramidView<T,LevelCount,TargetType>& pyramid) : BaseT(pyramid) { }
+    EIGEN_DEVICE_FUNC inline ImagePyramidView(const ImagePyramidView<T,LevelCount,TargetDeviceCUDA>& pyramid) : BaseT(pyramid) { }
     
-    EIGEN_DEVICE_FUNC inline ImagePyramidView(ImagePyramidView<T,LevelCount,TargetType>&& pyramid) : BaseT(std::move(pyramid)) { }
+    EIGEN_DEVICE_FUNC inline ImagePyramidView(ImagePyramidView<T,LevelCount,TargetDeviceCUDA>&& pyramid) : BaseT(std::move(pyramid)) { }
     
-    EIGEN_DEVICE_FUNC inline ImagePyramidView<T,LevelCount,TargetType>& operator=(const ImagePyramidView<T,LevelCount,TargetType>& pyramid)
+    EIGEN_DEVICE_FUNC inline ImagePyramidView<T,LevelCount,TargetDeviceCUDA>& operator=(const ImagePyramidView<T,LevelCount,TargetDeviceCUDA>& pyramid)
     {
         BaseT::operator=(pyramid);
         return *this;
     }
     
-    EIGEN_DEVICE_FUNC inline ImagePyramidView<T,LevelCount,TargetType>& operator=(ImagePyramidView<T,LevelCount,TargetType>&& pyramid)
+    EIGEN_DEVICE_FUNC inline ImagePyramidView<T,LevelCount,TargetDeviceCUDA>& operator=(ImagePyramidView<T,LevelCount,TargetDeviceCUDA>&& pyramid)
     {
         BaseT::operator=(std::move(pyramid));
         return *this;
@@ -158,7 +154,7 @@ public:
         }
     }
     
-    template<typename TargetFrom>
+    template<template<typename = T> class TargetFrom>
     inline void copyFrom(const ImagePyramidView<T,Levels,TargetFrom>& pyramid)
     {
         for(std::size_t l = 0 ; l < LevelCount ; ++l) 
@@ -181,24 +177,22 @@ public:
     typedef PyramidViewBase<Image2DView, T,Levels,TargetDeviceOpenCL> BaseT;
     typedef typename BaseT::ViewType LevelT;
     static const std::size_t LevelCount = BaseT::LevelCount;
-    typedef typename BaseT::ValueType ValueType;
-    typedef typename BaseT::TargetType TargetType;
     
     inline ImagePyramidView() { }
     
     inline ~ImagePyramidView() { }
     
-    inline ImagePyramidView(const ImagePyramidView<T,LevelCount,TargetType>& pyramid) : BaseT(pyramid) { }
+    inline ImagePyramidView(const ImagePyramidView<T,LevelCount,TargetDeviceOpenCL>& pyramid) : BaseT(pyramid) { }
     
-    inline ImagePyramidView(ImagePyramidView<T,LevelCount,TargetType>&& pyramid) : BaseT(std::move(pyramid)) { }
+    inline ImagePyramidView(ImagePyramidView<T,LevelCount,TargetDeviceOpenCL>&& pyramid) : BaseT(std::move(pyramid)) { }
     
-    inline ImagePyramidView<T,LevelCount,TargetType>& operator=(const ImagePyramidView<T,LevelCount,TargetType>& pyramid)
+    inline ImagePyramidView<T,LevelCount,TargetDeviceOpenCL>& operator=(const ImagePyramidView<T,LevelCount,TargetDeviceOpenCL>& pyramid)
     {
         BaseT::operator=(pyramid);
         return *this;
     }
     
-    inline ImagePyramidView<T,LevelCount,TargetType>& operator=(ImagePyramidView<T,LevelCount,TargetType>&& pyramid)
+    inline ImagePyramidView<T,LevelCount,TargetDeviceOpenCL>& operator=(ImagePyramidView<T,LevelCount,TargetDeviceOpenCL>&& pyramid)
     {
         BaseT::operator=(std::move(pyramid));
         return *this;
@@ -244,15 +238,13 @@ public:
 /**
  * CUDA/Host Image Pyramid Creation.
  */
-template<typename T, std::size_t Levels, typename Target = TargetHost>
+template<typename T, std::size_t Levels, template<typename = T> class Target = TargetHost>
 class ImagePyramidManaged : public ImagePyramidView<T, Levels, Target>
 {
 public:
     typedef ImagePyramidView<T, Levels, Target> ViewT;
     typedef typename ViewT::ViewType LevelT;
     static const std::size_t LevelCount = Levels;
-    typedef T ValueType;
-    typedef Target TargetType;
     
     ImagePyramidManaged() = delete;
     
@@ -261,10 +253,10 @@ public:
         // Build power of two structure
         for(std::size_t l = 0; l < LevelCount && (w>>l > 0) && (h>>l > 0); ++l ) 
         {
-            typename Target::template PointerType<T> ptr = 0;
+            typename Target<T>::PointerType ptr = 0;
             std::size_t line_pitch = 0;
             
-            Target::template AllocatePitchedMem<T>(&ptr, &line_pitch, w >> l, h >> l);
+            Target<T>::AllocatePitchedMem(&ptr, &line_pitch, w >> l, h >> l);
             
             ViewT::imgs[l] = core::Image2DView<T,Target>((T*)ptr, w >> l, h >> l, line_pitch);
         }
@@ -289,7 +281,7 @@ public:
     {
         for(std::size_t l = 0; l < LevelCount ; ++l)
         {
-            Target::template DeallocatePitchedMem<T>(ViewT::imgs[l].ptr());
+            Target<T>::DeallocatePitchedMem(ViewT::imgs[l].ptr());
         }
     }
     
@@ -309,8 +301,6 @@ public:
     typedef ImagePyramidView<T, Levels, TargetDeviceOpenCL> ViewT;
     typedef typename ViewT::ViewType LevelT;
     static const std::size_t LevelCount = Levels;
-    typedef T ValueType;
-    typedef TargetDeviceOpenCL TargetType;
     
     ImagePyramidManaged() = delete;
     
@@ -319,7 +309,7 @@ public:
         // Build power of two structure
         for(std::size_t l = 0; l < LevelCount && (w>>l > 0) && (h>>l > 0); ++l ) 
         {
-            ViewT::imgs[l] = core::Image2DView<T,TargetType>(new cl::Image2D(context, flags, fmt, w >> l, h >> l, 0, nullptr), w >> l, h >> l, w * sizeof(T));
+            ViewT::imgs[l] = core::Image2DView<T,TargetDeviceOpenCL>(new cl::Image2D(context, flags, fmt, w >> l, h >> l, 0, nullptr), w >> l, h >> l, w * sizeof(T));
         }
     }
     
@@ -330,21 +320,21 @@ public:
         {
             const std::size_t new_w = w >> l;
             const std::size_t new_h = h >> l;
-            ViewT::imgs[l] = core::Image2DView<T,TargetType>(new cl::Image2D(context, flags, cl::ImageFormat(internal::ChannelCountToOpenCLChannelOrder<LevelT::Channels>::ChannelOrder,
+            ViewT::imgs[l] = core::Image2DView<T,TargetDeviceOpenCL>(new cl::Image2D(context, flags, cl::ImageFormat(internal::ChannelCountToOpenCLChannelOrder<LevelT::Channels>::ChannelOrder,
                                                                                                              internal::TypeToOpenCLChannelType<typename LevelT::ValueType>::ChannelType), new_w, new_h, 0, nullptr), new_w, new_h, new_w * sizeof(T));
         }
     }
     
-    ImagePyramidManaged(const ImagePyramidManaged<T,LevelCount,TargetType>& img) = delete;
+    ImagePyramidManaged(const ImagePyramidManaged<T,LevelCount,TargetDeviceOpenCL>& img) = delete;
     
-    inline ImagePyramidManaged(ImagePyramidManaged<T,LevelCount,TargetType>&& img) : ViewT(std::move(img))
+    inline ImagePyramidManaged(ImagePyramidManaged<T,LevelCount,TargetDeviceOpenCL>&& img) : ViewT(std::move(img))
     {
         
     }
     
-    ImagePyramidManaged<T,LevelCount,TargetType>& operator=(const ImagePyramidManaged<T,LevelCount,TargetType>& img) = delete;
+    ImagePyramidManaged<T,LevelCount,TargetDeviceOpenCL>& operator=(const ImagePyramidManaged<T,LevelCount,TargetDeviceOpenCL>& img) = delete;
     
-    inline ImagePyramidManaged<T,LevelCount,TargetType>& operator=(ImagePyramidManaged<T,LevelCount,TargetType>&& img)
+    inline ImagePyramidManaged<T,LevelCount,TargetDeviceOpenCL>& operator=(ImagePyramidManaged<T,LevelCount,TargetDeviceOpenCL>&& img)
     {
         ViewT::operator=(std::move(img));
         return *this;

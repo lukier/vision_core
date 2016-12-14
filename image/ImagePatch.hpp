@@ -43,13 +43,10 @@
 namespace core
 {
 
-template<typename T, typename Target = TargetHost>
+template<typename T, template<typename = T> class Target = TargetHost>
 class ImagePatch
 {
-public:
-    typedef T ValueType;
-    typedef Target TargetType;
-    
+public:    
     EIGEN_DEVICE_FUNC inline ImagePatch() = delete;
     
     /**

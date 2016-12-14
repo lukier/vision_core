@@ -103,7 +103,7 @@ public:
     }
 };
 
-template<typename Target>
+template<template<typename> class Target = TargetHost>
 struct RandomGenerator
 {
     RandomGenerator(uint64_t seed);
@@ -112,16 +112,16 @@ struct RandomGenerator
     curandGenerator_t handle;
 };
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void generateRandom(RandomGenerator<Target>& gen, core::Buffer1DView<T,Target>& bufout, const core::types::Gaussian<typename core::type_traits<T>::ChannelType>& gauss);
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void generateRandom(RandomGenerator<Target>& gen, core::Buffer2DView<T,Target>& bufout, const core::types::Gaussian<typename core::type_traits<T>::ChannelType>& gauss);
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void generateRandom(RandomGenerator<Target>& gen, core::Buffer1DView<T,Target>& bufout, const typename core::type_traits<T>::ChannelType& mean, const typename core::type_traits<T>::ChannelType& stddev);
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void generateRandom(RandomGenerator<Target>& gen, core::Buffer2DView<T,Target>& bufout, const typename core::type_traits<T>::ChannelType& mean, const typename core::type_traits<T>::ChannelType& stddev);
 
 }

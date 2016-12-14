@@ -42,7 +42,7 @@
 namespace core
 {
 
-template<typename T, std::size_t Levels, typename Target = TargetHost>
+template<typename T, std::size_t Levels, template<typename = T> class Target = TargetHost>
 class BufferPyramidView { };
 
 /**
@@ -55,24 +55,22 @@ public:
     typedef PyramidViewBase<Buffer2DView, T,Levels,TargetHost> BaseT;
     typedef typename BaseT::ViewType LevelT;
     static const std::size_t LevelCount = BaseT::LevelCount;
-    typedef typename BaseT::ValueType ValueType;
-    typedef typename BaseT::TargetType TargetType;
     
     EIGEN_DEVICE_FUNC inline BufferPyramidView() { }
     
     EIGEN_DEVICE_FUNC inline ~BufferPyramidView() { }
     
-    EIGEN_DEVICE_FUNC inline BufferPyramidView(const BufferPyramidView<T,LevelCount,TargetType>& pyramid) : BaseT(pyramid) { }
+    EIGEN_DEVICE_FUNC inline BufferPyramidView(const BufferPyramidView<T,LevelCount,TargetHost>& pyramid) : BaseT(pyramid) { }
     
-    EIGEN_DEVICE_FUNC inline BufferPyramidView(BufferPyramidView<T,LevelCount,TargetType>&& pyramid) : BaseT(std::move(pyramid)) { }
+    EIGEN_DEVICE_FUNC inline BufferPyramidView(BufferPyramidView<T,LevelCount,TargetHost>&& pyramid) : BaseT(std::move(pyramid)) { }
     
-    EIGEN_DEVICE_FUNC inline BufferPyramidView<T,LevelCount,TargetType>& operator=(const BufferPyramidView<T,LevelCount,TargetType>& pyramid)
+    EIGEN_DEVICE_FUNC inline BufferPyramidView<T,LevelCount,TargetHost>& operator=(const BufferPyramidView<T,LevelCount,TargetHost>& pyramid)
     {
         BaseT::operator=(pyramid);
         return *this;
     }
     
-    EIGEN_DEVICE_FUNC inline BufferPyramidView<T,LevelCount,TargetType>& operator=(BufferPyramidView<T,LevelCount,TargetType>&& pyramid)
+    EIGEN_DEVICE_FUNC inline BufferPyramidView<T,LevelCount,TargetHost>& operator=(BufferPyramidView<T,LevelCount,TargetHost>&& pyramid)
     {
         BaseT::operator=(std::move(pyramid));
         return *this;
@@ -127,24 +125,22 @@ public:
     typedef PyramidViewBase<Buffer2DView, T,Levels,TargetDeviceCUDA> BaseT;
     typedef typename BaseT::ViewType LevelT;
     static const std::size_t LevelCount = BaseT::LevelCount;
-    typedef typename BaseT::ValueType ValueType;
-    typedef typename BaseT::TargetType TargetType;
     
     EIGEN_DEVICE_FUNC inline BufferPyramidView() { }
     
     EIGEN_DEVICE_FUNC inline ~BufferPyramidView() { }
     
-    EIGEN_DEVICE_FUNC inline BufferPyramidView(const BufferPyramidView<T,LevelCount,TargetType>& pyramid) : BaseT(pyramid) { }
+    EIGEN_DEVICE_FUNC inline BufferPyramidView(const BufferPyramidView<T,LevelCount,TargetDeviceCUDA>& pyramid) : BaseT(pyramid) { }
     
-    EIGEN_DEVICE_FUNC inline BufferPyramidView(BufferPyramidView<T,LevelCount,TargetType>&& pyramid) : BaseT(std::move(pyramid)) { }
+    EIGEN_DEVICE_FUNC inline BufferPyramidView(BufferPyramidView<T,LevelCount,TargetDeviceCUDA>&& pyramid) : BaseT(std::move(pyramid)) { }
     
-    EIGEN_DEVICE_FUNC inline BufferPyramidView<T,LevelCount,TargetType>& operator=(const BufferPyramidView<T,LevelCount,TargetType>& pyramid)
+    EIGEN_DEVICE_FUNC inline BufferPyramidView<T,LevelCount,TargetDeviceCUDA>& operator=(const BufferPyramidView<T,LevelCount,TargetDeviceCUDA>& pyramid)
     {
         BaseT::operator=(pyramid);
         return *this;
     }
     
-    EIGEN_DEVICE_FUNC inline BufferPyramidView<T,LevelCount,TargetType>& operator=(BufferPyramidView<T,LevelCount,TargetType>&& pyramid)
+    EIGEN_DEVICE_FUNC inline BufferPyramidView<T,LevelCount,TargetDeviceCUDA>& operator=(BufferPyramidView<T,LevelCount,TargetDeviceCUDA>&& pyramid)
     {
         BaseT::operator=(std::move(pyramid));
         return *this;
@@ -158,7 +154,7 @@ public:
         }
     }
     
-    template<typename TargetFrom>
+    template<template<typename = T> class TargetFrom>
     inline void copyFrom(const BufferPyramidView<T,Levels,TargetFrom>& pyramid)
     {
         for(std::size_t l = 0 ; l < LevelCount ; ++l) 
@@ -181,24 +177,22 @@ public:
     typedef PyramidViewBase<Buffer2DView, T,Levels,TargetDeviceOpenCL> BaseT;
     typedef typename BaseT::ViewType LevelT;
     static const std::size_t LevelCount = BaseT::LevelCount;
-    typedef typename BaseT::ValueType ValueType;
-    typedef typename BaseT::TargetType TargetType;
     
     inline BufferPyramidView() { }
     
     inline ~BufferPyramidView() { }
     
-    inline BufferPyramidView(const BufferPyramidView<T,LevelCount,TargetType>& pyramid) : BaseT(pyramid) { }
+    inline BufferPyramidView(const BufferPyramidView<T,LevelCount,TargetDeviceOpenCL>& pyramid) : BaseT(pyramid) { }
     
-    inline BufferPyramidView(BufferPyramidView<T,LevelCount,TargetType>&& pyramid) : BaseT(std::move(pyramid)) { }
+    inline BufferPyramidView(BufferPyramidView<T,LevelCount,TargetDeviceOpenCL>&& pyramid) : BaseT(std::move(pyramid)) { }
     
-    inline BufferPyramidView<T,LevelCount,TargetType>& operator=(const BufferPyramidView<T,LevelCount,TargetType>& pyramid)
+    inline BufferPyramidView<T,LevelCount,TargetDeviceOpenCL>& operator=(const BufferPyramidView<T,LevelCount,TargetDeviceOpenCL>& pyramid)
     {
         BaseT::operator=(pyramid);
         return *this;
     }
     
-    inline BufferPyramidView<T,LevelCount,TargetType>& operator=(BufferPyramidView<T,LevelCount,TargetType>&& pyramid)
+    inline BufferPyramidView<T,LevelCount,TargetDeviceOpenCL>& operator=(BufferPyramidView<T,LevelCount,TargetDeviceOpenCL>&& pyramid)
     {
         BaseT::operator=(std::move(pyramid));
         return *this;
@@ -244,16 +238,14 @@ public:
 /**
  * CUDA/Host Buffer Pyramid Creation.
  */
-template<typename T, std::size_t Levels, typename Target = TargetHost>
+template<typename T, std::size_t Levels, template<typename = T> class Target = TargetHost>
 class BufferPyramidManaged : public BufferPyramidView<T, Levels, Target>
 {
 public:
     typedef BufferPyramidView<T, Levels, Target> ViewT;
     typedef typename ViewT::ViewType LevelT;
     static const std::size_t LevelCount = Levels;
-    typedef T ValueType;
-    typedef Target TargetType;
-    
+        
     BufferPyramidManaged() = delete;
     
     inline BufferPyramidManaged(std::size_t w, std::size_t h)
@@ -261,10 +253,10 @@ public:
         // Build power of two structure
         for(std::size_t l = 0; l < LevelCount && (w>>l > 0) && (h>>l > 0); ++l ) 
         {
-            typename Target::template PointerType<T> ptr = 0;
+            typename Target<T>::PointerType ptr = 0;
             std::size_t line_pitch = 0;
             
-            Target::template AllocatePitchedMem<T>(&ptr, &line_pitch, w >> l, h >> l);
+            Target<T>::AllocatePitchedMem(&ptr, &line_pitch, w >> l, h >> l);
             
             ViewT::imgs[l] = core::Buffer2DView<T,Target>((T*)ptr, w >> l, h >> l, line_pitch);
         }
@@ -289,7 +281,7 @@ public:
     {
         for(std::size_t l = 0; l < LevelCount ; ++l)
         {
-            Target::template DeallocatePitchedMem<T>(ViewT::imgs[l].ptr());
+            Target<T>::DeallocatePitchedMem(ViewT::imgs[l].ptr());
         }
     }
     
@@ -309,8 +301,6 @@ public:
     typedef BufferPyramidView<T, Levels, TargetDeviceOpenCL> ViewT;
     typedef typename ViewT::ViewType LevelT;
     static const std::size_t LevelCount = Levels;
-    typedef T ValueType;
-    typedef TargetDeviceOpenCL TargetType;
     
     BufferPyramidManaged() = delete;
 
@@ -321,20 +311,20 @@ public:
         {
             const std::size_t new_w = w >> l;
             const std::size_t new_h = h >> l;
-            ViewT::imgs[l] = core::Buffer2DView<T,TargetType>(new cl::Buffer(context, flags, new_w*new_h*sizeof(T)), new_w, new_h, new_w * sizeof(T));
+            ViewT::imgs[l] = core::Buffer2DView<T,TargetDeviceOpenCL>(new cl::Buffer(context, flags, new_w*new_h*sizeof(T)), new_w, new_h, new_w * sizeof(T));
         }
     }
     
-    BufferPyramidManaged(const BufferPyramidManaged<T,LevelCount,TargetType>& img) = delete;
+    BufferPyramidManaged(const BufferPyramidManaged<T,LevelCount,TargetDeviceOpenCL>& img) = delete;
     
-    inline BufferPyramidManaged(BufferPyramidManaged<T,LevelCount,TargetType>&& img) : ViewT(std::move(img))
+    inline BufferPyramidManaged(BufferPyramidManaged<T,LevelCount,TargetDeviceOpenCL>&& img) : ViewT(std::move(img))
     {
         
     }
     
-    BufferPyramidManaged<T,LevelCount,TargetType>& operator=(const BufferPyramidManaged<T,LevelCount,TargetType>& img) = delete;
+    BufferPyramidManaged<T,LevelCount,TargetDeviceOpenCL>& operator=(const BufferPyramidManaged<T,LevelCount,TargetDeviceOpenCL>& img) = delete;
     
-    inline BufferPyramidManaged<T,LevelCount,TargetType>& operator=(BufferPyramidManaged<T,LevelCount,TargetType>&& img)
+    inline BufferPyramidManaged<T,LevelCount,TargetDeviceOpenCL>& operator=(BufferPyramidManaged<T,LevelCount,TargetDeviceOpenCL>&& img)
     {
         ViewT::operator=(std::move(img));
         return *this;

@@ -57,107 +57,107 @@ namespace image
  * Rescale element-wise and clamp.
  * out = in * alpha + beta
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void rescaleBufferInplace(core::Buffer1DView<T, Target>& buf_in, T alpha, T beta = 0.0f, T clamp_min = 0.0f, T clamp_max = 1.0f);
 
 /**
  * Rescale element-wise and clamp.
  * out = in * alpha + beta
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void rescaleBufferInplace(core::Buffer2DView<T, Target>& buf_in, T alpha, T beta = 0.0f, T clamp_min = 0.0f, T clamp_max = 1.0f);
 
 /**
  * Rescale element-wise and clamp.
  * out = in * alpha + beta
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void rescaleBufferInplaceMinMax(core::Buffer2DView<T, Target>& buf_in, T vmin, T vmax, T clamp_min = 0.0f, T clamp_max = 1.0f);
 
 /**
  * Rescale element-wise and clamp.
  * out = in * alpha + beta
  */
-template<typename T1, typename T2, typename Target>
+template<typename T1, typename T2, template<typename> class Target>
 void rescaleBuffer(const core::Buffer2DView<T1, Target>& buf_in, core::Buffer2DView<T2, Target>& buf_out, float alpha, float beta = 0.0f, float clamp_min = 0.0f, float clamp_max = 1.0f);
 
 /**
  * Normalize buffer to 0..1 range (float only) for now.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void normalizeBufferInplace(core::Buffer2DView<T, Target>& buf_in);
 
 /**
  * Clamp Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void clampBuffer(core::Buffer1DView<T, Target>& buf_io, T a, T b);
 
 /**
  * Clamp Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void clampBuffer(core::Buffer2DView<T, Target>& buf_io, T a, T b);
 
 
 /**
  * Find minimal value of a 1D buffer.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T calcBufferMin(const core::Buffer1DView<T, Target>& buf_in);
 
 /**
  * Find maximal value of a 1D buffer.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T calcBufferMax(const core::Buffer1DView<T, Target>& buf_in);
 
 /**
  * Find mean value of a 1D buffer.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T calcBufferMean(const core::Buffer1DView<T, Target>& buf_in);
 
 /**
  * Find minimal value of a 2D buffer.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T calcBufferMin(const core::Buffer2DView<T, Target>& buf_in);
 
 /**
  * Find maximal value of a 2D buffer.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T calcBufferMax(const core::Buffer2DView<T, Target>& buf_in);
 
 /**
  * Find mean value of a 2D buffer.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T calcBufferMean(const core::Buffer2DView<T, Target>& buf_in);
 
 /**
  * Downsample by half.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void downsampleHalf(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out);
 
 /**
  * Downsample by half (ignore invalid).
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void downsampleHalfNoInvalid(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out);
 
 /**
  * Leave even rows and columns.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void leaveQuarter(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out);
 
 /**
  * Fills remaining pyramid levels with downsampleHalf.
  */
-template<typename T, std::size_t Levels, typename Target>
+template<typename T, std::size_t Levels, template<typename> class Target>
 static inline void fillPyramidBilinear(core::ImagePyramidView<T,Levels,Target>& pyr)
 {
     for(std::size_t l = 1 ; l < Levels ; ++l) 
@@ -169,7 +169,7 @@ static inline void fillPyramidBilinear(core::ImagePyramidView<T,Levels,Target>& 
 /**
  * Fills remaining pyramid levels with leaveQuarter.
  */
-template<typename T, std::size_t Levels, typename Target>
+template<typename T, std::size_t Levels, template<typename> class Target>
 static inline void fillPyramidCrude(core::ImagePyramidView<T,Levels,Target>& pyr)
 {
     for(std::size_t l = 1 ; l < Levels ; ++l) 
@@ -181,75 +181,75 @@ static inline void fillPyramidCrude(core::ImagePyramidView<T,Levels,Target>& pyr
 /**
  * Join buffers.
  */
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void join(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in2, core::Buffer2DView<TCOMP, Target>& buf_out);
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void join(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in2, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in3, core::Buffer2DView<TCOMP, Target>& buf_out);
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void join(const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in1, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in2, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in3, const core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_in4, core::Buffer2DView<TCOMP, Target>& buf_out);
 
 /**
  * Split buffers.
  */
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out2);
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out2, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out3);
-template<typename TCOMP, typename Target>
+template<typename TCOMP, template<typename> class Target>
 void split(const core::Buffer2DView<TCOMP, Target>& buf_in, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out1, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out2, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out3, core::Buffer2DView<typename core::type_traits<TCOMP>::ChannelType, Target>& buf_out4);
 
 /**
  * fillBuffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void fillBuffer(core::Buffer1DView<T, Target>& buf_in, const typename core::type_traits<T>::ChannelType& v);
 
 /**
  * fillBuffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void fillBuffer(core::Buffer2DView<T, Target>& buf_in, const typename core::type_traits<T>::ChannelType& v);
 
 /**
  * Invert Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void invertBuffer(core::Buffer1DView<T, Target>& buf_io);
 
 /**
  * Invert Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void invertBuffer(core::Buffer2DView<T, Target>& buf_io);
 
 /**
  * Threshold Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void thresholdBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out, T thr, T val_below, T val_above);
 
 /**
  * Threshold Buffer
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void thresholdBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out, T thr, T val_below, T val_above, T minval, T maxval, bool saturation = false);
 
 /**
  * Flip X.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void flipXBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out);
 
 /**
  * Flip Y.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void flipYBuffer(const core::Buffer2DView<T, Target>& buf_in, core::Buffer2DView<T, Target>& buf_out);
 
 /**
  * Substract.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void bufferSubstract(const core::Buffer2DView<T, Target>& buf_in1,
                      const core::Buffer2DView<T, Target>& buf_in2,
                      core::Buffer2DView<T, Target>& buf_out);
@@ -257,7 +257,7 @@ void bufferSubstract(const core::Buffer2DView<T, Target>& buf_in1,
 /**
  * Substract L1.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void bufferSubstractL1(const core::Buffer2DView<T, Target>& buf_in1,
                        const core::Buffer2DView<T, Target>& buf_in2,
                        core::Buffer2DView<T, Target>& buf_out);
@@ -265,15 +265,15 @@ void bufferSubstractL1(const core::Buffer2DView<T, Target>& buf_in1,
 /**
  * Substract L2.
  */
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 void bufferSubstractL2(const core::Buffer2DView<T, Target>& buf_in1,
                        const core::Buffer2DView<T, Target>& buf_in2,
                        core::Buffer2DView<T, Target>& buf_out);
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T bufferSum(const core::Buffer1DView<T, Target>& buf_in, const T& initial);
 
-template<typename T, typename Target>
+template<typename T, template<typename> class Target>
 T bufferSum(const core::Buffer2DView<T, Target>& buf_in, const T& initial);
 }
 

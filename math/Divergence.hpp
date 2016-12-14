@@ -66,7 +66,7 @@ EIGEN_DEVICE_FUNC inline Eigen::Vector4f projectUnitBall(const Eigen::Vector4f& 
     return val / max(1.0f, sqrt(val(0) * val(0) + val(1) * val(1) + val(2) * val(2) + val(3) * val(3))  / maxrad );
 }
 
-template<typename Target>
+template<template<typename> class Target>
 EIGEN_DEVICE_FUNC inline Eigen::Vector2f gradUFwd(const Buffer2DView<float, Target>& imgu, float u, size_t x, size_t y)
 {
     Eigen::Vector2f du(0.0f, 0.0f);
@@ -75,7 +75,7 @@ EIGEN_DEVICE_FUNC inline Eigen::Vector2f gradUFwd(const Buffer2DView<float, Targ
     return du;
 }
 
-template<typename Target>
+template<template<typename> class Target>
 EIGEN_DEVICE_FUNC inline float divA(const Buffer2DView<Eigen::Vector2f, Target>& A, int x, int y)
 {
     const Eigen::Vector2f& p = A(x,y);
@@ -85,7 +85,7 @@ EIGEN_DEVICE_FUNC inline float divA(const Buffer2DView<Eigen::Vector2f, Target>&
     return divA;
 }
 
-template<typename Target>
+template<template<typename> class Target>
 EIGEN_DEVICE_FUNC inline Eigen::Vector4f TGVEpsilon(const Buffer2DView<Eigen::Vector2f, Target>& imgA, size_t x, size_t y)
 {
     const Eigen::Vector2f& A = imgA(x,y);
@@ -112,7 +112,7 @@ EIGEN_DEVICE_FUNC inline Eigen::Vector4f TGVEpsilon(const Buffer2DView<Eigen::Ve
     return Eigen::Vector4f(dx_v0, dy_v1, (dy_v0+dx_v1)/2.0f, (dy_v0+dx_v1)/2.0f );
 }
 
-template<typename Target>
+template<template<typename> class Target>
 EIGEN_DEVICE_FUNC inline Eigen::Vector2f TGVDivA(const Buffer2DView<Eigen::Vector4f, Target>& A, int x, int y)
 {
     const Eigen::Vector4f& p = A(x,y);

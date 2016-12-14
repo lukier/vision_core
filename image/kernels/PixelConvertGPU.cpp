@@ -39,7 +39,7 @@
 
 #include <image/PixelConvert.hpp>
 
-template<typename T_IN, typename T_OUT, typename Target>
+template<typename T_IN, typename T_OUT, template<typename> class Target>
 __global__ void Kernel_convertBuffer(core::Buffer2DView<T_IN, Target> buf_in, 
                                      core::Buffer2DView<T_OUT, Target> buf_out)
 {
@@ -53,7 +53,7 @@ __global__ void Kernel_convertBuffer(core::Buffer2DView<T_IN, Target> buf_in,
     }
 }
 
-template<typename T_IN, typename T_OUT, typename Target>
+template<typename T_IN, typename T_OUT, template<typename> class Target>
 void core::image::convertBuffer(const core::Buffer2DView<T_IN, Target>& buf_in, core::Buffer2DView<T_OUT, Target>& buf_out)
 {
     dim3 gridDim, blockDim;

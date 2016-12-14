@@ -68,14 +68,13 @@ template<> struct OpenCVType<double> { static const int TypeCode = CV_64F; };
  * Image 2D View. CUDA + Host. 
  * Image specific functions. Interpolations, derivatives.
  */
-template<typename T, typename Target>
+template<typename T, template<typename = T> class Target>
 class Image2DView : public Buffer2DView<T,Target>
 {
 public:
     typedef Buffer2DView<T,Target> BaseType;
     typedef typename core::type_traits<T>::ChannelType ValueType;
     static const int Channels = core::type_traits<T>::ChannelCount;
-    typedef Target TargetType;
     
     using BaseType::ptr;
     using BaseType::rowPtr;
@@ -94,7 +93,7 @@ public:
         
     }
 
-    EIGEN_DEVICE_FUNC inline Image2DView(const Image2DView<T,TargetType>& img)  : BaseType(img)
+    EIGEN_DEVICE_FUNC inline Image2DView(const Image2DView<T,Target>& img)  : BaseType(img)
     {
         
     }
@@ -104,18 +103,18 @@ public:
         
     }
     
-    EIGEN_DEVICE_FUNC inline Image2DView(Image2DView<T,TargetType>&& img) : BaseType(std::move(img))
+    EIGEN_DEVICE_FUNC inline Image2DView(Image2DView<T,Target>&& img) : BaseType(std::move(img))
     {
         
     }
     
-    EIGEN_DEVICE_FUNC inline Image2DView<T,TargetType>& operator=(const Image2DView<T,TargetType>& img)
+    EIGEN_DEVICE_FUNC inline Image2DView<T,Target>& operator=(const Image2DView<T,Target>& img)
     {
         BaseType::operator=(img);
         return *this;
     }
         
-    EIGEN_DEVICE_FUNC inline Image2DView<T,TargetType>& operator=(Image2DView<T,TargetType>&& img)
+    EIGEN_DEVICE_FUNC inline Image2DView<T,Target>& operator=(Image2DView<T,Target>&& img)
     {
         BaseType::operator=(std::move(img));
         return *this;
@@ -134,7 +133,7 @@ public:
 #ifdef CORE_HAVE_OPENCV
     inline Image2DView( const cv::Mat& img ) : BaseType((T*)img.data, (std::size_t)img.cols, (std::size_t)img.rows, (std::size_t)img.step)
     {
-        static_assert(std::is_same<TargetType,TargetHost>::value == true, "Only possible on TargetHost buffers");
+        static_assert(std::is_same<Target<T>,TargetHost<T>>::value == true, "Only possible on TargetHost buffers");
         assert(img.type() == CV_MAKETYPE(internal::OpenCVType<ValueType>::TypeCode, Channels) && "This wont work nicely");
     }
 #endif
@@ -304,7 +303,7 @@ public:
 #ifdef CORE_HAVE_OPENCV
     inline cv::Mat getOpenCV() const
     {
-        static_assert(std::is_same<TargetType,TargetHost>::value == true, "Only possible on TargetHost buffers");
+        static_assert(std::is_same<Target<T>,TargetHost<T>>::value == true, "Only possible on TargetHost buffers");
         return cv::Mat(height(), width(), CV_MAKETYPE(internal::OpenCVType<ValueType>::TypeCode, Channels), (void*)BaseType::ptr(), BaseType::pitch());
     }
 
@@ -322,7 +321,7 @@ public:
 #ifdef CORE_HAVE_OPENCL
     inline void copyFrom(const cl::CommandQueue& queue, const Image2DView<T,TargetDeviceOpenCL>& img, const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
     {
-        static_assert(std::is_same<TargetType,TargetHost>::value == true, "Only possible on TargetHost buffers");
+        static_assert(std::is_same<Target<T>,TargetHost<T>>::value == true, "Only possible on TargetHost buffers");
         
         std::array<std::size_t,3> origin, region;
         origin[0] = 0;
@@ -349,7 +348,6 @@ public:
     typedef Buffer2DView<T,TargetDeviceOpenCL> BaseType;
     typedef typename core::type_traits<T>::ChannelType ValueType;
     static const int Channels = core::type_traits<T>::ChannelCount;
-    typedef TargetDeviceOpenCL TargetType;
     
     using BaseType::width;
     using BaseType::height;
@@ -364,7 +362,7 @@ public:
         
     }
     
-    inline Image2DView(const Image2DView<T,TargetType>& img)  : BaseType(img)
+    inline Image2DView(const Image2DView<T,TargetDeviceOpenCL>& img)  : BaseType(img)
     {
         
     }
@@ -374,29 +372,29 @@ public:
         
     }
     
-    inline Image2DView(Image2DView<T,TargetType>&& img) : BaseType(std::move(img))
+    inline Image2DView(Image2DView<T,TargetDeviceOpenCL>&& img) : BaseType(std::move(img))
     {
         
     }
     
-    inline Image2DView<T,TargetType>& operator=(const Image2DView<T,TargetType>& img)
+    inline Image2DView<T,TargetDeviceOpenCL>& operator=(const Image2DView<T,TargetDeviceOpenCL>& img)
     {
         BaseType::operator=(img);
         return *this;
     }
     
-    inline Image2DView<T,TargetType>& operator=(Image2DView<T,TargetType>&& img)
+    inline Image2DView<T,TargetDeviceOpenCL>& operator=(Image2DView<T,TargetDeviceOpenCL>&& img)
     {
         BaseType::operator=(std::move(img));
         return *this;
     }
     
-    inline Image2DView(typename TargetType::template PointerType<T> ptr, std::size_t w, std::size_t h) : BaseType(ptr, w, h)
+    inline Image2DView(typename TargetDeviceOpenCL<T>::PointerType ptr, std::size_t w, std::size_t h) : BaseType(ptr, w, h)
     {
         
     }
     
-    inline Image2DView(typename TargetType::template PointerType<T> ptr, std::size_t w, std::size_t h, std::size_t pitch) : BaseType(ptr, w, h, pitch)
+    inline Image2DView(typename TargetDeviceOpenCL<T>::PointerType ptr, std::size_t w, std::size_t h, std::size_t pitch) : BaseType(ptr, w, h, pitch)
     {
         
     }
@@ -470,7 +468,7 @@ public:
 /**
  * CUDA/Host Image 2D Creation.
  */
-template<typename T, typename Target = TargetHost>
+template<typename T, template<typename = T> class Target = TargetHost>
 class Image2DManaged : public Image2DView<T,Target>
 {
 public:
@@ -480,12 +478,12 @@ public:
     
     inline Image2DManaged(std::size_t w, std::size_t h) : ViewT()
     {
-        typename Target::template PointerType<T> ptr = nullptr;
+        typename Target<T>::PointerType ptr = nullptr;
         std::size_t line_pitch = 0;
         ViewT::xsize = w;
         ViewT::ysize = h;
         
-        Target::template AllocatePitchedMem<T>(&ptr, &line_pitch, w, h);
+        Target<T>::AllocatePitchedMem(&ptr, &line_pitch, w, h);
         
         ViewT::memptr = ptr;
         ViewT::line_pitch = line_pitch;
@@ -495,7 +493,7 @@ public:
     {
         if(ViewT::isValid())
         {
-            Target::template DeallocatePitchedMem<T>(ViewT::memptr);
+            Target<T>::DeallocatePitchedMem(ViewT::memptr);
         }
     }
     
@@ -518,7 +516,7 @@ public:
     {
         if(ViewT::isValid())
         {
-            Target::template DeallocatePitchedMem<T>(ViewT::memptr);
+            Target<T>::DeallocatePitchedMem(ViewT::memptr);
             ViewT::xsize = 0;
             ViewT::ysize = 0;
             ViewT::memptr = nullptr;
@@ -528,9 +526,9 @@ public:
         ViewT::xsize = new_w;
         ViewT::ysize = new_h;
         
-        typename Target::template PointerType<T> ptr = nullptr;
+        typename Target<T>::PointerType ptr = nullptr;
         std::size_t line_pitch = 0;
-        Target::template AllocatePitchedMem<T>(&ptr, &line_pitch, new_w, new_h);
+        Target<T>::AllocatePitchedMem(&ptr, &line_pitch, new_w, new_h);
         
         ViewT::memptr = ptr;
         ViewT::line_pitch = line_pitch;
@@ -572,12 +570,11 @@ template<typename T>
 class Image2DManaged<T,TargetDeviceOpenCL> : public Image2DView<T,TargetDeviceOpenCL>
 {
 public:
-    typedef TargetDeviceOpenCL Target;
     typedef Image2DView<T,TargetDeviceOpenCL> ViewT;
     
     Image2DManaged() = delete;
     
-    inline Image2DManaged(std::size_t w, std::size_t h, const cl::Context& context, cl_mem_flags flags, const cl::ImageFormat& fmt, typename TargetHost::template PointerType<T> hostptr = nullptr) : ViewT()
+    inline Image2DManaged(std::size_t w, std::size_t h, const cl::Context& context, cl_mem_flags flags, const cl::ImageFormat& fmt, typename TargetHost<T>::PointerType hostptr = nullptr) : ViewT()
     {
         ViewT::line_pitch = w * sizeof(T);
         ViewT::xsize = w;
@@ -585,7 +582,7 @@ public:
         ViewT::memptr = new cl::Image2D(context, flags, fmt, w, h, 0, hostptr);   
     }
     
-    inline Image2DManaged(std::size_t w, std::size_t h, const cl::Context& context, cl_mem_flags flags, typename TargetHost::template PointerType<T> hostptr = nullptr) : ViewT()
+    inline Image2DManaged(std::size_t w, std::size_t h, const cl::Context& context, cl_mem_flags flags, typename TargetHost<T>::PointerType hostptr = nullptr) : ViewT()
     {
         ViewT::line_pitch = w * sizeof(T);
         ViewT::xsize = w;
@@ -609,16 +606,16 @@ public:
         }
     }
     
-    Image2DManaged(const Image2DManaged<T,Target>& img) = delete;
+    Image2DManaged(const Image2DManaged<T,TargetDeviceOpenCL>& img) = delete;
     
-    inline Image2DManaged(Image2DManaged<T,Target>&& img) : ViewT(std::move(img))
+    inline Image2DManaged(Image2DManaged<T,TargetDeviceOpenCL>&& img) : ViewT(std::move(img))
     {
         
     }
     
-    Image2DManaged<T,Target>& operator=(const Image2DManaged<T,Target>& img) = delete;
+    Image2DManaged<T,TargetDeviceOpenCL>& operator=(const Image2DManaged<T,TargetDeviceOpenCL>& img) = delete;
     
-    inline Image2DManaged<T,Target>& operator=(Image2DManaged<T,Target>&& img)
+    inline Image2DManaged<T,TargetDeviceOpenCL>& operator=(Image2DManaged<T,TargetDeviceOpenCL>&& img)
     {
         ViewT::operator=(std::move(img));
         return *this;
@@ -643,7 +640,7 @@ struct Image2DMapper
         
         std::size_t line_pitch = 0;
         
-        typename TargetHost::template PointerType<T> ptr = queue.enqueueMapImage(buf.clType(), true, flags, origin, region, &line_pitch, nullptr, events, event);
+        typename TargetHost<T>::PointerType ptr = queue.enqueueMapImage(buf.clType(), true, flags, origin, region, &line_pitch, nullptr, events, event);
         return Image2DView<T,TargetHost>(ptr, buf.width(), buf.height(), line_pitch);
     }
     

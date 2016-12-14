@@ -37,10 +37,10 @@
 
 #include <LaunchUtils.hpp>
 
-template<typename T, typename Target, typename T2>
+template<typename T, template<typename> class Target, typename T2>
 struct ConvolutionDispatcher;
 
-template<typename Target, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+template<template<typename> class Target, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
 struct ConvolutionDispatcher<_Scalar, Target, Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> >
 {
     typedef Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> KernelT;
@@ -91,13 +91,13 @@ struct ConvolutionDispatcher<_Scalar, Target, Eigen::Matrix<_Scalar, _Rows, _Col
     }
 };
 
-template<typename T, typename Target, typename T2>
+template<typename T, template<typename> class Target, typename T2>
 void core::math::convolve(const core::Buffer1DView<T,Target>& img_in, core::Buffer1DView<T,Target>& img_out, const T2& kern)
 {
     return ConvolutionDispatcher<T,Target,T2>::convolve1D(img_in, img_out, kern);
 }
 
-template<typename T, typename Target, typename T2>
+template<typename T, template<typename> class Target, typename T2>
 void core::math::convolve(const core::Buffer2DView<T,Target>& img_in, core::Buffer2DView<T,Target>& img_out, const T2& kern)
 {
     return ConvolutionDispatcher<T,Target,T2>::convolve2D(img_in, img_out, kern);

@@ -163,6 +163,42 @@ private:
     PointStatsT stats;
 };
 
+/** 
+ * This function computes the great-circle distance of two points on earth
+ * using the Haversine formula, assuming spherical shape of the planet. A
+ * well-known numerical issue with the formula is reduced accuracy in the
+ * case of near antipodal points.
+ * 
+ * lat1, lon1: latitude and longitude of first point, radians.
+ * lat2, lon2: latitude and longitude of second point, radians.
+ * radius: radius of the earth in user-defined units, e.g. 6378.2 km.
+ * returns: distance of the two points, in the same units as radius.
+ * Reference: http://en.wikipedia.org/wiki/Great-circle_distance
+ */
+template<typename T>
+static EIGEN_DEVICE_FUNC inline T greatCircleDistance(T lat1, T lon1, T lat2, T lon2, T radius)
+{
+    using std::cos;
+    using std::sin;
+    using std::asin;
+    using std::fmin;
+    using std::sqrt;
+    
+    T dlat, dlon, c1, c2, d1, d2, a, c, t;
+    
+    c1 = cos(lat1);
+    c2 = cos(lat2);
+    dlat = lat2 - lat1;
+    dlon = lon2 - lon1;
+    d1 = sin(dlat/T(2.0));
+    d2 = sin(dlon/T(2.0));
+    t = d2 * d2 * c1 * c2;
+    a = d1 * d1 + t;
+    c = T(2.0) * asin(fmin(T(1.0),sqrt(a)));
+    
+    return radius * c;
+}
+
 }
     
 }

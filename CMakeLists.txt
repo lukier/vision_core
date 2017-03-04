@@ -80,10 +80,12 @@ include(GenerateExportHeader)
 # ---------------------------------------------
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts)
 
+option(USE_GLBINDING "Use glbinding & globjects instead" OFF)
+
 # ------------------------------------------------------------------------------
 # Print Project Info
 # ------------------------------------------------------------------------------
-message("Project: ${PROJECT_NAME} / ${${PROJECT_NAME}_VERSION}, build type: ${CMAKE_BUILD_TYPE}, compiled on: ${CMAKE_SYSTEM}, flags: ${CMAKE_CXX_FLAGS}")
+message("Project: ${PROJECT_NAME} / ${${PROJECT_NAME}_VERSION}, build type: ${CMAKE_BUILD_TYPE}, compiled on: ${CMAKE_SYSTEM}, flags: ${CMAKE_CXX_FLAGS}, GLBinding: ${USE_GLBINDING}")
 
 # ------------------------------------------------------------------------------
 # Dependencies
@@ -92,13 +94,19 @@ find_package(Eigen3 REQUIRED QUIET)
 find_package(Sophus REQUIRED QUIET)
 find_package(TBB REQUIRED QUIET)
 find_package(Boost COMPONENTS system REQUIRED QUIET)
-find_package(glbinding REQUIRED QUIET)
-find_package(globjects REQUIRED QUIET)
+
+if(USE_GLBINDING)
+    find_package(glbinding REQUIRED QUIET)
+    find_package(globjects REQUIRED QUIET)
+else()
+    find_package(OpenGL REQUIRED QUIET)
+    find_package(GLEW REQUIRED QUIET)
+endif()
 
 find_package(CUDA QUIET)
 if(CUDA_FOUND)
     CUDA_SELECT_NVCC_ARCH_FLAGS(CUDA_NVCC_ARCH_FLAGS Auto)
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_ARCH_FLAGS};--expt-relaxed-constexpr;-std=c++11;-use_fast_math;-O2)
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_ARCH_FLAGS};--expt-relaxed-constexpr;--expt-extended-lambda;-std=c++11;-use_fast_math;-O2)
     if((CMAKE_BUILD_TYPE MATCHES Debug) OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo))
         list(APPEND CUDA_NVCC_FLAGS -Xcompiler;-rdynamic;-lineinfo)
     endif()
@@ -157,6 +165,7 @@ endmacro()
 # ---------------------------------------------
 set(HEADERS
 CUDAException.hpp
+CUDAGenerics.hpp
 CUDATypes.hpp
 EigenSerializers.hpp
 LaunchUtils.hpp
@@ -248,7 +257,7 @@ if(CUDA_FOUND)
     list(APPEND SOURCES math/sources/Random.cpp)
 endif()
 
-if(glbinding_FOUND)
+if(USE_GLBINDING AND glbinding_FOUND)
     if(FREEGLUT_FOUND)
         list(APPEND SOURCES wrapgl/sources/context_glut.cpp)
     endif()
@@ -310,20 +319,28 @@ if(CERES_FOUND)
     target_include_directories(${PROJECT_NAME} PUBLIC ${CERES_INCLUDE_DIRS})
     target_compile_definitions(${PROJECT_NAME} PUBLIC ${CERES_DEFINITIONS} CORE_HAVE_CERES)
 endif()
-if(glbinding_FOUND)
+
+if(USE_GLBINDING AND glbinding_FOUND)
     target_compile_definitions(${PROJECT_NAME} PUBLIC WRAPGL_HAVE_GLBINDING)
     target_link_libraries(${PROJECT_NAME} PUBLIC glbinding)
+    
+    if(FREEGLUT_FOUND)
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${FREEGLUT_LIBRARIES})
+    endif()
+    if(X11_FOUND)
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${X11_LIBRARIES})
+    endif()
     
     if(globjects_FOUND)
         target_link_libraries(${PROJECT_NAME} PUBLIC globjects)
     endif()
+else()
+    # Just basic OpenGL functionality
+    target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR})
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENGL_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} PUBLIC GLEW::GLEW)
 endif()
-if(FREEGLUT_FOUND)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${FREEGLUT_LIBRARIES})
-endif()
-if(X11_FOUND)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${X11_LIBRARIES})
-endif()
+
 if(Vulkan_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan::Vulkan)
 endif()

@@ -61,7 +61,7 @@ public:
         return ok;
     }
     
-    inline bool isCreated() const { return hndl != 0; }
+    inline bool isCreated() const { return hndl != nullptr; }
     
     virtual void finishFrame() = 0;
     virtual bool shouldQuit() = 0;

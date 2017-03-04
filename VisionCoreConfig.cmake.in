@@ -1,18 +1,22 @@
 include(CMakeFindDependencyMacro)
 
-find_dependency(glbinding QUIET)
-find_dependency(globjects QUIET)
+find_dependency(glbinding)
+find_dependency(globjects)
 
 if(@OpenCL_FOUND@)
-    find_dependency(OpenCL QUIET)
+    find_dependency(OpenCL)
 endif()
 
 if(@Vulkan_FOUND@)
-    find_dependency(Vulkan QUIET)
+    find_dependency(Vulkan)
 endif()
 
 if(@cereal_FOUND@)
-    find_dependency(cereal QUIET)
+    find_dependency(cereal)
+endif()
+
+if(@GLEW_FOUND@)
+    find_dependency(GLEW)
 endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/VisionCoreTargets.cmake")

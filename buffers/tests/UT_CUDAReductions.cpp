@@ -43,13 +43,13 @@
 
 #include <buffers/Buffer2D.hpp>
 #include <buffers/Reductions.hpp>
+#include <buffers/ReductionSum2D.hpp>
 
 #include <LaunchUtils.hpp>
 
-static constexpr std::size_t BufferSizeX = 32;
-static constexpr std::size_t BufferSizeY = 32;
-static constexpr std::size_t BlockSizeX = 4;
-static constexpr std::size_t BlockSizeY = 4;
+static constexpr std::size_t BufferSizeX = 640;
+static constexpr std::size_t BufferSizeY = 480;
+static constexpr std::size_t ThreadsPerBlock = 512;
 typedef float BufferElementT;
 typedef Eigen::Vector2f EigenElementT;
 
@@ -169,87 +169,172 @@ __global__ void reduce1DBuffer(
     core::finalizeReduction(bout.ptr(), &sum, sum_op);
 }
 
-TEST_F(Test_CUDAReductions, TestFloat) 
+TEST_F(Test_CUDAReductions, TestNewFloat) 
 {
-    const unsigned int block_size = 32;
-    const unsigned int block_dim = core::detail::Gcd<unsigned int>(buffer.area(), block_size);
-    const unsigned int grid_dim = buffer.area() / block_dim;
+    const std::size_t threads = ThreadsPerBlock;
+    const std::size_t blocks = std::min((buffer.area() + threads - 1) / threads, (std::size_t)1024);
     
-    core::Buffer1DManaged<BufferElementT, core::TargetDeviceCUDA> scratch_buffer(block_dim);
-    core::Buffer1DManaged<BufferElementT, core::TargetDeviceCUDA> scratch_buffer2(block_dim);
-    core::Buffer1DManaged<BufferElementT, core::TargetHost> scratch_buffer_cpu(block_dim);
+    LOG(INFO) << "F Reducing1 " << blocks << " / " << threads << " = " << (blocks * threads);
     
-    LOG(INFO) << "Running with " << grid_dim << " / " << block_dim << " = " << (grid_dim * block_dim);
-     
-    printBuffer(buffer);
+    core::Buffer1DManaged<BufferElementT, core::TargetDeviceCUDA> scratch_buffer(blocks);
+    core::Buffer1DManaged<BufferElementT, core::TargetHost> scratch_buffer_cpu(blocks);
+    
+    auto tpt1 = std::chrono::steady_clock::now();
     
     // run kernel
-    reduce2DBuffer<BufferElementT><<<grid_dim,block_dim>>>(buffer, scratch_buffer, buffer.area());
+    reduce2DBuffer<BufferElementT><<<blocks, threads>>>(buffer, scratch_buffer, buffer.area());
     
     // wait for it
-    const cudaError err = cudaDeviceSynchronize();
+    cudaError err = cudaDeviceSynchronize();
     if(err != cudaSuccess)
     {
         throw core::CUDAException(err, "Error launching the kernel");
     }
     
-    LOG(INFO) << "Whoa";
+    auto tpt2 = std::chrono::steady_clock::now();
     
-    scratch_buffer_cpu.copyFrom(scratch_buffer);
+    // final reduction - my way
     
-    for(unsigned int i = 0 ; i < block_dim ; ++i)
-    {
-        std::cout << "(" << scratch_buffer_cpu(i) << ") | ";
-    }
-    std::cout << std::endl;
+    reduce1DBuffer<BufferElementT><<<1, 1024>>>(scratch_buffer, scratch_buffer, scratch_buffer.size());
     
-    // final reduction
-    
-    reduce1DBuffer<BufferElementT><<<1,block_dim>>>(scratch_buffer, scratch_buffer2, block_dim);
-    scratch_buffer_cpu.copyFrom(scratch_buffer2);
-    
-    LOG(INFO) << "Result: " << scratch_buffer_cpu(0) << " vs GT " <<  ground_truth;
-}
-
-TEST_F(Test_CUDAReductions, TestVector2f) 
-{
-    const unsigned int block_size = 32;
-    const unsigned int block_dim = core::detail::Gcd<unsigned int>(ebuffer.area(), block_size);
-    const unsigned int grid_dim = ebuffer.area() / block_dim;
-    
-    core::Buffer1DManaged<EigenElementT, core::TargetDeviceCUDA> scratch_buffer(block_dim);
-    core::Buffer1DManaged<EigenElementT, core::TargetDeviceCUDA> scratch_buffer2(block_dim);
-    core::Buffer1DManaged<EigenElementT, core::TargetHost> scratch_buffer_cpu(block_dim);
-    
-    LOG(INFO) << "Running with " << grid_dim << " / " << block_dim << " = " << (grid_dim * block_dim);
-     
-    printBuffer(ebuffer);
-    
-    // run kernel
-    reduce2DBuffer<EigenElementT><<<grid_dim,block_dim>>>(ebuffer, scratch_buffer, ebuffer.area());
-    
-    // wait for it
-    const cudaError err = cudaDeviceSynchronize();
+    err = cudaDeviceSynchronize();
     if(err != cudaSuccess)
     {
         throw core::CUDAException(err, "Error launching the kernel");
     }
     
-    LOG(INFO) << "Whoa";
-    
+    auto tpt3 = std::chrono::steady_clock::now();
+
     scratch_buffer_cpu.copyFrom(scratch_buffer);
     
-    for(unsigned int i = 0 ; i < block_dim ; ++i)
-    {
-        std::cout << "(" << scratch_buffer_cpu(i)(0) << "," << scratch_buffer_cpu(i)(1) << ") | ";
-    }
-    std::cout << std::endl;
+    LOG(INFO) << "F Result1: " << scratch_buffer_cpu(0) << " vs GT " <<  ground_truth;
     
-    // final reduction
-    
-    reduce1DBuffer<EigenElementT><<<1,block_dim>>>(scratch_buffer, scratch_buffer2, block_dim);
-    scratch_buffer_cpu.copyFrom(scratch_buffer2);
-    
-    LOG(INFO) << "Result: " << scratch_buffer_cpu(0)(0) << " , " << scratch_buffer_cpu(0)(1) << " vs GT " << eground_truth(0) << " , " << eground_truth(1);
+    LOG(INFO) << "F Reduction2D: " << std::chrono::duration_cast<std::chrono::microseconds>(tpt2-tpt1).count() << " [us]";
+    LOG(INFO) << "F Reduction1D: " << std::chrono::duration_cast<std::chrono::microseconds>(tpt3-tpt2).count() << " [us]";
+    LOG(INFO) << "F ReductionMy: " << std::chrono::duration_cast<std::chrono::microseconds>(tpt3-tpt1).count() << " [us]";
 }
 
+TEST_F(Test_CUDAReductions, TestNewVector2f) 
+{
+    const std::size_t threads = ThreadsPerBlock;
+    const std::size_t blocks = std::min((buffer.area() + threads - 1) / threads, (std::size_t)1024);
+    
+    LOG(INFO) << "V2 Reducing1 " << blocks << " / " << threads << " = " << (blocks * threads);
+    
+    core::Buffer1DManaged<EigenElementT, core::TargetDeviceCUDA> scratch_buffer(blocks);
+    core::Buffer1DManaged<EigenElementT, core::TargetHost> scratch_buffer_cpu(blocks);
+    
+    auto tpt1 = std::chrono::steady_clock::now();
+    
+    // run kernel
+    reduce2DBuffer<EigenElementT><<<blocks, threads>>>(ebuffer, scratch_buffer, ebuffer.area());
+    
+    // wait for it
+    cudaError err = cudaDeviceSynchronize();
+    if(err != cudaSuccess)
+    {
+        throw core::CUDAException(err, "Error launching the kernel");
+    }
+    
+    auto tpt2 = std::chrono::steady_clock::now();
+    
+    // final reduction - my way
+    
+    reduce1DBuffer<EigenElementT><<<1, 1024>>>(scratch_buffer, scratch_buffer, scratch_buffer.size());
+    
+    err = cudaDeviceSynchronize();
+    if(err != cudaSuccess)
+    {
+        throw core::CUDAException(err, "Error launching the kernel");
+    }
+    
+    auto tpt3 = std::chrono::steady_clock::now();
+
+    scratch_buffer_cpu.copyFrom(scratch_buffer);
+    
+    LOG(INFO) << "V2 Result1: " << scratch_buffer_cpu(0)(0) << " , " << scratch_buffer_cpu(0)(1) << " vs GT " <<  eground_truth(0) << " , " << eground_truth(1);
+    
+    LOG(INFO) << "V2 Reduction2D: " << std::chrono::duration_cast<std::chrono::microseconds>(tpt2-tpt1).count() << " [us]";
+    LOG(INFO) << "V2 Reduction1D: " << std::chrono::duration_cast<std::chrono::microseconds>(tpt3-tpt2).count() << " [us]";
+    LOG(INFO) << "V2 ReductionMy: " << std::chrono::duration_cast<std::chrono::microseconds>(tpt3-tpt1).count() << " [us]";
+}
+
+template<typename T>
+__global__ void ReduceOld2D(core::HostReductionSum2DView<T> sum, core::Buffer2DView<T, core::TargetDeviceCUDA> bin)
+{
+    // current pixel
+    const std::size_t x = blockIdx.x*blockDim.x + threadIdx.x;
+    const std::size_t y = blockIdx.y*blockDim.y + threadIdx.y;
+    
+    // reduction for perr
+    typedef core::DeviceReductionSum2D<T, 32, 32> ReductionT;
+
+    FIXED_SIZE_SHARED_VAR(sumIt, ReductionT);
+    
+    if(bin.inBounds(x,y))
+    {
+        sumIt.getThisBlock() = bin(x,y);
+    }
+    
+    sumIt.reduceBlock(sum);
+}
+
+TEST_F(Test_CUDAReductions, TestOldFloat) 
+{
+    dim3 blockDim, gridDim;
+    
+    core::InitDimFromOutputImageOver(blockDim, gridDim, buffer, 16, 16);
+    
+    LOG(INFO) << "OF Running with " << gridDim.x << " x " << gridDim.y << " / " << blockDim.x << " x " << blockDim.y;
+    
+    core::HostReductionSum2DManaged<BufferElementT> scratch(gridDim);
+    
+    auto tpt1 = std::chrono::steady_clock::now();
+    
+    ReduceOld2D<BufferElementT><<<gridDim,blockDim>>>(scratch, buffer);
+    
+    // wait for it
+    cudaError err = cudaDeviceSynchronize();
+    if(err != cudaSuccess)
+    {
+        throw core::CUDAException(err, "Error launching the kernel");
+    }
+    
+    BufferElementT sum = core::zero<BufferElementT>();
+    scratch.getFinalSum(sum);
+    
+    auto tpt2 = std::chrono::steady_clock::now();
+    
+    LOG(INFO) << "OF Result: " << sum << " vs GT " << ground_truth;
+    LOG(INFO) << "OF Reduction2D: " << std::chrono::duration_cast<std::chrono::microseconds>(tpt2-tpt1).count() << " [us]";
+}
+
+TEST_F(Test_CUDAReductions, TestOldVector2f) 
+{
+    dim3 blockDim, gridDim;
+    
+    core::InitDimFromOutputImageOver(blockDim, gridDim, ebuffer, 16, 16);
+    
+    LOG(INFO) << "OV2 Running with " << gridDim.x << " x " << gridDim.y << " / " << blockDim.x << " x " << blockDim.y;
+    
+    core::HostReductionSum2DManaged<EigenElementT> scratch(gridDim);
+    
+    auto tpt1 = std::chrono::steady_clock::now();
+    
+    ReduceOld2D<EigenElementT><<<gridDim,blockDim>>>(scratch, ebuffer);
+    
+    // wait for it
+    cudaError err = cudaDeviceSynchronize();
+    if(err != cudaSuccess)
+    {
+        throw core::CUDAException(err, "Error launching the kernel");
+    }
+    
+    EigenElementT sum = core::zero<EigenElementT>();
+    scratch.getFinalSum(sum);
+    
+    auto tpt2 = std::chrono::steady_clock::now();
+    
+    LOG(INFO) << "OV2 Result: " << sum(0) << " , " << sum(1) << " vs GT " << eground_truth(0) << " , " << eground_truth(1);
+    LOG(INFO) << "OV2 Reduction2D: " << std::chrono::duration_cast<std::chrono::microseconds>(tpt2-tpt1).count() << " [us]";
+}

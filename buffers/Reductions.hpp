@@ -80,30 +80,23 @@ inline EIGEN_PURE_DEVICE_FUNC void warpReduce(
 template<typename T, typename FunctorT>
 inline EIGEN_PURE_DEVICE_FUNC void blockReduce(T* val, FunctorT op)
 {
-    typedef T VectorArrayT[32]; // for warp reduce
-    
-    FIXED_SIZE_SHARED_VAR(sharedMem, VectorArrayT);
+    typedef T VectorArrayT[32]; 
+    FIXED_SIZE_SHARED_VAR(sharedMem, VectorArrayT); // Shared mem for 32 partial sums
         
     const unsigned int lane = threadIdx.x % warpSize;
-    
     const unsigned int wid = threadIdx.x / warpSize;
     
-    warpReduce(*val, op);
+    warpReduce(*val, op); // Each warp performs partial reduction
     
-    //write reduced value to shared memory
-    if(lane == 0)
-    {
-        sharedMem[wid] = *val;
-    }
-    __syncthreads();
+    if(lane == 0)  { sharedMem[wid] = *val; } // Write reduced value to shared memory
     
-    //ensure we only grab a value from shared memory if that warp existed
+    __syncthreads(); // Wait for all partial reductions
+    
+    //read from shared memory only if that warp existed
     *val = (threadIdx.x < blockDim.x / warpSize) ? sharedMem[lane] : core::zero<T>();
     
-    if(wid == 0)
-    {
-        warpReduce(*val, op);
-    }
+    // Final reduce within first warp
+    if(wid == 0) { warpReduce(*val, op); }
 }
    
 }
@@ -127,6 +120,16 @@ inline EIGEN_PURE_DEVICE_FUNC void finalizeReduction(T* block_scratch, T* curr_s
         block_scratch[blockIdx.x] = *curr_sum;
     }
 }
+
+/*
+{
+  const std::size_t threads = 512;
+  const std::size_t blocks = std::min((N + threads - 1) / threads, 1024);
+
+  kernel<<<blocks, threads>>>(in, out, N);
+  kernel<<<1, 1024>>>(out, out, blocks);
+}
+*/
     
 }
 

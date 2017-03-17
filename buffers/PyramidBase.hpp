@@ -134,6 +134,111 @@ protected:
     ViewType imgs[LevelCount];
 };
 
+// Power of two pyramid - runtime set levels.
+// TODO check both level counts
+template<template<class, class> class ViewT, typename T, typename Target>
+class RuntimePyramidViewBase
+{
+public:    
+    typedef ViewT<T,Target> ViewType;
+    typedef T ValueType;
+    typedef Target TargetType;
+    
+    inline RuntimePyramidViewBase() = delete;
+    
+    inline RuntimePyramidViewBase(std::size_t Levels) : imgs(Levels) { }
+    
+    inline ~RuntimePyramidViewBase() { }
+    
+    inline RuntimePyramidViewBase(const RuntimePyramidViewBase& pyramid)
+    {
+        imgs.resize(pyramid.getLevelCount());
+      
+        for(std::size_t l = 0 ; l < getLevelCount() ; ++l) 
+        {
+            imgs[l] = pyramid.imgs[l];
+        }
+    }
+    
+    inline RuntimePyramidViewBase(RuntimePyramidViewBase&& pyramid) 
+    {
+        imgs.resize(pyramid.getLevelCount());
+        
+        for(std::size_t l = 0 ; l < getLevelCount() ; ++l) 
+        {
+            imgs[l] = std::move(pyramid.imgs[l]);
+        }
+    }
+    
+    inline RuntimePyramidViewBase& operator=(const RuntimePyramidViewBase& pyramid)
+    {
+        imgs.resize(pyramid.getLevelCount());
+      
+        for(std::size_t l = 0 ; l < getLevelCount() ; ++l) 
+        {
+            imgs[l] = pyramid.imgs[l];
+        }
+        
+        return *this;
+    }
+    
+    inline RuntimePyramidViewBase& operator=(RuntimePyramidViewBase&& pyramid)
+    {
+        imgs.resize(pyramid.getLevelCount());
+      
+        for(std::size_t l = 0 ; l < getLevelCount() ; ++l) 
+        {
+            imgs[l] = std::move(pyramid.imgs[l]);
+        }
+        
+        return *this;
+    }
+    
+    inline void swap(RuntimePyramidViewBase& pyramid)
+    {
+        for(std::size_t l = 0 ; l < getLevelCount() ; ++l) 
+        {
+            imgs[l]->swap(pyramid.imgs[l]);
+        }
+    }
+    
+    inline ViewType& operator[](std::size_t i)
+    {
+        return *imgs[i];
+    }
+    
+    inline const ViewType& operator[](std::size_t i) const
+    {
+        return *imgs[i];
+    }
+    
+    inline ViewType& operator()(std::size_t i)
+    {
+        return *imgs[i];
+    }
+    
+    inline const ViewType& operator()(std::size_t i) const
+    {
+        return *imgs[i];
+    }
+    
+    inline RuntimePyramidViewBase<ViewT, T, Target> subPyramid(std::size_t startLevel, std::size_t SubLevels)
+    {
+        RuntimePyramidViewBase<ViewT, T, Target> pyr(SubLevels);
+        
+        for(std::size_t l = 0 ; l < SubLevels; ++l) 
+        {
+            pyr.imgs[l] = imgs[startLevel+l];
+        }
+        
+        return pyr;
+    }
+    
+    inline std::size_t getLevelCount() const { return imgs.size(); }
+protected:
+    std::vector<ViewType*> imgs;
+};
+
 }
 
 #endif // CORE_PYRAMID_BASE_HPP

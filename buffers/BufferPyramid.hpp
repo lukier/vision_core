@@ -45,6 +45,9 @@ namespace core
 template<typename T, std::size_t Levels, typename Target = TargetHost>
 class BufferPyramidView { };
 
+template<typename T, typename Target = TargetHost>
+class RuntimeBufferPyramidView { };
+
 /**
  * Buffer Pyramid View - Host.
  */
@@ -115,6 +118,77 @@ public:
 #endif // CORE_HAVE_OPENCL
 };
 
+/**
+ * Runtime Buffer Pyramid View - Host.
+ */
+template<typename T>
+class RuntimeBufferPyramidView<T,TargetHost> : public RuntimePyramidViewBase<Buffer2DView,T,TargetHost>
+{
+public:
+    typedef RuntimePyramidViewBase<Buffer2DView,T,TargetHost> BaseT;
+    typedef typename BaseT::ViewType LevelT;
+    typedef typename BaseT::ValueType ValueType;
+    typedef typename BaseT::TargetType TargetType;
+    
+    inline RuntimeBufferPyramidView() = delete;
+    
+    inline RuntimeBufferPyramidView(std::size_t Levels) : BaseT(Levels) { }
+    
+    inline ~RuntimeBufferPyramidView() { }
+    
+    inline RuntimeBufferPyramidView(const RuntimeBufferPyramidView<T,TargetType>& pyramid) : BaseT(pyramid) { }
+    
+    inline RuntimeBufferPyramidView(RuntimeBufferPyramidView<T,TargetType>&& pyramid) : BaseT(std::move(pyramid)) { }
+    
+    inline RuntimeBufferPyramidView<T,TargetType>& operator=(const RuntimeBufferPyramidView<T,TargetType>& pyramid)
+    {
+        BaseT::operator=(pyramid);
+        return *this;
+    }
+    
+    inline RuntimeBufferPyramidView<T,TargetType>& operator=(RuntimeBufferPyramidView<T,TargetType>&& pyramid)
+    {
+        BaseT::operator=(std::move(pyramid));
+        return *this;
+    }
+    
+    inline void memset(unsigned char v = 0)
+    {
+        for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
+        {
+            BaseT::imgs[l]->memset(v);
+        }
+    }
+    
+    inline void copyFrom(const RuntimeBufferPyramidView<T,TargetHost>& pyramid)
+    {
+        for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
+        {
+            BaseT::imgs[l]->copyFrom(pyramid[l]);
+        }
+    }
+    
+#ifdef CORE_HAVE_CUDA
+    inline void copyFrom(const RuntimeBufferPyramidView<T,TargetDeviceCUDA>& pyramid)
+    {
+        for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
+        {
+            BaseT::imgs[l]->copyFrom(pyramid[l]);
+        }
+    }
+#endif // CORE_HAVE_CUDA
+    
+#ifdef CORE_HAVE_OPENCL
+    inline void copyFrom(const cl::CommandQueue& queue, const RuntimeBufferPyramidView<T,TargetDeviceOpenCL>& pyramid)
+    {
+        for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
+        {
+            BaseT::imgs[l]->copyFrom(queue, pyramid[l]);
+        }
+    }
+#endif // CORE_HAVE_OPENCL
+};
+
 #ifdef CORE_HAVE_CUDA
 
 /**
@@ -166,6 +240,58 @@ public:
             BaseT::imgs[l].copyFrom(pyramid.imgs[l]);
         }
     }
+};
+
+/**
+ * Runtime Buffer Pyramid View - CUDA.
+ */
+template<typename T>
+class RuntimeBufferPyramidView<T,TargetDeviceCUDA> : public RuntimePyramidViewBase<Buffer2DView,T,TargetDeviceCUDA>
+{
+public:
+  typedef RuntimePyramidViewBase<Buffer2DView,T,TargetDeviceCUDA> BaseT;
+  typedef typename BaseT::ViewType LevelT;
+  typedef typename BaseT::ValueType ValueType;
+  typedef typename BaseT::TargetType TargetType;
+  
+  inline RuntimeBufferPyramidView() = delete;
+  
+  inline RuntimeBufferPyramidView(std::size_t Levels) : BaseT(Levels) { }
+  
+  inline ~RuntimeBufferPyramidView() { }
+  
+  inline RuntimeBufferPyramidView(const RuntimeBufferPyramidView<T,TargetType>& pyramid) : BaseT(pyramid) { }
+  
+  inline RuntimeBufferPyramidView(RuntimeBufferPyramidView<T,TargetType>&& pyramid) : BaseT(std::move(pyramid)) { }
+  
+  inline RuntimeBufferPyramidView<T,TargetType>& operator=(const RuntimeBufferPyramidView<T,TargetType>& pyramid)
+  {
+      BaseT::operator=(pyramid);
+      return *this;
+  }
+  
+  inline RuntimeBufferPyramidView<T,TargetType>& operator=(RuntimeBufferPyramidView<T,TargetType>&& pyramid)
+  {
+      BaseT::operator=(std::move(pyramid));
+      return *this;
+  }
+  
+  inline void memset(unsigned char v = 0)
+  {
+      for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
+      {
+          BaseT::imgs[l]->memset(v);
+      }
+  }
+  
+  template<typename TargetFrom>
+  inline void copyFrom(const RuntimeBufferPyramidView<T,TargetFrom>& pyramid)
+  {
+      for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
+      {
+          BaseT::imgs[l]->copyFrom(pyramid[l]);
+      }
+  }
 };
 
 #endif // CORE_HAVE_CUDA
@@ -233,6 +359,73 @@ public:
         for(std::size_t l = 0 ; l < LevelCount ; ++l) 
         {
             BaseT::imgs[l].memset(queue, v);
+        }
+    }
+};
+
+/**
+ * Runtime Buffer Pyramid View - OpenCL.
+ */
+template<typename T>
+class RuntimeBufferPyramidView<T,TargetDeviceOpenCL> : public RuntimePyramidViewBase<Buffer2DView,T,TargetDeviceOpenCL>
+{
+public:
+    typedef RuntimePyramidViewBase<Buffer2DView,T,TargetDeviceOpenCL> BaseT;
+    typedef typename BaseT::ViewType LevelT;
+    typedef typename BaseT::ValueType ValueType;
+    typedef typename BaseT::TargetType TargetType;
+    
+    inline RuntimeBufferPyramidView() = delete;
+    
+    inline RuntimeBufferPyramidView(std::size_t Levels) : BaseT(Levels) { }
+    
+    inline ~RuntimeBufferPyramidView() { }
+    
+    inline RuntimeBufferPyramidView(const RuntimeBufferPyramidView<T,TargetType>& pyramid) : BaseT(pyramid) { }
+    
+    inline RuntimeBufferPyramidView(RuntimeBufferPyramidView<T,TargetType>&& pyramid) : BaseT(std::move(pyramid)) { }
+    
+    inline RuntimeBufferPyramidView<T,TargetType>& operator=(const RuntimeBufferPyramidView<T,TargetType>& pyramid)
+    {
+        BaseT::operator=(pyramid);
+        return *this;
+    }
+    
+    inline RuntimeBufferPyramidView<T,TargetType>& operator=(RuntimeBufferPyramidView<T,TargetType>&& pyramid)
+    {
+        BaseT::operator=(std::move(pyramid));
+        return *this;
+    }
+    
+    inline void memset(unsigned char v = 0)
+    {
+        for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
+        {
+            BaseT::imgs[l]->memset(v);
+        }
+    }
+    
+    inline void copyFrom(const cl::CommandQueue& queue, const RuntimeBufferPyramidView<T,TargetHost>& pyramid)
+    {
+        for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
+        {
+            BaseT::imgs[l]->copyFrom(queue, pyramid[l]);
+        }
+    }
+    
+    inline void copyFrom(const cl::CommandQueue& queue, const RuntimeBufferPyramidView<T,TargetDeviceOpenCL>& pyramid)
+    {
+        for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
+        {
+            BaseT::imgs[l]->copyFrom(queue, pyramid[l]);
+        }
+    }
+    
+    inline void memset(const cl::CommandQueue& queue, cl_float4 v)
+    {
+        for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
+        {
+            BaseT::imgs[l]->memset(queue, v);
         }
     }
 };
@@ -357,6 +550,62 @@ public:
 };
 
 #endif // CORE_HAVE_OPENCL
+
+/**
+ * CUDA/Host Runtime Buffer Pyramid Creation.
+ */
+template<typename T, typename Target = TargetHost>
+class RuntimeBufferPyramidManaged : public RuntimeBufferPyramidView<T, Target>
+{
+public:
+    typedef RuntimeBufferPyramidView<T, Target> ViewT;
+    typedef typename ViewT::ViewType LevelT;
+    typedef T ValueType;
+    typedef Target TargetType;
+    
+    RuntimeBufferPyramidManaged() = delete;
+    
+    inline RuntimeBufferPyramidManaged(std::size_t LevelCount, std::size_t w, std::size_t h) : ViewT(LevelCount)
+    {        
+        // Build power of two structure
+        for(std::size_t l = 0; l < LevelCount && (w>>l > 0) && (h>>l > 0); ++l ) 
+        {
+            typename Target::template PointerType<T> ptr = 0;
+            std::size_t line_pitch = 0;
+            
+            Target::template AllocatePitchedMem<T>(&ptr, &line_pitch, w >> l, h >> l);
+            
+            ViewT::imgs[l] = new core::Buffer2DView<T,Target>((T*)ptr, w >> l, h >> l, line_pitch);
+        }
+    }
+    
+    RuntimeBufferPyramidManaged(const RuntimeBufferPyramidManaged<T,Target>& img) = delete;
+    
+    inline RuntimeBufferPyramidManaged(RuntimeBufferPyramidManaged<T,Target>&& img) : ViewT(std::move(img))
+    {
+      
+    }
+    
+    RuntimeBufferPyramidManaged<T,Target>& operator=(const RuntimeBufferPyramidManaged<T,Target>& img) = delete;
+    
+    inline RuntimeBufferPyramidManaged<T,Target>& operator=(RuntimeBufferPyramidManaged<T,Target>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        return *this;
+    }
+    
+    inline ~RuntimeBufferPyramidManaged()
+    {
+        for(std::size_t l = 0; l < ViewT::getLevelCount() ; ++l)
+        {
+            Target::template DeallocatePitchedMem<T>(ViewT::imgs[l]->ptr());
+            delete ViewT::imgs[l];
+        }
+    }
+    
+    inline const ViewT& view() const { return (const ViewT&)*this; }
+    inline ViewT& view() { return (ViewT&)*this; }
+};
 
 }
 

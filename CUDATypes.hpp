@@ -37,6 +37,7 @@
 #define CORE_CUDA_TYPES_HPP
 
 #include <cstdint>
+#include <cfenv>
 
 // ---------------------------------------------------------------------------
 // CUDA Macros or CUDA types if CUDA not available
@@ -175,6 +176,71 @@ namespace core
     SPECIALIZE_EIGEN(emf66,float,6,6)
     #undef SPECIALIZE
     #undef SPECIALIZE_EIGEN
+    
+  // rounding
+  namespace detail
+  {
+    template<typename T, std::float_round_style rs>
+    struct RoundingDispatcher;
+    
+#ifndef CORE_CUDA_KERNEL_SPACE  
+    template<typename T>
+    struct RoundingDispatcher<T,std::float_round_style::round_toward_neg_infinity>
+    {
+      static inline T run(const T& v) { std::fesetround(FE_DOWNWARD); return std::round(v); }
+    };
+    
+    template<typename T>
+    struct RoundingDispatcher<T,std::float_round_style::round_to_nearest>
+    {
+      static inline T run(const T& v) { std::fesetround(FE_TONEAREST); return std::round(v); }
+    };
+    
+    template<typename T>
+    struct RoundingDispatcher<T,std::float_round_style::round_toward_zero>
+    {
+      static inline T run(const T& v) { std::fesetround(FE_TOWARDZERO); return std::round(v); }
+    };
+    
+    template<typename T>
+    struct RoundingDispatcher<T,std::float_round_style::round_toward_infinity>
+    {
+      static inline T run(const T& v) { std::fesetround(FE_UPWARD); return std::round(v); }
+    };
+    
+#else // CORE_CUDA_KERNEL_SPACE
+    template<>
+    struct RoundingDispatcher<float,std::float_round_style::round_toward_neg_infinity>
+    {
+      EIGEN_DEVICE_FUNC static inline float run(const float& v) { return __float2int_rd(v); }
+    };
+    
+    template<>
+    struct RoundingDispatcher<float,std::float_round_style::round_to_nearest>
+    {
+      EIGEN_DEVICE_FUNC static inline float run(const float& v) { return __float2int_rn(v); }
+    };
+    
+    template<>
+    struct RoundingDispatcher<float,std::float_round_style::round_toward_zero>
+    {
+      EIGEN_DEVICE_FUNC static inline float run(const float& v) { return __float2int_ru(v); }
+    };
+    
+    template<>
+    struct RoundingDispatcher<float,std::float_round_style::round_toward_infinity>
+    {
+      EIGEN_DEVICE_FUNC static inline float run(const float& v) { return __float2int_rz(v); }
+    };
+#endif // CORE_CUDA_KERNEL_SPACE
+  }
+  
+  template<typename T, std::float_round_style rs = std::float_round_style::round_to_nearest>
+  EIGEN_DEVICE_FUNC inline T round(const T& v)
+  {
+    return detail::RoundingDispatcher<T,rs>::run(v);
+  }
+    
 }
 
 #else // CORE_HAVE_CUDA

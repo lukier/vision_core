@@ -132,20 +132,15 @@ __global__ void reduce2DBuffer(
 {
     T sum = core::zero<T>();
     
-    auto sum_op = [&] __device__ (T& outval, const T& inval) 
-    {
-        outval += inval;
-    };
-    
-    core::runReductions<T>(Nblocks, [&] __device__ (unsigned int i) 
+    core::runReductions(Nblocks, [&] __device__ (unsigned int i) 
     { 
         const unsigned int y = i / bin.width();
         const unsigned int x = i - (y * bin.width());
         
-        sum_op(sum, bin(x,y));
+        sum = bin(x,y);
     });
     
-    core::finalizeReduction(bout.ptr(), &sum, sum_op);
+    core::finalizeReduction(bout.ptr(), &sum, core::internal::warpReduceSum<T>, core::zero<T>());
 }
 
 template<typename T>
@@ -156,17 +151,12 @@ __global__ void reduce1DBuffer(
 {
     T sum = core::zero<T>();
     
-    auto sum_op = [&] __device__ (T& outval, const T& inval) 
-    {
-        outval += inval;
-    };
-    
-    core::runReductions<T>(Nblocks, [&] __device__ (unsigned int i) 
+    core::runReductions(Nblocks, [&] __device__ (unsigned int i) 
     { 
-        sum_op(sum, bin(i));
+        sum = bin(i);
     });
     
-    core::finalizeReduction(bout.ptr(), &sum, sum_op);
+    core::finalizeReduction(bout.ptr(), &sum, core::internal::warpReduceSum<T>, core::zero<T>());
 }
 
 TEST_F(Test_CUDAReductions, TestNewFloat) 
@@ -195,7 +185,7 @@ TEST_F(Test_CUDAReductions, TestNewFloat)
     
     // final reduction - my way
     
-    reduce1DBuffer<BufferElementT><<<1, 1024>>>(scratch_buffer, scratch_buffer, scratch_buffer.size());
+    reduce1DBuffer<BufferElementT><<<1, 1024>>>(scratch_buffer, scratch_buffer, blocks);
     
     err = cudaDeviceSynchronize();
     if(err != cudaSuccess)
@@ -240,7 +230,7 @@ TEST_F(Test_CUDAReductions, TestNewVector2f)
     
     // final reduction - my way
     
-    reduce1DBuffer<EigenElementT><<<1, 1024>>>(scratch_buffer, scratch_buffer, scratch_buffer.size());
+    reduce1DBuffer<EigenElementT><<<1, 1024>>>(scratch_buffer, scratch_buffer, blocks);
     
     err = cudaDeviceSynchronize();
     if(err != cudaSuccess)

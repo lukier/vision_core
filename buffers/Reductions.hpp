@@ -50,18 +50,18 @@ namespace core
 namespace internal
 {
     
-template<typename T, typename FunctorT>
-inline EIGEN_PURE_DEVICE_FUNC void warpReduce(T& val, FunctorT op)
+template<typename T>
+inline EIGEN_PURE_DEVICE_FUNC void warpReduceSum(T& val)
 {
     for(unsigned int offset = warpSize / 2; offset > 0; offset /= 2)
     {
-        op(val, __shfl_down(val, offset));
+        val += __shfl_down(val, offset);
     }
 }
 
-template<typename FunctorT, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-inline EIGEN_PURE_DEVICE_FUNC void warpReduce(
-    Eigen::Ref<Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>> val, FunctorT op)
+template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+inline EIGEN_PURE_DEVICE_FUNC void warpReduceSum(
+    Eigen::Ref<Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>> val)
 {
     for(unsigned int offset = warpSize / 2; offset > 0; offset /= 2)
     {
@@ -71,14 +71,14 @@ inline EIGEN_PURE_DEVICE_FUNC void warpReduce(
             #pragma unroll
             for(int r = 0; r < _Rows ; r++)
             {
-                op(val(r,c),__shfl_down(val(r,c), offset));
+                val(r,c) += __shfl_down(val(r,c), offset);
             }
         }
     }
 }
 
-template<typename T, typename FunctorT>
-inline EIGEN_PURE_DEVICE_FUNC void blockReduce(T* val, FunctorT op)
+template<typename T, typename WarpReduceFunT>
+inline EIGEN_PURE_DEVICE_FUNC void blockReduce(T* val, WarpReduceFunT wrf, const T& zero)
 {
     typedef T VectorArrayT[32]; 
     FIXED_SIZE_SHARED_VAR(sharedMem, VectorArrayT); // Shared mem for 32 partial sums
@@ -86,22 +86,22 @@ inline EIGEN_PURE_DEVICE_FUNC void blockReduce(T* val, FunctorT op)
     const unsigned int lane = threadIdx.x % warpSize;
     const unsigned int wid = threadIdx.x / warpSize;
     
-    warpReduce(*val, op); // Each warp performs partial reduction
+    wrf(*val); // Each warp performs partial reduction
     
     if(lane == 0)  { sharedMem[wid] = *val; } // Write reduced value to shared memory
     
     __syncthreads(); // Wait for all partial reductions
     
     //read from shared memory only if that warp existed
-    *val = (threadIdx.x < blockDim.x / warpSize) ? sharedMem[lane] : core::zero<T>();
+    *val = (threadIdx.x < blockDim.x / warpSize) ? sharedMem[lane] : zero;
     
     // Final reduce within first warp
-    if(wid == 0) { warpReduce(*val, op); }
+    if(wid == 0) { wrf(*val); }
 }
    
 }
 
-template<typename T, typename ReductionBodyT>
+template<typename ReductionBodyT>
 inline EIGEN_PURE_DEVICE_FUNC void runReductions(unsigned int Nblocks, ReductionBodyT rb)
 {
     for(unsigned int i = blockIdx.x * blockDim.x + threadIdx.x; i < Nblocks; i += blockDim.x * gridDim.x)
@@ -110,10 +110,10 @@ inline EIGEN_PURE_DEVICE_FUNC void runReductions(unsigned int Nblocks, Reduction
     }
 }
 
-template<typename T, typename FunctorT>
-inline EIGEN_PURE_DEVICE_FUNC void finalizeReduction(T* block_scratch, T* curr_sum, FunctorT op)
+template<typename T, typename WarpReduceFunT>
+inline EIGEN_PURE_DEVICE_FUNC void finalizeReduction(T* block_scratch, T* curr_sum, WarpReduceFunT wrf, const T& zero)
 {
-    internal::blockReduce(curr_sum, op);
+    internal::blockReduce(curr_sum, wrf, zero);
     
     if(threadIdx.x == 0)
     {

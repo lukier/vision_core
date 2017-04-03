@@ -172,7 +172,7 @@ TEST_F(Test_CUDAReductions, TestNewFloat)
     auto tpt1 = std::chrono::steady_clock::now();
     
     // run kernel
-    reduce2DBuffer<BufferElementT><<<blocks, threads>>>(buffer, scratch_buffer, buffer.area());
+    reduce2DBuffer<BufferElementT><<<blocks, threads, 32 * sizeof(BufferElementT)>>>(buffer, scratch_buffer, buffer.area());
     
     // wait for it
     cudaError err = cudaDeviceSynchronize();
@@ -185,7 +185,7 @@ TEST_F(Test_CUDAReductions, TestNewFloat)
     
     // final reduction - my way
     
-    reduce1DBuffer<BufferElementT><<<1, 1024>>>(scratch_buffer, scratch_buffer, blocks);
+    reduce1DBuffer<BufferElementT><<<1, 1024, 32 * sizeof(BufferElementT)>>>(scratch_buffer, scratch_buffer, blocks);
     
     err = cudaDeviceSynchronize();
     if(err != cudaSuccess)
@@ -217,7 +217,7 @@ TEST_F(Test_CUDAReductions, TestNewVector2f)
     auto tpt1 = std::chrono::steady_clock::now();
     
     // run kernel
-    reduce2DBuffer<EigenElementT><<<blocks, threads>>>(ebuffer, scratch_buffer, ebuffer.area());
+    reduce2DBuffer<EigenElementT><<<blocks, threads, 32 * sizeof(EigenElementT)>>>(ebuffer, scratch_buffer, ebuffer.area());
     
     // wait for it
     cudaError err = cudaDeviceSynchronize();
@@ -230,7 +230,7 @@ TEST_F(Test_CUDAReductions, TestNewVector2f)
     
     // final reduction - my way
     
-    reduce1DBuffer<EigenElementT><<<1, 1024>>>(scratch_buffer, scratch_buffer, blocks);
+    reduce1DBuffer<EigenElementT><<<1, 1024, 32 * sizeof(EigenElementT)>>>(scratch_buffer, scratch_buffer, blocks);
     
     err = cudaDeviceSynchronize();
     if(err != cudaSuccess)

@@ -80,8 +80,9 @@ inline EIGEN_PURE_DEVICE_FUNC void warpReduceSum(
 template<typename T, typename WarpReduceFunT>
 inline EIGEN_PURE_DEVICE_FUNC void blockReduce(T* val, WarpReduceFunT wrf, const T& zero)
 {
-    typedef T VectorArrayT[32]; 
-    FIXED_SIZE_SHARED_VAR(sharedMem, VectorArrayT); // Shared mem for 32 partial sums
+    //typedef T VectorArrayT[SharedCount]; 
+    //FIXED_SIZE_SHARED_VAR(sharedMem, VectorArrayT); // Shared mem for partial sums
+    core::SharedMemory<T> sharedMem;
         
     const unsigned int lane = threadIdx.x % warpSize;
     const unsigned int wid = threadIdx.x / warpSize;

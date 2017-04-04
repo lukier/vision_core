@@ -19,4 +19,6 @@ if(@GLEW_FOUND@)
     find_dependency(GLEW)
 endif()
 
+set(EIGEN_CUDA_MAX_ALIGN_BYTES @EIGEN_IDEAL_MAX_ALIGN_BYTES@)
+
 include("${CMAKE_CURRENT_LIST_DIR}/VisionCoreTargets.cmake")

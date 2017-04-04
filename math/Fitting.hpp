@@ -101,7 +101,7 @@ private:
     
     void getPlane(const CovarianceMatrixT& cm, const VectorT& mean_point, PlaneT& p, T& curvature) const
     {
-        using Eigen::numext::fabs;
+        using Eigen::numext::abs;
 
         Eigen::SelfAdjointEigenSolver<CovarianceMatrixT> es(cm);
         
@@ -113,7 +113,7 @@ private:
         T eig_sum = cm.coeff(0) + cm.coeff(4) + cm.coeff(8);
         if(eig_sum != T(0.0))
         {
-            curvature = fabs(eigen_value / eig_sum);
+            curvature = abs(eigen_value / eig_sum);
         }
         else
         {

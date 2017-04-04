@@ -92,6 +92,9 @@ public:
         LOG(INFO) << "sizeof(Eigen::Vector4f) = " << data[19];
         LOG(INFO) << "sizeof(Sophus::SE3f) = " << data[20];
         LOG(INFO) << "EIGEN_DONT_VECTORIZE = " << data[21];
+        LOG(INFO) << "EIGEN_VECTORIZE_CUDA = " << data[22];
+        LOG(INFO) << "CUDACC_VS_CUDA_ARCH = " << data[23];
+        LOG(INFO) << "EIGEN_CUDA_MAX_ALIGN_BYTES = " << data[24];
     }
 };
 

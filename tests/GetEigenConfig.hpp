@@ -113,6 +113,27 @@ inline EIGEN_DEVICE_FUNC void getEigenConfiguration(float* ptr)
 #else // EIGEN_DONT_VECTORIZE
     ptr[21] = 0.0f;
 #endif // EIGEN_DONT_VECTORIZE
+    
+#ifdef EIGEN_VECTORIZE_CUDA
+    ptr[22] = 1.0f;
+#else // EIGEN_VECTORIZE_CUDA
+    ptr[22] = 0.0f;
+#endif // EIGEN_VECTORIZE_CUDA
+    
+#ifndef __CUDACC__
+    ptr[23] = 0.0f;
+#else // __CUDACC__
+  #ifndef __CUDA_ARCH__
+    ptr[23] = 1.0f;
+  #else //__CUDA_ARCH__
+    ptr[23] = 2.0f;
+  #endif // __CUDA_ARCH__
+#endif // __CUDACC__
+#ifdef EIGEN_CUDA_MAX_ALIGN_BYTES
+    ptr[24] = EIGEN_CUDA_MAX_ALIGN_BYTES;
+#else // EIGEN_CUDA_MAX_ALIGN_BYTES
+    ptr[24] = -1.0f;
+#endif // EIGEN_CUDA_MAX_ALIGN_BYTES
 }
 
 #endif // GET_EIGEN_CONFIG_HPP

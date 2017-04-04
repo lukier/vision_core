@@ -57,6 +57,12 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter -Wno-unused-variable)
 
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-march=native" COMPILER_OPT_ARCH_NATIVE_SUPPORTED)
+if(COMPILER_OPT_ARCH_NATIVE_SUPPORTED)
+    add_compile_options(-march=native -mtune=native)
+endif()
+
 # ------------------------------------------------------------------------------
 # Ready for testing
 # ------------------------------------------------------------------------------
@@ -95,6 +101,16 @@ find_package(Sophus REQUIRED QUIET)
 find_package(TBB REQUIRED QUIET)
 find_package(Boost COMPONENTS system REQUIRED QUIET)
 
+set(CMAKE_REQUIRED_DEFINITIONS -march=native -mtune=native)
+set(CMAKE_REQUIRED_INCLUDES ${EIGEN3_INCLUDE_DIR})
+try_run(EIGEN_IDEAL_MAX_ALIGN_BYTES EIGEN_GET_ALIGNMENT_OK 
+            ${CMAKE_BINARY_DIR} 
+            ${CMAKE_CURRENT_SOURCE_DIR}/scripts/EigenAlignmentCheck.cpp
+            COMPILE_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS}
+            CMAKE_FLAGS -DINCLUDE_DIRECTORIES:STRING=${CMAKE_REQUIRED_INCLUDES})
+if(EIGEN_GET_ALIGNMENT_OK)
+  message("Eigen Host Alignment: ${EIGEN_IDEAL_MAX_ALIGN_BYTES}")
+endif()
 if(USE_GLBINDING)
     find_package(glbinding REQUIRED QUIET)
     find_package(globjects REQUIRED QUIET)
@@ -108,7 +124,7 @@ if(CUDA_FOUND)
     CUDA_SELECT_NVCC_ARCH_FLAGS(CUDA_NVCC_ARCH_FLAGS Auto)
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_ARCH_FLAGS};--expt-relaxed-constexpr;--expt-extended-lambda;-std=c++11;-use_fast_math;-O2)
     if((CMAKE_BUILD_TYPE MATCHES Debug) OR (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo))
-        list(APPEND CUDA_NVCC_FLAGS -Xcompiler;-rdynamic;-lineinfo)
+        list(APPEND CUDA_NVCC_FLAGS -g;-lineinfo)
     endif()
     message("CUDA Flags: ${CUDA_NVCC_FLAGS}")
 endif()
@@ -295,6 +311,9 @@ if(CUDA_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE ${CUDA_curand_LIBRARY} ${CUDA_CUFFT_LIBRARIES})
     target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_INCLUDE_DIRS})
     target_compile_definitions(${PROJECT_NAME} PUBLIC CORE_HAVE_CUDA)
+    if(EIGEN_GET_ALIGNMENT_OK)
+      target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_CUDA_MAX_ALIGN_BYTES=${EIGEN_IDEAL_MAX_ALIGN_BYTES})
+    endif()
 endif()
 if(OpenCL_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenCL::OpenCL)

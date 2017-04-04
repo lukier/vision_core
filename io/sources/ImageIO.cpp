@@ -164,7 +164,7 @@ struct ImageIOProxy<core::Image2DManaged<T, core::TargetHost>,OpenCVBackend>
             flag = CV_LOAD_IMAGE_COLOR;
         }
         
-        cv::Mat cv_tmp = cv::imread(fn, flag);
+        cv::Mat cv_tmp = cv::imread(fn, flag | cv::IMREAD_ANYDEPTH);
         
         if(!cv_tmp.data)
         {
@@ -210,7 +210,7 @@ struct ImageIOProxy<core::Buffer2DManaged<T, core::TargetHost>,OpenCVBackend>
         {
             flag = CV_LOAD_IMAGE_COLOR;
         }
-        cv::Mat cv_tmp = cv::imread(fn, flag);
+        cv::Mat cv_tmp = cv::imread(fn, flag | cv::IMREAD_ANYDEPTH);
         
         if(!cv_tmp.data)
         {
@@ -250,14 +250,26 @@ template cv::Mat core::io::loadImage<cv::Mat>(const std::string& fn);
 template void core::io::saveImage<cv::Mat>(const std::string& fn, const cv::Mat& input);
 #endif // CORE_HAVE_OPENCV
 
+template core::Image2DManaged<float, core::TargetHost> core::io::loadImage<core::Image2DManaged<float, core::TargetHost>>(const std::string& fn);
+template void core::io::saveImage<core::Image2DView<float, core::TargetHost>>(const std::string& fn, const core::Image2DView<float, core::TargetHost>& input);
+
 template core::Image2DManaged<uint8_t, core::TargetHost> core::io::loadImage<core::Image2DManaged<uint8_t, core::TargetHost>>(const std::string& fn);
 template void core::io::saveImage<core::Image2DView<uint8_t, core::TargetHost>>(const std::string& fn, const core::Image2DView<uint8_t, core::TargetHost>& input);
+
+template core::Image2DManaged<uint16_t, core::TargetHost> core::io::loadImage<core::Image2DManaged<uint16_t, core::TargetHost>>(const std::string& fn);
+template void core::io::saveImage<core::Image2DView<uint16_t, core::TargetHost>>(const std::string& fn, const core::Image2DView<uint16_t, core::TargetHost>& input);
 
 template core::Image2DManaged<uchar3, core::TargetHost> core::io::loadImage<core::Image2DManaged<uchar3, core::TargetHost>>(const std::string& fn);
 template void core::io::saveImage<core::Image2DView<uchar3, core::TargetHost>>(const std::string& fn, const core::Image2DView<uchar3, core::TargetHost>& input);
 
+template core::Buffer2DManaged<float, core::TargetHost> core::io::loadImage<core::Buffer2DManaged<float, core::TargetHost>>(const std::string& fn);
+template void core::io::saveImage<core::Buffer2DView<float, core::TargetHost>>(const std::string& fn, const core::Buffer2DView<float, core::TargetHost>& input);
+
 template core::Buffer2DManaged<uint8_t, core::TargetHost> core::io::loadImage<core::Buffer2DManaged<uint8_t, core::TargetHost>>(const std::string& fn);
 template void core::io::saveImage<core::Buffer2DView<uint8_t, core::TargetHost>>(const std::string& fn, const core::Buffer2DView<uint8_t, core::TargetHost>& input);
+
+template core::Buffer2DManaged<uint16_t, core::TargetHost> core::io::loadImage<core::Buffer2DManaged<uint16_t, core::TargetHost>>(const std::string& fn);
+template void core::io::saveImage<core::Buffer2DView<uint16_t, core::TargetHost>>(const std::string& fn, const core::Buffer2DView<uint16_t, core::TargetHost>& input);
 
 template core::Buffer2DManaged<uchar3, core::TargetHost> core::io::loadImage<core::Buffer2DManaged<uchar3, core::TargetHost>>(const std::string& fn);
 template void core::io::saveImage<core::Buffer2DView<uchar3, core::TargetHost>>(const std::string& fn, const core::Buffer2DView<uchar3, core::TargetHost>& input);

@@ -51,6 +51,7 @@ UT_Hypersphere.cpp
 UT_Polynomial.cpp
 UT_Rectangle.cpp
 UT_SDF.cpp
+UT_SquareUpperTriangularMatrix.cpp
 )
 
 add_executable(UT_VisionCore_Types ${TEST_SOURCES})

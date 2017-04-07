@@ -50,6 +50,12 @@ T loadImage(const std::string& fn);
 template<typename T>
 void saveImage(const std::string& fn, const T& input);
 
+template<typename T>
+void saveBufferAsText(const std::string& fn, const T& input);
+
+template<typename T>
+void saveBufferAsBinary(const std::string& fn, const T& input);
+
 }
     
 }

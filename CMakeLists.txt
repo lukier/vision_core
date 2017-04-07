@@ -254,6 +254,7 @@ image/sources/FiltersCPU.cpp
 image/sources/PixelConvertCPU.cpp
 io/sources/PLYModel.cpp
 io/sources/ImageIO.cpp
+io/sources/SaveBuffer.cpp
 math/sources/ConvolutionCPU.cpp
 wrapgl/sources/WrapGLCommon.cpp
 wrapgl/sources/WrapGLFramebuffer.cpp

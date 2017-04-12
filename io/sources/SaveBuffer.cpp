@@ -33,6 +33,7 @@
  * ****************************************************************************
  */
 
+#include <buffers/Buffer1D.hpp>
 #include <buffers/Buffer2D.hpp>
 
 #include <io/ImageIO.hpp>
@@ -136,6 +137,19 @@ private:
 
 template<typename T>
 struct BinaryBufferSavingProxy { };
+
+template<typename T2>
+struct BinaryBufferSavingProxy<core::Buffer1DView<T2, core::TargetHost>>
+{
+  static inline void save(const std::string& fn, const core::Buffer1DView<T2, core::TargetHost>& b) 
+  { 
+    File outf(fn.c_str(),"wb");
+    
+    outf.write(b.ptr(), b.size(), sizeof(T2));
+    
+    outf.flush();
+  }
+};
 
 template<typename T2>
 struct BinaryBufferSavingProxy<core::Buffer2DView<T2, core::TargetHost>>

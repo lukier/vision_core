@@ -45,8 +45,8 @@
 
 #include <LaunchUtils.hpp>
 
-static constexpr std::size_t BufferSize = 1000;
-typedef float BufferElementT;
+static constexpr std::size_t BufferSize = 4097;
+typedef uint32_t BufferElementT;
 
 class Test_CUDABuffer1D : public ::testing::Test
 {
@@ -61,54 +61,6 @@ public:
         
     }
 };
-
-__global__ void Kernel_ReadBuffer1D(const core::Buffer1DView<BufferElementT,core::TargetDeviceCUDA> buf, std::size_t cbs)
-{
-    const std::size_t x = blockIdx.x*blockDim.x + threadIdx.x;
-    
-    if(buf.size() != cbs)
-    {
-        asm("trap;");
-    }
-    
-    if(buf.inBounds(x)) // is valid
-    {
-        BufferElementT elem = buf[x];
-    }
-}
-
-TEST_F(Test_CUDABuffer1D, TestRead) 
-{
-    dim3 gridDim, blockDim;
-    
-    core::Buffer1DManaged<BufferElementT, core::TargetDeviceCUDA> buffer(BufferSize);
-    
-    core::InitDimFromLinearBuffer(blockDim, gridDim, buffer);
-    
-    Kernel_ReadBuffer1D<<<gridDim,blockDim>>>(buffer, BufferSize);
-    
-    // wait for it
-    cudaError err = cudaDeviceSynchronize();
-    if(err != cudaSuccess)
-    {
-        throw core::CUDAException(err, "Error launching the kernel");
-    }
-    
-    // --------------------------------
-    
-    buffer.resize(BufferSize/2);
-    
-    core::InitDimFromLinearBuffer(blockDim, gridDim, buffer);
-    
-    Kernel_ReadBuffer1D<<<gridDim,blockDim>>>(buffer, BufferSize/2);
-    
-    // wait for it
-    err = cudaDeviceSynchronize();
-    if(err != cudaSuccess)
-    {
-        throw core::CUDAException(err, "Error launching the kernel");
-    }
-}
 
 __global__ void Kernel_WriteBuffer1D(core::Buffer1DView<BufferElementT,core::TargetDeviceCUDA> buf, std::size_t cbs)
 {
@@ -126,53 +78,51 @@ __global__ void Kernel_WriteBuffer1D(core::Buffer1DView<BufferElementT,core::Tar
     }
 }
 
-TEST_F(Test_CUDABuffer1D, TestWrite) 
+TEST_F(Test_CUDABuffer1D, TestHostDevice) 
 {
     dim3 gridDim, blockDim;
     
-    core::Buffer1DManaged<BufferElementT, core::TargetDeviceCUDA> buffer(BufferSize);
+    // CPU buffer 1
+    core::Buffer1DManaged<BufferElementT, core::TargetHost> buffer_cpu1(BufferSize);
     
-    core::InitDimFromLinearBuffer(blockDim, gridDim, buffer);
+    // Fill H
+    for(std::size_t i = 0 ; i < BufferSize ; ++i) { buffer_cpu1[i] = i * 10; }
     
-    Kernel_WriteBuffer1D<<<gridDim,blockDim>>>(buffer, BufferSize);
+    // GPU Buffer
+    core::Buffer1DManaged<BufferElementT, core::TargetDeviceCUDA> buffer_gpu(BufferSize);
     
-    // wait for it
+    // H->D
+    buffer_gpu.copyFrom(buffer_cpu1);
+    
+    // CPU buffer 2
+    core::Buffer1DManaged<BufferElementT, core::TargetHost> buffer_cpu2(BufferSize);
+    
+    // D->H
+    buffer_cpu2.copyFrom(buffer_gpu);
+    
+    // Check
+    for(std::size_t i = 0 ; i < BufferSize ; ++i) 
+    {
+        ASSERT_EQ(buffer_cpu2(i), i * 10) << "Wrong data at " << i;
+    }
+    
+    // Now write from kernel
+    core::InitDimFromLinearBuffer(blockDim, gridDim, buffer_gpu);
+    Kernel_WriteBuffer1D<<<gridDim,blockDim>>>(buffer_gpu, BufferSize);
+    
+    // Wait for it
     cudaError err = cudaDeviceSynchronize();
     if(err != cudaSuccess)
     {
         throw core::CUDAException(err, "Error launching the kernel");
     }
     
-    core::Buffer1DManaged<BufferElementT, core::TargetHost> cpu_buffer(BufferSize);
-    cpu_buffer.copyFrom(buffer);
+    // D->H
+    buffer_cpu1.copyFrom(buffer_gpu);
     
-    for(std::size_t i = 0 ; i < BufferSize ; ++i)
+    // Check
+    for(std::size_t i = 0 ; i < BufferSize ; ++i) 
     {
-        const BufferElementT& elem = cpu_buffer[i];
-        ASSERT_TRUE( ((float)i - elem) < std::numeric_limits<float>::epsilon() ) << "Error too big " << i << " vs " << elem; 
-    }
-    
-    // --------------------------------
-    
-    buffer.resize(BufferSize/2);
-    
-    core::InitDimFromLinearBuffer(blockDim, gridDim, buffer);
-    
-    Kernel_WriteBuffer1D<<<gridDim,blockDim>>>(buffer, BufferSize/2);
-    
-    // wait for it
-    err = cudaDeviceSynchronize();
-    if(err != cudaSuccess)
-    {
-        throw core::CUDAException(err, "Error launching the kernel");
-    }
-    
-    cpu_buffer.resize(buffer.size());
-    cpu_buffer.copyFrom(buffer);
-    
-    for(std::size_t i = 0 ; i < BufferSize/2 ; ++i)
-    {
-        const BufferElementT& elem = cpu_buffer[i];
-        ASSERT_TRUE( ((float)i - elem) < std::numeric_limits<float>::epsilon() ) << "Error too big " << i << " vs " << elem; 
+        ASSERT_EQ(buffer_cpu1(i), i) << "Wrong data at " << i;
     }
 }

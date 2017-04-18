@@ -54,6 +54,11 @@
 
 #include <buffers/Buffer3D.hpp>
 
+static constexpr std::size_t BufferSizeX = 1025;
+static constexpr std::size_t BufferSizeY = 769;
+static constexpr std::size_t BufferSizeZ = 5;
+typedef uint32_t BufferElementT;
+
 class Test_Buffer3D : public ::testing::Test
 {
 public:   
@@ -70,11 +75,40 @@ public:
 
 TEST_F(Test_Buffer3D, CPU) 
 {
-    core::Buffer3DManaged<float, core::TargetHost> bufcpu(10,20,30);
+    core::Buffer3DManaged<BufferElementT, core::TargetHost> bufcpu(BufferSizeX,BufferSizeY,BufferSizeZ);
     
-    ASSERT_TRUE(bufcpu.isValid());
+    ASSERT_TRUE(bufcpu.isValid()) << "Wrong managed state";
+    ASSERT_EQ(bufcpu.width(), BufferSizeX) << "Wrong managed width size";
+    ASSERT_EQ(bufcpu.height(), BufferSizeY) << "Wrong managed height size";
+    ASSERT_EQ(bufcpu.depth(), BufferSizeZ) << "Wrong managed depth size";
+    ASSERT_EQ(bufcpu.bytes(), BufferSizeX * BufferSizeY * BufferSizeZ * sizeof(BufferElementT)) << "Wrong managed size bytes";
     
-    core::Buffer3DView<float, core::TargetHost> viewcpu(bufcpu);
+    for(std::size_t z = 0 ; z < bufcpu.depth() ; ++z)
+    {
+        for(std::size_t y = 0 ; y < bufcpu.height() ; ++y)
+        {
+            for(std::size_t x = 0 ; x < bufcpu.width() ; ++x)
+            {
+                bufcpu(x,y,z) = z * (bufcpu.width() * bufcpu.height()) + y * bufcpu.width() + x;
+            }
+        }
+    }
     
-    ASSERT_TRUE(viewcpu.isValid());
+    core::Buffer3DView<BufferElementT, core::TargetHost> viewcpu(bufcpu);
+    
+    ASSERT_TRUE(viewcpu.isValid()) << "Wrong view state";
+    ASSERT_EQ(viewcpu.width(), BufferSizeX) << "Wrong view width size";
+    ASSERT_EQ(viewcpu.height(), BufferSizeY) << "Wrong view height size";
+    ASSERT_EQ(viewcpu.depth(), BufferSizeZ) << "Wrong view height size";
+    
+    for(std::size_t z = 0 ; z < viewcpu.depth() ; ++z)
+    {
+        for(std::size_t y = 0 ; y < viewcpu.height() ; ++y)
+        {
+            for(std::size_t x = 0 ; x < viewcpu.width() ; ++x)
+            {
+                ASSERT_EQ(viewcpu(x,y,z), viewcpu.ptr()[z * (viewcpu.elementPlanePitch()) + y * viewcpu.elementPitch() + x]) << "Wrong data at " << x << " , " << y << " , " << z;
+            }
+        }
+    }
 }

@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * ****************************************************************************
- * Basic CUDA Buffer2D Tests.
+ * Basic CUDA Buffer1D Tests.
  * ****************************************************************************
  */
 
@@ -45,14 +45,14 @@
 
 #include <LaunchUtils.hpp>
 
-static constexpr std::size_t BufferSizeX = 1234;
-static constexpr std::size_t BufferSizeY = 768;
-typedef float BufferElementT;
+static constexpr std::size_t BufferSizeX = 1025;
+static constexpr std::size_t BufferSizeY = 769;
+typedef uint32_t BufferElementT;
 
 class Test_CUDABuffer2D : public ::testing::Test
 {
 public:   
-    Test_CUDABuffer2D() : buffer(BufferSizeX,BufferSizeY)
+    Test_CUDABuffer2D()
     {
         
     }
@@ -61,61 +61,87 @@ public:
     {
         
     }
-    
-    core::Buffer2DManaged<BufferElementT, core::TargetDeviceCUDA> buffer;
 };
 
-__global__ void Kernel_ReadBuffer2D(const core::Buffer2DView<BufferElementT,core::TargetDeviceCUDA> buf)
+__global__ void Kernel_WriteBuffer2D(core::Buffer2DView<BufferElementT,core::TargetDeviceCUDA> buf, std::size_t cbsx, std::size_t cbsy)
 {
     const std::size_t x = blockIdx.x*blockDim.x + threadIdx.x;
     const std::size_t y = blockIdx.y*blockDim.y + threadIdx.y;
     
-    if(buf.inBounds(x,y)) // is valid
+    if(buf.width() != cbsx)
     {
-        BufferElementT elem = buf(x,y);
+        asm("trap;");
     }
-}
-
-TEST_F(Test_CUDABuffer2D, TestRead) 
-{
-    dim3 gridDim, blockDim;
     
-    core::InitDimFromOutputImage(blockDim, gridDim, buffer);
-    
-    Kernel_ReadBuffer2D<<<gridDim,blockDim>>>(buffer);
-    
-    // wait for it
-    const cudaError err = cudaDeviceSynchronize();
-    if(err != cudaSuccess)
+    if(buf.height() != cbsy)
     {
-        throw core::CUDAException(err, "Error launching the kernel");
+        asm("trap;");
     }
-}
-
-__global__ void Kernel_WriteBuffer2D(core::Buffer2DView<BufferElementT,core::TargetDeviceCUDA> buf)
-{
-    const std::size_t x = blockIdx.x*blockDim.x + threadIdx.x;
-    const std::size_t y = blockIdx.y*blockDim.y + threadIdx.y;
     
     if(buf.inBounds(x,y)) // is valid
     {
         BufferElementT& elem = buf(x,y);
-        elem = x * y;
+        elem = y * buf.width() + x;
     }
 }
 
-TEST_F(Test_CUDABuffer2D, TestWrite) 
+TEST_F(Test_CUDABuffer2D, TestHostDevice) 
 {
     dim3 gridDim, blockDim;
     
-    core::InitDimFromOutputImage(blockDim, gridDim, buffer);
+    // CPU buffer 1
+    core::Buffer2DManaged<BufferElementT, core::TargetHost> buffer_cpu1(BufferSizeX,BufferSizeY);
     
-    Kernel_WriteBuffer2D<<<gridDim,blockDim>>>(buffer);
+    // Fill H
+    for(std::size_t y = 0 ; y < BufferSizeY ; ++y) 
+    { 
+        for(std::size_t x = 0 ; x < BufferSizeX ; ++x) 
+        {
+            buffer_cpu1(x,y) = (y * BufferSizeX + x) * 10; 
+        }
+    }
     
-    // wait for it
-    const cudaError err = cudaDeviceSynchronize();
+    // GPU Buffer
+    core::Buffer2DManaged<BufferElementT, core::TargetDeviceCUDA> buffer_gpu(BufferSizeX,BufferSizeY);
+    
+    // H->D
+    buffer_gpu.copyFrom(buffer_cpu1);
+    
+    // CPU buffer 2
+    core::Buffer2DManaged<BufferElementT, core::TargetHost> buffer_cpu2(BufferSizeX,BufferSizeY);
+    
+    // D->H
+    buffer_cpu2.copyFrom(buffer_gpu);
+    
+    // Check
+    for(std::size_t y = 0 ; y < BufferSizeY ; ++y) 
+    { 
+        for(std::size_t x = 0 ; x < BufferSizeX ; ++x) 
+        {
+            ASSERT_EQ(buffer_cpu2(x,y), (y * BufferSizeX + x) * 10) << "Wrong data at " << x << " , " << y;
+        }
+    }
+    
+    // Now write from kernel
+    core::InitDimFromOutputImage(blockDim, gridDim, buffer_gpu);
+    Kernel_WriteBuffer2D<<<gridDim,blockDim>>>(buffer_gpu, BufferSizeX, BufferSizeY);
+    
+    // Wait for it
+    cudaError err = cudaDeviceSynchronize();
     if(err != cudaSuccess)
     {
         throw core::CUDAException(err, "Error launching the kernel");
+    }
+    
+    // D->H
+    buffer_cpu1.copyFrom(buffer_gpu);
+    
+    // Check
+    for(std::size_t y = 0 ; y < BufferSizeY ; ++y) 
+    { 
+        for(std::size_t x = 0 ; x < BufferSizeX ; ++x) 
+        {
+            ASSERT_EQ(buffer_cpu1(x,y), y * BufferSizeX + x) << "Wrong data at " << x << " , " << y;
+        }
     }
 }

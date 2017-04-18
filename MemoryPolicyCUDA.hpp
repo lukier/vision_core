@@ -91,11 +91,13 @@ struct TargetDeviceCUDA
     }
 
     template<typename T>
-    inline static void DeallocatePitchedMem(PointerType<T> devPtr) throw()
+    inline static bool DeallocatePitchedMem(PointerType<T> devPtr) throw()
     {
 #ifndef CORE_CUDA_KERNEL_SPACE
-        cudaFree(devPtr);
+        const cudaError err = cudaFree(devPtr);
+        return err == cudaSuccess;
 #endif // CORE_CUDA_KERNEL_SPACE
+        return false;
     }
     
     template<typename T> 

@@ -54,6 +54,10 @@
 
 #include <buffers/Buffer2D.hpp>
 
+static constexpr std::size_t BufferSizeX = 1025;
+static constexpr std::size_t BufferSizeY = 769;
+typedef uint32_t BufferElementT;
+
 class Test_Buffer2D : public ::testing::Test
 {
 public:   
@@ -70,11 +74,32 @@ public:
 
 TEST_F(Test_Buffer2D, CPU) 
 {
-    core::Buffer2DManaged<float, core::TargetHost> bufcpu(10,20);
+    core::Buffer2DManaged<BufferElementT, core::TargetHost> bufcpu(BufferSizeX,BufferSizeY);
     
-    ASSERT_TRUE(bufcpu.isValid());
+    ASSERT_TRUE(bufcpu.isValid()) << "Wrong managed state";
+    ASSERT_EQ(bufcpu.width(), BufferSizeX) << "Wrong managed width size";
+    ASSERT_EQ(bufcpu.height(), BufferSizeY) << "Wrong managed height size";
+    ASSERT_EQ(bufcpu.bytes(), BufferSizeX * BufferSizeY * sizeof(BufferElementT)) << "Wrong managed size bytes";
     
-    core::Buffer2DView<float, core::TargetHost> viewcpu(bufcpu);
+    for(std::size_t y = 0 ; y < bufcpu.height() ; ++y)
+    {
+        for(std::size_t x = 0 ; x < bufcpu.width() ; ++x)
+        {
+            bufcpu(x,y) = y * bufcpu.width() + x;
+        }
+    }
     
-    ASSERT_TRUE(viewcpu.isValid());
+    core::Buffer2DView<BufferElementT, core::TargetHost> viewcpu(bufcpu);
+    
+    ASSERT_TRUE(viewcpu.isValid()) << "Wrong view state";
+    ASSERT_EQ(viewcpu.width(), BufferSizeX) << "Wrong view width size";
+    ASSERT_EQ(viewcpu.height(), BufferSizeY) << "Wrong view height size";
+    
+    for(std::size_t y = 0 ; y < viewcpu.height() ; ++y)
+    {
+        for(std::size_t x = 0 ; x < viewcpu.width() ; ++x)
+        {
+            ASSERT_EQ(viewcpu(x,y), viewcpu.ptr()[y * viewcpu.elementPitch() + x]) << "Wrong data at " << x << " , " << y;
+        }
+    }
 }

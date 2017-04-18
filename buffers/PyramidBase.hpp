@@ -198,28 +198,28 @@ public:
     {
         for(std::size_t l = 0 ; l < getLevelCount() ; ++l) 
         {
-            imgs[l]->swap(pyramid.imgs[l]);
+            imgs[l].swap(pyramid.imgs[l]);
         }
     }
     
     inline ViewType& operator[](std::size_t i)
     {
-        return *imgs[i];
+        return imgs[i];
     }
     
     inline const ViewType& operator[](std::size_t i) const
     {
-        return *imgs[i];
+        return imgs[i];
     }
     
     inline ViewType& operator()(std::size_t i)
     {
-        return *imgs[i];
+        return imgs[i];
     }
     
     inline const ViewType& operator()(std::size_t i) const
     {
-        return *imgs[i];
+        return imgs[i];
     }
     
     inline RuntimePyramidViewBase<ViewT, T, Target> subPyramid(std::size_t startLevel, std::size_t SubLevels)
@@ -236,7 +236,7 @@ public:
     
     inline std::size_t getLevelCount() const { return imgs.size(); }
 protected:
-    std::vector<ViewType*> imgs;
+    std::vector<ViewType> imgs;
 };
 
 }

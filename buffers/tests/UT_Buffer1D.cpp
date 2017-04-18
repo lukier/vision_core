@@ -54,6 +54,9 @@
 
 #include <buffers/Buffer1D.hpp>
 
+static constexpr std::size_t BufferSize = 4097;
+typedef uint32_t BufferElementT;
+
 class Test_Buffer1D : public ::testing::Test
 {
 public:   
@@ -70,11 +73,24 @@ public:
 
 TEST_F(Test_Buffer1D, CPU) 
 {
-    core::Buffer1DManaged<float, core::TargetHost> bufcpu(10);
+    core::Buffer1DManaged<BufferElementT, core::TargetHost> bufcpu(BufferSize);
     
-    ASSERT_TRUE(bufcpu.isValid());
+    ASSERT_TRUE(bufcpu.isValid()) << "Wrong managed state";
+    ASSERT_EQ(bufcpu.size(), BufferSize) << "Wrong managed size";
+    ASSERT_EQ(bufcpu.bytes(), BufferSize * sizeof(BufferElementT)) << "Wrong managed size bytes";
     
-    core::Buffer1DView<float, core::TargetHost> viewcpu(bufcpu);
+    for(std::size_t i = 0 ; i < bufcpu.size() ; ++i)
+    {
+        bufcpu(i) = i;
+    }
     
-    ASSERT_TRUE(viewcpu.isValid());
+    core::Buffer1DView<BufferElementT, core::TargetHost> viewcpu(bufcpu);
+    
+    ASSERT_TRUE(viewcpu.isValid()) << "Wrong view state";
+    ASSERT_EQ(viewcpu.size(), BufferSize) << "Wrong size for view";
+    
+    for(std::size_t i = 0 ; i < viewcpu.size() ; ++i)
+    {
+        ASSERT_EQ(viewcpu(i), viewcpu.ptr()[i]) << "Wrong data at " << i;
+    }
 }

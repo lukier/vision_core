@@ -198,6 +198,19 @@ public:
     {
         return ( image::convertPixel<TR,T>(get(x,y)) - image::convertPixel<TR,T>(get(x,y-1)) );
     }
+    
+    template<typename TR>
+    EIGEN_DEVICE_FUNC inline TR getForwardDiffDx(std::size_t x, std::size_t y) const
+    {
+        const T* row = rowPtr(y);
+        return ( image::convertPixel<TR,T>(row[x]) - image::convertPixel<TR,T>(row[x+1]) );
+    }
+
+    template<typename TR>
+    EIGEN_DEVICE_FUNC inline TR getForwardDiffDy(std::size_t x, std::size_t y) const
+    {
+        return ( image::convertPixel<TR,T>(get(x,y)) - image::convertPixel<TR,T>(get(x,y+1)) );
+    }
 
     template<typename TR>
     EIGEN_DEVICE_FUNC inline TR getCentralDiffDx(std::size_t x, std::size_t y) const
@@ -219,6 +232,19 @@ public:
         res(0,0) = getCentralDiffDx<TR>(px,py);
         res(0,1) = getCentralDiffDy<TR>(px,py);
         return res;
+    }
+    
+    template<typename TR>
+    EIGEN_DEVICE_FUNC inline Eigen::Matrix<TR,1,2> getMiddleDiff(std::size_t px, std::size_t py) const
+    {
+        const TR mid = image::convertPixel<TR,T>(get(px,py));
+        const TR back = image::convertPixel<TR,T>(get(px-1,py));
+        const TR forw = image::convertPixel<TR,T>(get(px+1,py));
+        const TR upper = image::convertPixel<TR,T>(get(px,py-1));
+        const TR lower = image::convertPixel<TR,T>(get(px,py+1));
+
+        return Eigen::Matrix<TR,1,2>( (back + mid) / TR(2.0) - (forw + mid) / TR(2.0), 
+                                      (upper + mid) / TR(2.0) - (lower + mid) / TR(2.0));
     }
 
     template<typename TR>

@@ -93,12 +93,14 @@ struct TargetHost
     }
 
     template<typename T> 
-    inline static void DeallocatePitchedMem(PointerType<T> hostPtr) throw()
+    inline static bool DeallocatePitchedMem(PointerType<T> hostPtr) throw()
     {
 #ifdef CORE_HAVE_CUDA
-        cudaFreeHost(hostPtr);
+        const cudaError err = cudaFreeHost(hostPtr);
+        return err == cudaSuccess;
 #else // CORE_HAVE_CUDA
         free(hostPtr);
+        return true;
 #endif // CORE_HAVE_CUDA
     }
     

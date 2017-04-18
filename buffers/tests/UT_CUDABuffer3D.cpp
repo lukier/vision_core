@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * ****************************************************************************
- * Basic CUDA Buffer3D Tests.
+ * Basic CUDA Buffer1D Tests.
  * ****************************************************************************
  */
 
@@ -45,84 +45,119 @@
 
 #include <LaunchUtils.hpp>
 
-static constexpr std::size_t BufferSizeX = 1234;
-static constexpr std::size_t BufferSizeY = 768;
-static constexpr std::size_t BufferSizeZ = 9;
-typedef float BufferElementT;
+static constexpr std::size_t BufferSizeX = 1025;
+static constexpr std::size_t BufferSizeY = 769;
+static constexpr std::size_t BufferSizeZ = 5;
+typedef uint32_t BufferElementT;
 
 class Test_CUDABuffer3D : public ::testing::Test
 {
 public:   
-    Test_CUDABuffer3D() : buffer(BufferSizeX,BufferSizeY,BufferSizeZ)
+    Test_CUDABuffer3D()
     {
-        LOG(INFO) << "Buffer 3D " << buffer.width() << " x " << buffer.height() << " x " << buffer.depth() << " / " << buffer.pitch() << " / " << buffer.planePitch();
+        
     }
     
     virtual ~Test_CUDABuffer3D()
     {
         
     }
-    
-    core::Buffer3DManaged<BufferElementT, core::TargetDeviceCUDA> buffer;
 };
 
-__global__ void Kernel_ReadBuffer3D(const core::Buffer3DView<BufferElementT,core::TargetDeviceCUDA> buf)
+__global__ void Kernel_WriteBuffer3D(core::Buffer3DView<BufferElementT,core::TargetDeviceCUDA> buf, std::size_t cbsx, std::size_t cbsy, std::size_t cbsz)
 {
     const std::size_t x = blockIdx.x*blockDim.x + threadIdx.x;
     const std::size_t y = blockIdx.y*blockDim.y + threadIdx.y;
+    const std::size_t z = blockIdx.z*blockDim.z + threadIdx.z;
     
-    for(std::size_t z = 0 ; z < buf.depth() ; ++z)
+    if(buf.width() != cbsx)
     {
-        if(buf.inBounds(x,y,z)) // is valid
-        {
-            BufferElementT elem = buf(x,y,z);
-        }
+        asm("trap;");
+    }
+    
+    if(buf.height() != cbsy)
+    {
+        asm("trap;");
+    }
+    
+    if(buf.depth() != cbsz)
+    {
+        asm("trap;");
+    }
+    
+    if(buf.inBounds(x,y,z)) // is valid
+    {
+        BufferElementT& elem = buf(x,y,z);
+        elem = (z * buf.width() * buf.height()) + (y * buf.width()) + x;
     }
 }
 
-TEST_F(Test_CUDABuffer3D, TestRead) 
+TEST_F(Test_CUDABuffer3D, TestHostDevice) 
 {
     dim3 gridDim, blockDim;
     
-    core::InitDimFromOutputImage(blockDim, gridDim, buffer);
+    // CPU buffer 1
+    core::Buffer3DManaged<BufferElementT, core::TargetHost> buffer_cpu1(BufferSizeX,BufferSizeY,BufferSizeZ);
     
-    Kernel_ReadBuffer3D<<<gridDim,blockDim>>>(buffer);
+    // Fill H
+    for(std::size_t z = 0 ; z < BufferSizeZ ; ++z) 
+    { 
+        for(std::size_t y = 0 ; y < BufferSizeY ; ++y) 
+        { 
+            for(std::size_t x = 0 ; x < BufferSizeX ; ++x) 
+            {
+                buffer_cpu1(x,y,z) = ((z * BufferSizeX * BufferSizeY) + (y * BufferSizeX) + x) * 10; 
+            }
+        }
+    }
     
-    // wait for it
-    const cudaError err = cudaDeviceSynchronize();
+    // GPU Buffer
+    core::Buffer3DManaged<BufferElementT, core::TargetDeviceCUDA> buffer_gpu(BufferSizeX,BufferSizeY,BufferSizeZ);
+    
+    // H->D
+    buffer_gpu.copyFrom(buffer_cpu1);
+    
+    // CPU buffer 2
+    core::Buffer3DManaged<BufferElementT, core::TargetHost> buffer_cpu2(BufferSizeX,BufferSizeY,BufferSizeZ);
+    
+    // D->H
+    buffer_cpu2.copyFrom(buffer_gpu);
+    
+    // Check
+    for(std::size_t z = 0 ; z < BufferSizeZ ; ++z) 
+    {
+        for(std::size_t y = 0 ; y < BufferSizeY ; ++y) 
+        { 
+            for(std::size_t x = 0 ; x < BufferSizeX ; ++x) 
+            {
+                ASSERT_EQ(buffer_cpu2(x,y,z), ((z * BufferSizeX * BufferSizeY) + (y * BufferSizeX + x)) * 10) << "Wrong data at " << x << " , " << y << " , " << z;
+            }
+        }
+    }
+    
+    // Now write from kernel
+    core::InitDimFromOutputVolume(blockDim, gridDim, buffer_gpu);
+    Kernel_WriteBuffer3D<<<gridDim,blockDim>>>(buffer_gpu, BufferSizeX, BufferSizeY, BufferSizeZ);
+    
+    // Wait for it
+    cudaError err = cudaDeviceSynchronize();
     if(err != cudaSuccess)
     {
         throw core::CUDAException(err, "Error launching the kernel");
     }
-}
-
-__global__ void Kernel_WriteBuffer3D(core::Buffer3DView<BufferElementT,core::TargetDeviceCUDA> buf)
-{
-    const std::size_t x = blockIdx.x*blockDim.x + threadIdx.x;
-    const std::size_t y = blockIdx.y*blockDim.y + threadIdx.y;
     
-    for(std::size_t z = 0 ; z < buf.depth() ; ++z)
+    // D->H
+    buffer_cpu1.copyFrom(buffer_gpu);
+    
+    // Check
+    for(std::size_t z = 0 ; z < BufferSizeZ ; ++z) 
     {
-        if(buf.inBounds(x,y,z)) // is valid
-        {
-            BufferElementT& elem = buf(x,y,z);
-            elem = x * y * z;
+        for(std::size_t y = 0 ; y < BufferSizeY ; ++y) 
+        { 
+            for(std::size_t x = 0 ; x < BufferSizeX ; ++x) 
+            {
+                ASSERT_EQ(buffer_cpu1(x,y,z), (z * BufferSizeX * BufferSizeY) + (y * BufferSizeX) + x) << "Wrong data at " << x << " , " << y << " , " << z;
+            }
         }
-    }
-}
-
-TEST_F(Test_CUDABuffer3D, TestWrite) 
-{
-    dim3 gridDim, blockDim;
-    
-    core::InitDimFromOutputImage(blockDim, gridDim, buffer);
-    
-    Kernel_WriteBuffer3D<<<gridDim,blockDim>>>(buffer);
-    
-    // wait for it
-    const cudaError err = cudaDeviceSynchronize();
-    if(err != cudaSuccess)
-    {
-        throw core::CUDAException(err, "Error launching the kernel");
     }
 }

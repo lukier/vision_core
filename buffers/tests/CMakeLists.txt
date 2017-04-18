@@ -43,20 +43,20 @@ include_directories(../tests)
 
 set(TEST_SOURCES
 ../../tests/tests_main.cpp
-#UT_Buffer1D.cpp
-#UT_Buffer2D.cpp
-#UT_Buffer3D.cpp
+UT_Buffer1D.cpp
+UT_Buffer2D.cpp
+UT_Buffer3D.cpp
 #UT_Pyramid.cpp
 #UT_Reduction2D.cpp
 )
 
 set(TEST_KERNEL_SOURCES
-#UT_CUDABuffer1D.cu
-#UT_CUDABuffer2D.cu
-#UT_CUDABuffer3D.cu
+UT_CUDABuffer1D.cu
+UT_CUDABuffer2D.cu
+UT_CUDABuffer3D.cu
 #UT_CUDAPyramid.cu
 #UT_CUDAReduction2D.cu
-UT_CUDAReductions.cu
+#UT_CUDAReductions.cu
 )
 
 set(TEST_KERNEL_OBJS)

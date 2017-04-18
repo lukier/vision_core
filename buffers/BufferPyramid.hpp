@@ -156,7 +156,7 @@ public:
     {
         for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
         {
-            BaseT::imgs[l]->memset(v);
+            BaseT::imgs[l].memset(v);
         }
     }
     
@@ -164,7 +164,7 @@ public:
     {
         for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
         {
-            BaseT::imgs[l]->copyFrom(pyramid[l]);
+            BaseT::imgs[l].copyFrom(pyramid[l]);
         }
     }
     
@@ -173,7 +173,7 @@ public:
     {
         for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
         {
-            BaseT::imgs[l]->copyFrom(pyramid[l]);
+            BaseT::imgs[l].copyFrom(pyramid[l]);
         }
     }
 #endif // CORE_HAVE_CUDA
@@ -183,7 +183,7 @@ public:
     {
         for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
         {
-            BaseT::imgs[l]->copyFrom(queue, pyramid[l]);
+            BaseT::imgs[l].copyFrom(queue, pyramid[l]);
         }
     }
 #endif // CORE_HAVE_OPENCL
@@ -280,7 +280,7 @@ public:
   {
       for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
       {
-          BaseT::imgs[l]->memset(v);
+          BaseT::imgs[l].memset(v);
       }
   }
   
@@ -289,7 +289,7 @@ public:
   {
       for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
       {
-          BaseT::imgs[l]->copyFrom(pyramid[l]);
+          BaseT::imgs[l].copyFrom(pyramid[l]);
       }
   }
 };
@@ -401,7 +401,7 @@ public:
     {
         for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
         {
-            BaseT::imgs[l]->memset(v);
+            BaseT::imgs[l].memset(v);
         }
     }
     
@@ -409,7 +409,7 @@ public:
     {
         for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
         {
-            BaseT::imgs[l]->copyFrom(queue, pyramid[l]);
+            BaseT::imgs[l].copyFrom(queue, pyramid[l]);
         }
     }
     
@@ -417,7 +417,7 @@ public:
     {
         for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
         {
-            BaseT::imgs[l]->copyFrom(queue, pyramid[l]);
+            BaseT::imgs[l].copyFrom(queue, pyramid[l]);
         }
     }
     
@@ -425,7 +425,7 @@ public:
     {
         for(std::size_t l = 0 ; l < BaseT::getLevelCount() ; ++l) 
         {
-            BaseT::imgs[l]->memset(queue, v);
+            BaseT::imgs[l].memset(queue, v);
         }
     }
 };
@@ -459,7 +459,7 @@ public:
             
             Target::template AllocatePitchedMem<T>(&ptr, &line_pitch, w >> l, h >> l);
             
-            ViewT::imgs[l] = core::Buffer2DView<T,Target>((T*)ptr, w >> l, h >> l, line_pitch);
+            ViewT::imgs[l] = LevelT(ptr, w >> l, h >> l, line_pitch);
         }
     }
     
@@ -482,7 +482,7 @@ public:
     {
         for(std::size_t l = 0; l < LevelCount ; ++l)
         {
-            Target::template DeallocatePitchedMem<T>(ViewT::imgs[l].ptr());
+            Target::template DeallocatePitchedMem<T>(ViewT::imgs[l].rawPtr());
         }
     }
     
@@ -575,7 +575,7 @@ public:
             
             Target::template AllocatePitchedMem<T>(&ptr, &line_pitch, w >> l, h >> l);
             
-            ViewT::imgs[l] = new core::Buffer2DView<T,Target>((T*)ptr, w >> l, h >> l, line_pitch);
+            ViewT::imgs[l] = LevelT(ptr, w >> l, h >> l, line_pitch);
         }
     }
     
@@ -598,8 +598,7 @@ public:
     {
         for(std::size_t l = 0; l < ViewT::getLevelCount() ; ++l)
         {
-            Target::template DeallocatePitchedMem<T>(ViewT::imgs[l]->ptr());
-            delete ViewT::imgs[l];
+            Target::template DeallocatePitchedMem<T>(ViewT::imgs[l].rawPtr());
         }
     }
     

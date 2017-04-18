@@ -74,6 +74,20 @@ inline void InitDimFromOutputImageOver(dim3& blockDim, dim3& gridDim, const T& i
 }
 
 template<typename T>
+inline void InitDimFromOutputVolume(dim3& blockDim, dim3& gridDim, const T& image, unsigned blockx = 32, unsigned blocky = 32, unsigned blockz = 32)
+{
+    blockDim = dim3( detail::Gcd<unsigned>(image.width(), blockx), detail::Gcd<unsigned>(image.height(), blocky), detail::Gcd<unsigned>(image.depth(), blockz));
+    gridDim =  dim3( image.width() / blockDim.x, image.height() / blockDim.y, image.depth() / blockDim.z);
+}
+
+template<typename T>
+inline void InitDimFromOutputVolumeOver(dim3& blockDim, dim3& gridDim, const T& image, int blockx = 32, int blocky = 32, int blockz = 32)
+{
+    blockDim = dim3(blockx, blocky, blockz);
+    gridDim =  dim3( ceil(image.width() / (double)blockDim.x), ceil(image.height() / (double)blockDim.y), ceil(image.depth() / (double)blockDim.z) );
+}
+
+template<typename T>
 inline void InitDimFromLinearBuffer(dim3& blockDim, dim3& gridDim, const T& lin_buffer, int blockx = 32)
 {
     blockDim = dim3(detail::Gcd<unsigned>(lin_buffer.size(), blockx), 1, 1);

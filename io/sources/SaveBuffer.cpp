@@ -172,25 +172,25 @@ struct TextWriteElement<uint8_t>
 {
     static inline void write(File& of, const uint8_t& val)
     {
-        of.printf("0x02X ", (int)val);
+        of.printf("0x%02X ", (int)val);
     }
 };
 
 template<>
 struct TextWriteElement<uint16_t> 
 {
-    static inline void write(File& of, const uint8_t& val)
+    static inline void write(File& of, const uint16_t& val)
     {
-        of.printf("0x04X ", (int)val);
+        of.printf("0x%04X ", (int)val);
     }
 };
 
 template<>
 struct TextWriteElement<float> 
 {
-    static inline void write(File& of, const uint8_t& val)
+    static inline void write(File& of, const float& val)
     {
-        of.printf("0x04.4g ", (int)val);
+        of.printf("%04.4g ", val);
     }
 };
 
@@ -218,15 +218,23 @@ struct TextBufferSavingProxy<core::Buffer1DView<T2, core::TargetHost>>
     static inline void save(const std::string& fn, const core::Buffer1DView<T2, core::TargetHost>& b) 
     { 
         File outf(fn.c_str(),"w");
+        
+        outf.printf("%04lu\n", b.size());
 
         for(std::size_t i = 0 ; i < b.size() ; ++i)
         {
+            /*
             TextWriteElement<T2>::write(outf, b(i));
             
-            if(i % 10 == 0)
+            if((i != 0) && (i % 10 == 0))
             {
                 outf.putc('\n');
             }
+            */
+            
+            outf.printf("%04lu\t", i);
+            TextWriteElement<T2>::write(outf, b(i));
+            outf.putc('\n');
         }
     }
 };
@@ -238,17 +246,24 @@ struct TextBufferSavingProxy<core::Buffer2DView<T2, core::TargetHost>>
     { 
         File outf(fn.c_str(),"w");
         
+        outf.printf("%04lu x %04lu\n", b.width(), b.height());
+        
         for(std::size_t y = 0 ; y < b.height() ; ++y)
         {
-            for(std::size_t x = 0 ; y < b.width() ; ++x)
+            for(std::size_t x = 0 ; x < b.width() ; ++x)
             {
+                /*
                 const std::size_t lin_index = y * b.width() + x;
                 TextWriteElement<T2>::write(outf, b(x,y));
                 
-                if(lin_index % 10 == 0)
+                if((lin_index != 0) && (lin_index % 10 == 0))
                 {
                     outf.putc('\n');
                 }
+                */
+                outf.printf("%04lu x %04lu\t", x, y);
+                TextWriteElement<T2>::write(outf, b(x,y));
+                outf.putc('\n');
             }
         }
         

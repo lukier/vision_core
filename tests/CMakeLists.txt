@@ -45,8 +45,20 @@ endif()
 
 include_directories(.)
 
-# =========================================================================
+# ------------------------------------------------------------------------------
+# Build subtests
+# ------------------------------------------------------------------------------
+add_subdirectory(Buffers)
+add_subdirectory(Control)
+add_subdirectory(IO)
+add_subdirectory(Image)
+add_subdirectory(Math)
+add_subdirectory(Types)
+add_subdirectory(WrapGL)
 
+# =========================================================================
+# Build top level tests
+# =========================================================================
 set(TEST_SOURCES
 tests_main.cpp
 UT_Platform.cpp
@@ -54,30 +66,22 @@ EigenConfigCPU.cpp
 UT_EigenConfig.cpp
 )
 
-set(TEST_KERNEL_SOURCES
-EigenConfigCUDA.cu
-)
-
 if(OpenCL_FOUND)
     list(APPEND TEST_SOURCES UT_OpenCL.cpp)
 endif()
 
-set(TEST_KERNEL_OBJS)
 if(CUDA_FOUND)
-    # We have to do this for CUDA_COMPILE!
-    get_target_property(VisionCore_INT_INCLUDE_DIRS VisionCore INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(VisionCore_DEFINITIONS VisionCore INTERFACE_COMPILE_DEFINITIONS)
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY INCLUDE_DIRECTORIES ${VisionCore_INT_INCLUDE_DIRS})
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFINITIONS ${VisionCore_DEFINITIONS})
-    cuda_compile(TEST_KERNEL_OBJS ${TEST_KERNEL_SOURCES} SHARED)
+set(TEST_KERNEL_SOURCES
+EigenConfigCUDA.cu
+)
 endif()
 
-add_executable(UT_VisionCore ${TEST_SOURCES} ${TEST_KERNEL_OBJS})
-target_link_libraries(UT_VisionCore ${GTEST_LIBRARY} ${PROJECT_NAME})
+target_add_executable(UT_VisionCore ${TEST_SOURCES} ${TEST_KERNEL_SOURCES})
+target_link_libraries(UT_VisionCore PUBLIC ${GTEST_LIBRARY} ${PROJECT_NAME})
 if(CUDA_FOUND)
-    target_link_libraries(UT_VisionCore ${CUDA_LIBRARIES})
+    target_link_libraries(UT_VisionCore PUBLIC ${CUDA_LIBRARIES})
 endif()
 if(OpenCL_FOUND)
-    target_link_libraries(UT_VisionCore ${OpenCL_LIBRARIES})
+    target_link_libraries(UT_VisionCore PUBLIC ${OpenCL_LIBRARIES})
 endif()
 add_test(UT_VisionCore UT_VisionCore --gtest_output=xml:UT_VisionCore.xml)

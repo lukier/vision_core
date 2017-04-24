@@ -34,7 +34,7 @@
 #ifndef GET_EIGEN_CONFIG_HPP
 #define GET_EIGEN_CONFIG_HPP
 
-#include <Platform.hpp>
+#include <VisionCore/Platform.hpp>
 #include <Eigen/Core>
 
 #ifdef CORE_TESTS_HAVE_SOPHUS

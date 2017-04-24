@@ -50,7 +50,7 @@
 // google logger
 #include <glog/logging.h>
 
-#include <Platform.hpp>
+#include <VisionCore/Platform.hpp>
 
 class Test_OpenCL : public ::testing::Test
 {

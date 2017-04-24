@@ -32,22 +32,22 @@
  */
 
 #include <GetEigenConfig.hpp>
-#include <buffers/Buffer1D.hpp>
+#include <VisionCore/Buffers/Buffer1D.hpp>
 
 void GetEigenConfigCUDAHost(float* data)
 {
     getEigenConfiguration(data);
 }
 
-__global__ void Kernel_GetEigenConfig(core::Buffer1DView<float, core::TargetDeviceCUDA> buf)
+__global__ void Kernel_GetEigenConfig(vc::Buffer1DView<float, vc::TargetDeviceCUDA> buf)
 {
     getEigenConfiguration(buf.ptr());
 }
 
 void GetEigenConfigCUDADevice(float* data)
 {
-    core::Buffer1DManaged<float,core::TargetHost> cpu_buf(MaxEigenConfigurationCount);
-    core::Buffer1DManaged<float,core::TargetDeviceCUDA> gpu_buf(MaxEigenConfigurationCount);
+    vc::Buffer1DManaged<float,vc::TargetHost> cpu_buf(MaxEigenConfigurationCount);
+    vc::Buffer1DManaged<float,vc::TargetDeviceCUDA> gpu_buf(MaxEigenConfigurationCount);
     
     Kernel_GetEigenConfig<<<1,1>>>(gpu_buf);
     
@@ -55,7 +55,7 @@ void GetEigenConfigCUDADevice(float* data)
     const cudaError err = cudaDeviceSynchronize();
     if(err != cudaSuccess)
     {
-        throw core::CUDAException(err, "Error launching the kernel");
+        throw vc::CUDAException(err, "Error launching the kernel");
     }
     
     cpu_buf.copyFrom(gpu_buf);

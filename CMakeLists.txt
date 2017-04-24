@@ -146,161 +146,175 @@ find_package(FFTW QUIET)
 # ------------------------------------------------------------------------------
 # Fix for old-school stuff in FindCUDA.cmake
 # ------------------------------------------------------------------------------
-macro(TARGET_CUDA_ADD_LIBRARY cuda_target)
-  CUDA_ADD_CUDA_INCLUDE_ONCE()
-  # Separate the sources from the options
-  CUDA_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _options ${ARGN})
-  CUDA_BUILD_SHARED_LIBRARY(_cuda_shared_flag ${ARGN})
-  # Create custom commands and targets for each file.
-  CUDA_WRAP_SRCS( ${cuda_target} OBJ _generated_files ${_sources}
-    ${_cmake_options} ${_cuda_shared_flag} OPTIONS ${_options})
-
-  # Compute the file name of the intermedate link file used for separable
-  # compilation.
-  CUDA_COMPUTE_SEPARABLE_COMPILATION_OBJECT_FILE_NAME(link_file ${cuda_target} "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
-
-  # Add the library.
-  add_library(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
-
-  # Add a link phase for the separable compilation if it has been enabled.  If
-  # it has been enabled then the ${cuda_target}_SEPARABLE_COMPILATION_OBJECTS
-  # variable will have been defined.
-  CUDA_LINK_SEPARABLE_COMPILATION_OBJECTS("${link_file}" ${cuda_target} "${_options}" "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
-
-  target_link_libraries(${cuda_target} PUBLIC ${CUDA_LIBRARIES})
-
-  if(CUDA_SEPARABLE_COMPILATION)
-    target_link_libraries(${cuda_target} PUBLIC ${CUDA_cudadevrt_LIBRARY})
+macro(TARGET_ADD_EXECUTABLE cuda_target)
+  if(CUDA_FOUND)
+    CUDA_ADD_CUDA_INCLUDE_ONCE()
+    CUDA_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _options ${ARGN})
+    CUDA_WRAP_SRCS( ${cuda_target} OBJ _generated_files ${_sources} OPTIONS ${_options} )
+    CUDA_COMPUTE_SEPARABLE_COMPILATION_OBJECT_FILE_NAME(link_file ${cuda_target} 
+      "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+    add_executable(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
+    CUDA_LINK_SEPARABLE_COMPILATION_OBJECTS("${link_file}" ${cuda_target} "${_options}" "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+    target_link_libraries(${cuda_target} PUBLIC ${CUDA_LIBRARIES})
+    set_target_properties(${cuda_target} PROPERTIES LINKER_LANGUAGE ${CUDA_C_OR_CXX})
+  else()
+    add_executable(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
   endif()
+endmacro()
 
-  # We need to set the linker language based on what the expected generated file
-  # would be. CUDA_C_OR_CXX is computed based on CUDA_HOST_COMPILATION_CPP.
-  set_target_properties(${cuda_target} PROPERTIES LINKER_LANGUAGE ${CUDA_C_OR_CXX})
+macro(TARGET_ADD_LIBRARY cuda_target)
+  if(CUDA_FOUND)
+    CUDA_ADD_CUDA_INCLUDE_ONCE()
+    CUDA_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _options ${ARGN})
+    CUDA_BUILD_SHARED_LIBRARY(_cuda_shared_flag ${ARGN})
+    CUDA_WRAP_SRCS( ${cuda_target} OBJ _generated_files ${_sources}
+      ${_cmake_options} ${_cuda_shared_flag} OPTIONS ${_options})
+    CUDA_COMPUTE_SEPARABLE_COMPILATION_OBJECT_FILE_NAME(link_file ${cuda_target} 
+      "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+    add_library(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
+    CUDA_LINK_SEPARABLE_COMPILATION_OBJECTS("${link_file}" ${cuda_target} "${_options}" 
+    "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+    target_link_libraries(${cuda_target} PUBLIC ${CUDA_LIBRARIES})
+    if(CUDA_SEPARABLE_COMPILATION)
+      target_link_libraries(${cuda_target} PUBLIC ${CUDA_cudadevrt_LIBRARY})
+    endif()
+    set_target_properties(${cuda_target} PROPERTIES LINKER_LANGUAGE ${CUDA_C_OR_CXX})
+  else()
+    add_library(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
+  endif()
 endmacro()
 
 # ---------------------------------------------
 # List of sources
 # ---------------------------------------------
 set(HEADERS
-CUDAException.hpp
-CUDAGenerics.hpp
-CUDATypes.hpp
-EigenSerializers.hpp
-LaunchUtils.hpp
-MemoryPolicyCUDA.hpp
-MemoryPolicyHost.hpp
-MemoryPolicy.hpp
-MemoryPolicyOpenCL.hpp
-Platform.hpp
-SophusInterpolations.hpp
-buffers/Buffer1D.hpp
-buffers/Buffer2D.hpp
-buffers/Buffer3D.hpp
-buffers/BufferPyramid.hpp
-buffers/CUDATexture.hpp
-buffers/GPUVariable.hpp
-buffers/Image2D.hpp
-buffers/ImagePyramid.hpp
-buffers/PyramidBase.hpp
-buffers/ReductionSum2D.hpp
-buffers/Volume.hpp
-control/PID.hpp
-control/VelocityProfile.hpp
-image/BufferOps.hpp
-image/ColorMap.hpp
-image/ConnectedComponents.hpp
-image/Filters.hpp
-image/ImagePatch.hpp
-image/PixelConvert.hpp
-io/PLYModel.hpp
-io/ImageIO.hpp
-math/Angles.hpp
-math/Convolution.hpp
-math/DenavitHartenberg.hpp
-math/Divergence.hpp
-math/Fitting.hpp
-math/Fourier.hpp
-math/HammingDistance.hpp
-math/Kalman.hpp
-math/LeastSquares.hpp
-math/LiangBarsky.hpp
-math/LocalParamSE3.hpp
-math/LossFunctions.hpp
-math/PolarSpherical.hpp
-math/Random.hpp
-math/RANSAC.hpp
-math/Statistics.hpp
-types/AxisAlignedBoundingBox.hpp
-types/CostVolumeElement.hpp
-types/Endian.hpp
-types/Gaussian.hpp
-types/Hypersphere.hpp
-types/Polynomial.hpp
-types/Rectangle.hpp
-types/SDF.hpp
-wrapgl/WrapGLBuffer.hpp
-wrapgl/WrapGLContext.hpp
-wrapgl/WrapGLFramebuffer.hpp
-wrapgl/WrapGLShader.hpp
-wrapgl/WrapGLTexture.hpp
-wrapgl/WrapGLVertexArrayObject.hpp
-wrapgl/WrapGLCommon.hpp
+include/VisionCore/Buffers/Buffer1D.hpp
+include/VisionCore/Buffers/Buffer2D.hpp
+include/VisionCore/Buffers/Buffer3D.hpp
+include/VisionCore/Buffers/BufferPyramid.hpp
+include/VisionCore/Buffers/CUDATexture.hpp
+include/VisionCore/Buffers/GPUVariable.hpp
+include/VisionCore/Buffers/Image2D.hpp
+include/VisionCore/Buffers/ImagePyramid.hpp
+include/VisionCore/Buffers/PyramidBase.hpp
+include/VisionCore/Buffers/Reductions.hpp
+include/VisionCore/Buffers/Volume.hpp
+include/VisionCore/Control/PID.hpp
+include/VisionCore/Control/VelocityProfile.hpp
+include/VisionCore/CUDAException.hpp
+include/VisionCore/CUDAGenerics.hpp
+include/VisionCore/CUDATypes.hpp
+include/VisionCore/EigenSerializers.hpp
+include/VisionCore/Image/BufferOps.hpp
+include/VisionCore/Image/ColorMap.hpp
+include/VisionCore/Image/ConnectedComponents.hpp
+include/VisionCore/Image/Filters.hpp
+include/VisionCore/Image/ImagePatch.hpp
+include/VisionCore/Image/PixelConvert.hpp
+include/VisionCore/IO/File.hpp
+include/VisionCore/IO/ImageIO.hpp
+include/VisionCore/IO/PLYModel.hpp
+include/VisionCore/LaunchUtils.hpp
+include/VisionCore/Math/Angles.hpp
+include/VisionCore/Math/Convolution.hpp
+include/VisionCore/Math/DenavitHartenberg.hpp
+include/VisionCore/Math/Divergence.hpp
+include/VisionCore/Math/Fitting.hpp
+include/VisionCore/Math/Fourier.hpp
+include/VisionCore/Math/HammingDistance.hpp
+include/VisionCore/Math/Kalman.hpp
+include/VisionCore/Math/LeastSquares.hpp
+include/VisionCore/Math/LiangBarsky.hpp
+include/VisionCore/Math/LocalParamSE3.hpp
+include/VisionCore/Math/LossFunctions.hpp
+include/VisionCore/Math/PolarSpherical.hpp
+include/VisionCore/Math/Random.hpp
+include/VisionCore/Math/RANSAC.hpp
+include/VisionCore/Math/Statistics.hpp
+include/VisionCore/MemoryPolicyCUDA.hpp
+include/VisionCore/MemoryPolicyHost.hpp
+include/VisionCore/MemoryPolicy.hpp
+include/VisionCore/MemoryPolicyOpenCL.hpp
+include/VisionCore/Platform.hpp
+include/VisionCore/SophusInterpolations.hpp
+include/VisionCore/Types/AxisAlignedBoundingBox.hpp
+include/VisionCore/Types/CostVolumeElement.hpp
+include/VisionCore/Types/Gaussian.hpp
+include/VisionCore/Types/Hypersphere.hpp
+include/VisionCore/Types/Polynomial.hpp
+include/VisionCore/Types/Rectangle.hpp
+include/VisionCore/Types/SDF.hpp
+include/VisionCore/Types/SquareUpperTriangularMatrix.hpp
+include/VisionCore/WrapGL/WrapGLBuffer.hpp
+include/VisionCore/WrapGL/WrapGLCommon.hpp
+include/VisionCore/WrapGL/WrapGLContext.hpp
+include/VisionCore/WrapGL/WrapGLFramebuffer.hpp
+include/VisionCore/WrapGL/WrapGL.hpp
+include/VisionCore/WrapGL/WrapGLQuery.hpp
+include/VisionCore/WrapGL/WrapGLSampler.hpp
+include/VisionCore/WrapGL/WrapGLShader.hpp
+include/VisionCore/WrapGL/WrapGLTexture.hpp
+include/VisionCore/WrapGL/WrapGLTransformFeedback.hpp
+include/VisionCore/WrapGL/WrapGLVertexArrayObject.hpp
 )
 
 set(SOURCES
+sources/Image/BufferOpsCPU.cpp
+sources/Image/ColorMapCPU.cpp
+sources/Image/ConnectedComponents.cpp
+sources/Image/FiltersCPU.cpp
+sources/Image/PixelConvertCPU.cpp
+sources/Image/ColorMapDefs.hpp
+sources/Image/JoinSplitHelpers.hpp
+sources/IO/ImageIO.cpp
+sources/IO/ImageUtilsCPU.cpp
+sources/IO/PLYModel.cpp
+sources/IO/SaveBuffer.cpp
+sources/Math/ConvolutionCPU.cpp
 sources/VisionCore.cpp
-image/sources/BufferOpsCPU.cpp
-image/sources/ColorMapCPU.cpp
-image/sources/ConnectedComponents.cpp
-image/sources/FiltersCPU.cpp
-image/sources/PixelConvertCPU.cpp
-io/sources/PLYModel.cpp
-io/sources/ImageIO.cpp
-io/sources/SaveBuffer.cpp
-math/sources/ConvolutionCPU.cpp
-wrapgl/sources/WrapGLCommon.cpp
-wrapgl/sources/WrapGLFramebuffer.cpp
-wrapgl/sources/WrapGLBuffer.cpp
+sources/WrapGL/WrapGLBuffer.cpp
+sources/WrapGL/WrapGLCommon.cpp
+sources/WrapGL/WrapGLFramebuffer.cpp
 )
 
 set(KERNEL_SOURCES
-image/kernels/BufferOpsGPU.cu
-image/kernels/ColorMapGPU.cu
-image/kernels/FiltersGPU.cu
-image/kernels/PixelConvertGPU.cu
-math/kernels/ConvolutionGPU.cu
-math/kernels/FourierGPU.cu
+sources/Image/BufferOpsGPU.cu
+sources/Image/ColorMapGPU.cu
+sources/Image/FiltersGPU.cu
+sources/Image/PixelConvertGPU.cu
+sources/Math/ConvolutionGPU.cu
+sources/Math/FourierGPU.cu
 )
 
 if(CUDA_FOUND)
-    list(APPEND SOURCES math/sources/Random.cpp)
+    list(APPEND SOURCES sources/Math/Random.cpp)
 endif()
 
 if(USE_GLBINDING AND glbinding_FOUND)
     if(FREEGLUT_FOUND)
-        list(APPEND SOURCES wrapgl/sources/context_glut.cpp)
+        list(APPEND SOURCES sources/WrapGL/context_glut.cpp)
     endif()
 
     if(X11_FOUND)
-        list(APPEND SOURCES wrapgl/sources/context_x11.cpp wrapgl/sources/context_windowless.cpp)
+        list(APPEND SOURCES sources/WrapGL/context_windowless.cpp sources/WrapGL/context_x11.cpp)
     endif()
 endif()
 
 if(FFTW_FOUND)
-    list(APPEND SOURCES math/sources/FourierCPU.cpp)
+    list(APPEND SOURCES sources/Math/FourierCPU.cpp)
 endif()
 
 # ------------------------------------------------------------------------------
 # Build
 # ------------------------------------------------------------------------------
 if(CUDA_FOUND)
-    target_cuda_add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES} ${KERNEL_SOURCES})
+    target_add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES} ${KERNEL_SOURCES})
 else()
     add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:>
     PRIVATE sources)
     
@@ -313,37 +327,37 @@ if(CUDA_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${CUDA_LIBRARIES})
     target_link_libraries(${PROJECT_NAME} PRIVATE ${CUDA_curand_LIBRARY} ${CUDA_CUFFT_LIBRARIES})
     target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_INCLUDE_DIRS})
-    target_compile_definitions(${PROJECT_NAME} PUBLIC CORE_HAVE_CUDA)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_CUDA)
     if(EIGEN_GET_ALIGNMENT_OK)
       target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_CUDA_MAX_ALIGN_BYTES=${EIGEN_IDEAL_MAX_ALIGN_BYTES})
     endif()
 endif()
 if(OpenCL_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenCL::OpenCL)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC CORE_HAVE_OPENCL CL_HPP_MINIMUM_OPENCL_VERSION=120 CL_HPP_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0 CL_HPP_ENABLE_EXCEPTIONS)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_OPENCL CL_HPP_MINIMUM_OPENCL_VERSION=120 CL_HPP_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0 CL_HPP_ENABLE_EXCEPTIONS)
 endif()
 if(TBB_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${TBB_LIBRARIES})
     target_include_directories(${PROJECT_NAME} PUBLIC ${TBB_INCLUDE_DIRS})
-    target_compile_definitions(${PROJECT_NAME} PUBLIC CORE_HAVE_TBB ${TBB_DEFINITIONS})
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_TBB ${TBB_DEFINITIONS})
 endif()
 if(OpenCV_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${OpenCV_LIBRARIES})
     target_include_directories(${PROJECT_NAME} PUBLIC ${OpenCV_INCLUDE_DIRS})
-    target_compile_definitions(${PROJECT_NAME} PUBLIC CORE_HAVE_OPENCV)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_OPENCV)
 endif()
 if(cereal_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC cereal)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC CORE_HAVE_CEREAL)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_CEREAL)
 endif()
 if(CERES_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${CERES_LIBRARIES})
     target_include_directories(${PROJECT_NAME} PUBLIC ${CERES_INCLUDE_DIRS})
-    target_compile_definitions(${PROJECT_NAME} PUBLIC ${CERES_DEFINITIONS} CORE_HAVE_CERES)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ${CERES_DEFINITIONS} VISIONCORE_HAVE_CERES)
 endif()
 
 if(USE_GLBINDING AND glbinding_FOUND)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC WRAPGL_HAVE_GLBINDING)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_GLBINDING)
     target_link_libraries(${PROJECT_NAME} PUBLIC glbinding)
     
     if(FREEGLUT_FOUND)
@@ -376,13 +390,6 @@ endif()
 # ------------------------------------------------------------------------------
 if(BUILD_TESTS AND GTest_FOUND)
     add_subdirectory(tests)
-    add_subdirectory(buffers/tests)
-    add_subdirectory(control/tests)
-    add_subdirectory(image/tests)
-    add_subdirectory(io/tests)
-    add_subdirectory(math/tests)
-    add_subdirectory(types/tests)
-    add_subdirectory(wrapgl/tests)
 endif()
 
 # ------------------------------------------------------------------------------

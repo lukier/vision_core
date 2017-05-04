@@ -48,7 +48,7 @@ void vc::wrapgl::Debug::disable()
 #ifdef VISIONCORE_HAVE_GLBINDING
 extern "C" void openGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
 #else // VISIONCORE_HAVE_GLBINDING
-extern "C" void openGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
+extern "C" void openGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam)
 #endif // VISIONCORE_HAVE_GLBINDING
 {
     const vc::wrapgl::Debug::CallbackT& fun = *(const vc::wrapgl::Debug::CallbackT*)userParam;

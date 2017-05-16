@@ -91,26 +91,33 @@ namespace types
 namespace detail
 {
   
-template<typename CoeffType, typename OtherDerived, int Rows, int Index>
-struct run_outer_product
+template<int Rows, int Index, typename Derived, typename OtherDerived>
+struct run_outer_product_impl
 {
-    EIGEN_DEVICE_FUNC static inline void run(Eigen::Ref<CoeffType> coeff, const OtherDerived& vec)
+    EIGEN_DEVICE_FUNC static inline void run(Derived& coeff, const OtherDerived& vec)
     {
-        static constexpr std::size_t LinearLinex = Rows * Index - ((Index - 1) * Index) / 2;
+        static constexpr int LinearLinex = Rows * Index - ((Index - 1) * Index) / 2;
         
         coeff.template segment<Rows - Index>(LinearLinex) = vec(Index) * vec.template tail<Rows - Index>();
-        run_outer_product<CoeffType, OtherDerived, Rows, Index - 1>::run(coeff, vec);
+        run_outer_product_impl<Rows, Index - 1, Derived, OtherDerived>::run(coeff, vec);
     }
 };
 
-template<typename CoeffType, typename OtherDerived, int Rows>
-struct run_outer_product<CoeffType, OtherDerived, Rows, 0>
+template<int Rows, typename Derived, typename OtherDerived>
+struct run_outer_product_impl<Rows, 0, Derived, OtherDerived>
 {
-    EIGEN_DEVICE_FUNC static inline void run(Eigen::Ref<CoeffType> coeff, const OtherDerived& vec)
+    EIGEN_DEVICE_FUNC static inline void run(Derived& coeff, const OtherDerived& vec)
     {
-        coeff.template head<Rows>(0) = vec(0) * vec;
+        coeff.template head<Rows>() = vec(0) * vec;
     }
 };
+
+template<int Rows, int Index, typename Derived, typename OtherDerived>
+EIGEN_DEVICE_FUNC static inline void run_outer_product(Derived& coeff, 
+                                                       const OtherDerived& vec)
+{
+    run_outer_product_impl<Rows, Index, Derived, OtherDerived>::run(coeff, vec);
+}
 
 }
     
@@ -140,18 +147,18 @@ public:
     
     EIGEN_DEVICE_FUNC DenseMatrixType toDenseMatrix() const
     {
-      DenseMatrixType res;
-      
-      // TODO FIXME change to templates
-      for(int ic = 0 ; ic < Rows ; ++ic)
-      {
-         for(int ir = 0 ; ir < Rows ; ++ir)
-         {
-             res(ir,ic) = coeff()(toLinearIndex(ir,ic));
-         }
-      }
-      
-      return res;
+        DenseMatrixType res;
+        
+        // TODO FIXME change to templates
+        for(int ic = 0 ; ic < Rows ; ++ic)
+        {
+            for(int ir = 0 ; ir < Rows ; ++ir)
+            {
+                res(ir,ic) = coeff()(toLinearIndex(ir,ic));
+            }
+        }
+        
+        return res;
     }
     
     template<typename NewScalarType>
@@ -227,12 +234,14 @@ public:
     }
     
     template<typename OtherDerived>
-    EIGEN_DEVICE_FUNC inline void fromOuterProduct(const Eigen::DenseBase<OtherDerived>& b)
+    EIGEN_DEVICE_FUNC inline void fromOuterProduct(const OtherDerived& b)
     {
+        EIGEN_STATIC_ASSERT_FIXED_SIZE(CoeffType);
+        EIGEN_STATIC_ASSERT_FIXED_SIZE(OtherDerived);
         EIGEN_STATIC_ASSERT(OtherDerived::RowsAtCompileTime == Rows, YOU_MIXED_MATRICES_OF_DIFFERENT_SIZES);
         EIGEN_STATIC_ASSERT(OtherDerived::ColsAtCompileTime == 1, YOU_PASSED_A_COLUMN_VECTOR_BUT_A_ROW_VECTOR_WAS_EXPECTED);
         
-        detail::run_outer_product<CoeffType, OtherDerived, Rows, Rows-1>::run(coeff(), b);
+        detail::run_outer_product<Rows, Rows-1>(coeff(), b);
     }
     
     EIGEN_DEVICE_FUNC void fill(const Scalar& value) 
@@ -325,7 +334,7 @@ public:
     }
     
     template<typename OtherDerived>
-    EIGEN_DEVICE_FUNC inline SquareUpperTriangularMatrix(const Eigen::DenseBase<OtherDerived>& b)
+    EIGEN_DEVICE_FUNC inline SquareUpperTriangularMatrix(const OtherDerived& b)
     {
         Base::fromOuterProduct(b);
     }

@@ -37,6 +37,7 @@
 #define VISIONCORE_POLAR_SPHERICAL_HPP
 
 #include <VisionCore/Platform.hpp>
+#include <VisionCore/EigenMissingBits.hpp>
 
 namespace vc
 {

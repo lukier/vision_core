@@ -42,10 +42,11 @@
 #include <VisionCore/Buffers/Buffer1D.hpp>
 
 #include <VisionCore/LaunchUtils.hpp>
+#include <BufferTestHelpers.hpp>
 
 static constexpr std::size_t BufferSize = 4097;
-typedef uint32_t BufferElementT;
 
+template<typename T>
 class Test_CUDABuffer1D : public ::testing::Test
 {
 public:   
@@ -60,34 +61,28 @@ public:
     }
 };
 
-__global__ void Kernel_WriteBuffer1D(vc::Buffer1DView<BufferElementT,vc::TargetDeviceCUDA> buf, std::size_t cbs)
-{
-    const std::size_t x = blockIdx.x*blockDim.x + threadIdx.x;
-    
-    if(buf.size() != cbs)
-    {
-        asm("trap;");
-    }
-    
-    if(buf.inBounds(x)) // is valid
-    {
-        BufferElementT& elem = buf[x];
-        elem = x;
-    }
-}
+typedef ::testing::Types<float,Eigen::Vector3f,Sophus::SE3f> TypesToTest;
+TYPED_TEST_CASE(Test_CUDABuffer1D, TypesToTest);
 
-TEST_F(Test_CUDABuffer1D, TestHostDevice) 
+TYPED_TEST(Test_CUDABuffer1D, TestHostDevice) 
 {
-    dim3 gridDim, blockDim;
+    typedef TypeParam BufferElementT;
+  
+    
     
     // CPU buffer 1
     vc::Buffer1DManaged<BufferElementT, vc::TargetHost> buffer_cpu1(BufferSize);
     
     // Fill H
-    for(std::size_t i = 0 ; i < BufferSize ; ++i) { buffer_cpu1[i] = i * 10; }
+    for(std::size_t i = 0 ; i < BufferSize ; ++i) 
+    { 
+        BufferElementOps<BufferElementT>::assign(buffer_cpu1(i),i,BufferSize);
+    }
     
     // GPU Buffer
     vc::Buffer1DManaged<BufferElementT, vc::TargetDeviceCUDA> buffer_gpu(BufferSize);
+    
+    LOG(INFO) << "Buffer1D Sizes, CPU: " << buffer_cpu1.bytes() << ", GPU: " << buffer_gpu.bytes() << " [bytes]";
     
     // H->D
     buffer_gpu.copyFrom(buffer_cpu1);
@@ -101,19 +96,11 @@ TEST_F(Test_CUDABuffer1D, TestHostDevice)
     // Check
     for(std::size_t i = 0 ; i < BufferSize ; ++i) 
     {
-        ASSERT_EQ(buffer_cpu2(i), i * 10) << "Wrong data at " << i;
+        BufferElementOps<BufferElementT>::check(buffer_cpu2(i),buffer_cpu1(i),i);
     }
     
     // Now write from kernel
-    vc::InitDimFromBuffer(blockDim, gridDim, buffer_gpu);
-    Kernel_WriteBuffer1D<<<gridDim,blockDim>>>(buffer_gpu, BufferSize);
-    
-    // Wait for it
-    cudaError err = cudaDeviceSynchronize();
-    if(err != cudaSuccess)
-    {
-        throw vc::CUDAException(err, "Error launching the kernel");
-    }
+    LaunchKernel_WriteBuffer1D(buffer_gpu,BufferSize);
     
     // D->H
     buffer_cpu1.copyFrom(buffer_gpu);
@@ -121,6 +108,6 @@ TEST_F(Test_CUDABuffer1D, TestHostDevice)
     // Check
     for(std::size_t i = 0 ; i < BufferSize ; ++i) 
     {
-        ASSERT_EQ(buffer_cpu1(i), i) << "Wrong data at " << i;
+        BufferElementOps<BufferElementT>::check(buffer_cpu1(i),buffer_cpu2(i),i);
     }
 }

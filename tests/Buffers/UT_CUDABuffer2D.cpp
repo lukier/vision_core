@@ -42,11 +42,12 @@
 #include <VisionCore/Buffers/Buffer2D.hpp>
 
 #include <VisionCore/LaunchUtils.hpp>
+#include <BufferTestHelpers.hpp>
 
 static constexpr std::size_t BufferSizeX = 1025;
 static constexpr std::size_t BufferSizeY = 769;
-typedef uint32_t BufferElementT;
 
+template<typename T>
 class Test_CUDABuffer2D : public ::testing::Test
 {
 public:   
@@ -61,32 +62,13 @@ public:
     }
 };
 
-__global__ void Kernel_WriteBuffer2D(vc::Buffer2DView<BufferElementT,vc::TargetDeviceCUDA> buf, std::size_t cbsx, std::size_t cbsy)
-{
-    const std::size_t x = blockIdx.x*blockDim.x + threadIdx.x;
-    const std::size_t y = blockIdx.y*blockDim.y + threadIdx.y;
-    
-    if(buf.width() != cbsx)
-    {
-        asm("trap;");
-    }
-    
-    if(buf.height() != cbsy)
-    {
-        asm("trap;");
-    }
-    
-    if(buf.inBounds(x,y)) // is valid
-    {
-        BufferElementT& elem = buf(x,y);
-        elem = y * buf.width() + x;
-    }
-}
+typedef ::testing::Types<float,Eigen::Vector3f,Sophus::SE3f> TypesToTest;
+TYPED_TEST_CASE(Test_CUDABuffer2D, TypesToTest);
 
-TEST_F(Test_CUDABuffer2D, TestHostDevice) 
+TYPED_TEST(Test_CUDABuffer2D, TestHostDevice) 
 {
-    dim3 gridDim, blockDim;
-    
+    typedef TypeParam BufferElementT;
+  
     // CPU buffer 1
     vc::Buffer2DManaged<BufferElementT, vc::TargetHost> buffer_cpu1(BufferSizeX,BufferSizeY);
     
@@ -95,7 +77,8 @@ TEST_F(Test_CUDABuffer2D, TestHostDevice)
     { 
         for(std::size_t x = 0 ; x < BufferSizeX ; ++x) 
         {
-            buffer_cpu1(x,y) = (y * BufferSizeX + x) * 10; 
+            const std::size_t LinIndex = y * BufferSizeX + x;
+            BufferElementOps<BufferElementT>::assign(buffer_cpu1(x,y),LinIndex,BufferSizeX*BufferSizeY);
         }
     }
     
@@ -116,21 +99,14 @@ TEST_F(Test_CUDABuffer2D, TestHostDevice)
     { 
         for(std::size_t x = 0 ; x < BufferSizeX ; ++x) 
         {
-            ASSERT_EQ(buffer_cpu2(x,y), (y * BufferSizeX + x) * 10) << "Wrong data at " << x << " , " << y;
+            const std::size_t LinIndex = y * BufferSizeX + x;
+            BufferElementOps<BufferElementT>::check(buffer_cpu2(x,y),buffer_cpu1(x,y),LinIndex);
         }
     }
     
     // Now write from kernel
-    vc::InitDimFromBuffer(blockDim, gridDim, buffer_gpu);
-    Kernel_WriteBuffer2D<<<gridDim,blockDim>>>(buffer_gpu, BufferSizeX, BufferSizeY);
-    
-    // Wait for it
-    cudaError err = cudaDeviceSynchronize();
-    if(err != cudaSuccess)
-    {
-        throw vc::CUDAException(err, "Error launching the kernel");
-    }
-    
+    LaunchKernel_WriteBuffer2D(buffer_gpu,BufferSizeX,BufferSizeY);
+        
     // D->H
     buffer_cpu1.copyFrom(buffer_gpu);
     
@@ -139,7 +115,8 @@ TEST_F(Test_CUDABuffer2D, TestHostDevice)
     { 
         for(std::size_t x = 0 ; x < BufferSizeX ; ++x) 
         {
-            ASSERT_EQ(buffer_cpu1(x,y), y * BufferSizeX + x) << "Wrong data at " << x << " , " << y;
+            const std::size_t LinIndex = y * BufferSizeX + x;
+            BufferElementOps<BufferElementT>::check(buffer_cpu1(x,y),buffer_cpu2(x,y),LinIndex);
         }
     }
 }

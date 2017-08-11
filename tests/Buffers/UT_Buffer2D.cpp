@@ -53,11 +53,12 @@
 #include <glog/logging.h>
 
 #include <VisionCore/Buffers/Buffer2D.hpp>
+#include <BufferTestHelpers.hpp>
 
 static constexpr std::size_t BufferSizeX = 1025;
 static constexpr std::size_t BufferSizeY = 769;
-typedef uint32_t BufferElementT;
 
+template<typename T>
 class Test_Buffer2D : public ::testing::Test
 {
 public:   
@@ -72,8 +73,13 @@ public:
     }
 };
 
-TEST_F(Test_Buffer2D, CPU) 
+typedef ::testing::Types<float,Eigen::Vector3f,Sophus::SE3f> TypesToTest;
+TYPED_TEST_CASE(Test_Buffer2D, TypesToTest);
+
+TYPED_TEST(Test_Buffer2D, CPU) 
 {
+    typedef TypeParam BufferElementT;
+    
     vc::Buffer2DManaged<BufferElementT, vc::TargetHost> bufcpu(BufferSizeX,BufferSizeY);
     
     ASSERT_TRUE(bufcpu.isValid()) << "Wrong managed state";
@@ -85,7 +91,8 @@ TEST_F(Test_Buffer2D, CPU)
     {
         for(std::size_t x = 0 ; x < bufcpu.width() ; ++x)
         {
-            bufcpu(x,y) = y * bufcpu.width() + x;
+            const std::size_t LinIndex = y * BufferSizeX + x;
+            BufferElementOps<BufferElementT>::assign(bufcpu(x,y),LinIndex,BufferSizeX*BufferSizeY);
         }
     }
     
@@ -99,7 +106,10 @@ TEST_F(Test_Buffer2D, CPU)
     {
         for(std::size_t x = 0 ; x < viewcpu.width() ; ++x)
         {
-            ASSERT_EQ(viewcpu(x,y), viewcpu.ptr()[y * viewcpu.elementPitch() + x]) << "Wrong data at " << x << " , " << y;
+            BufferElementT gt;
+            const std::size_t LinIndex = y * BufferSizeX + x;
+            BufferElementOps<BufferElementT>::assign(gt,LinIndex,BufferSizeX*BufferSizeY);
+            BufferElementOps<BufferElementT>::check(viewcpu(x,y), gt, LinIndex);
         }
     }
 }

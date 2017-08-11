@@ -1,6 +1,6 @@
 /**
  * ****************************************************************************
- * Copyright (c) 2015, Robert Lukierski.
+ * Copyright (c) 2017, Robert Lukierski.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,74 +29,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * ****************************************************************************
- * Basic Buffer1D Tests.
+ * Bits and bobs missing from Eigen.
  * ****************************************************************************
  */
 
-// system
-#include <stdint.h>
-#include <stddef.h>
-#include <iostream>
-#include <fstream>
-#include <ctime>
-#include <exception>
-#include <sstream>
-#include <iomanip>
-#include <vector>
-#include <cmath>
-#include <valarray>
+#ifndef VISIONCORE_EIGEN_MISSING_BITS_HPP
+#define VISIONCORE_EIGEN_MISSING_BITS_HPP
 
-// testing framework & libraries
-#include <gtest/gtest.h>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <unsupported/Eigen/AutoDiff>
 
-// google logger
-#include <glog/logging.h>
+#include <sophus/so2.hpp>
+#include <sophus/so3.hpp>
+#include <sophus/se2.hpp>
+#include <sophus/se3.hpp>
+#include <sophus/rxso3.hpp>
+#include <sophus/sim3.hpp>
 
-#include <VisionCore/Buffers/Buffer1D.hpp>
-#include <BufferTestHelpers.hpp>
-
-static constexpr std::size_t BufferSize = 4097;
-
+namespace Eigen 
+{
+  
+namespace numext
+{
+  
 template<typename T>
-class Test_Buffer1D : public ::testing::Test
-{
-public:   
-    Test_Buffer1D()
-    {
-        
-    }
-    
-    virtual ~Test_Buffer1D()
-    {
-        
-    }
-};
-
-typedef ::testing::Types<float,Eigen::Vector3f,Sophus::SE3f> TypesToTest;
-TYPED_TEST_CASE(Test_Buffer1D, TypesToTest);
-
-TYPED_TEST(Test_Buffer1D, CPU) 
-{
-    typedef TypeParam BufferElementT;
-    
-    vc::Buffer1DManaged<BufferElementT, vc::TargetHost> bufcpu(BufferSize);
-    
-    ASSERT_TRUE(bufcpu.isValid()) << "Wrong managed state";
-    ASSERT_EQ(bufcpu.size(), BufferSize) << "Wrong managed size";
-    ASSERT_EQ(bufcpu.bytes(), BufferSize * sizeof(BufferElementT)) << "Wrong managed size bytes";
-    
-    for(std::size_t i = 0 ; i < bufcpu.size() ; ++i)
-    {
-        BufferElementOps<BufferElementT>::assign(bufcpu(i),i,BufferSize);
-    }
-    
-    vc::Buffer1DView<BufferElementT, vc::TargetHost> viewcpu(bufcpu);
-    
-    ASSERT_TRUE(viewcpu.isValid()) << "Wrong view state";
-    ASSERT_EQ(viewcpu.size(), BufferSize) << "Wrong size for view";
-    
-    for(std::size_t i = 0 ; i < viewcpu.size() ; ++i)
-    {
-        BufferElementOps<BufferElementT>::check(viewcpu(i), viewcpu.ptr()[i],i);
-    }
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+T atan2(const T& y, const T &x) {
+    EIGEN_USING_STD_MATH(atan2);
+    return atan2(y,x);
 }
+
+#ifdef __CUDACC__
+template<> EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+float atan2(const float& y, const float &x) { return ::atan2f(y,x); }
+
+template<> EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+double atan2(const double& y, const double &x) { return ::atan2(y,x); }
+#endif
+  
+}
+
+template<typename DerType> 
+inline const Eigen::AutoDiffScalar<EIGEN_EXPR_BINARYOP_SCALAR_RETURN_TYPE(typename Eigen::internal::remove_all<DerType>::type, typename Eigen::internal::traits<typename Eigen::internal::remove_all<DerType>::type>::Scalar, product)> 
+atan(const Eigen::AutoDiffScalar<DerType>& x) 
+{ 
+  using namespace Eigen; 
+  EIGEN_UNUSED typedef typename Eigen::internal::traits<typename Eigen::internal::remove_all<DerType>::type>::Scalar Scalar; 
+  using numext::atan;
+  return Eigen::MakeAutoDiffScalar(atan(x.value()),x.derivatives() * ( Scalar(1) / (Scalar(1) + x.value() * x.value()) ));
+}
+
+}
+
+#endif // VISIONCORE_EIGEN_MISSING_BITS_HPP

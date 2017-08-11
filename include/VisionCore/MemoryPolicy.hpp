@@ -36,6 +36,11 @@
 #ifndef VISIONCORE_MEMORY_POLICY_HPP
 #define VISIONCORE_MEMORY_POLICY_HPP
 
+#include <sophus/so2.hpp>
+#include <sophus/so3.hpp>
+#include <sophus/se2.hpp>
+#include <sophus/se3.hpp>
+
 namespace vc
 {
 template<typename TargetFrom, typename TargetTo>
@@ -53,6 +58,56 @@ struct TargetTransfer { };
 
 namespace vc
 {
+
+template<typename T, typename Target>
+struct TypeAlignmentTraits
+{
+    typedef T ResultT;
+};
+
+template<typename T, typename Target>
+using PortableT = typename vc::TypeAlignmentTraits<T,Target>::ResultT;
+
+#if 0
+// If Eigen@CUDA doesn't use the same alignment  
+#ifndef EIGEN_CUDA_MAX_ALIGN_BYTES
+template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+struct TypeAlignmentTraits<Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>,TargetDeviceCUDA>
+{
+  typedef Eigen::Matrix<_Scalar, _Rows, _Cols, _Options | Eigen::DontAlign, _MaxRows, _MaxCols> ResultT;
+};
+
+template<typename _Scalar, int _Options>
+struct TypeAlignmentTraits<Eigen::Quaternion<_Scalar, _Options>,TargetDeviceCUDA>
+{
+    typedef Eigen::Quaternion<_Scalar, _Options | Eigen::DontAlign> ResultT;
+};
+
+template<typename _Scalar, int _Options>
+struct TypeAlignmentTraits<Sophus::SO2<_Scalar, _Options>,TargetDeviceCUDA>
+{
+    typedef Sophus::SO2<_Scalar, _Options | Eigen::DontAlign> ResultT;
+};
+
+template<typename _Scalar, int _Options>
+struct TypeAlignmentTraits<Sophus::SE2<_Scalar, _Options>,TargetDeviceCUDA>
+{
+    typedef Sophus::SE2<_Scalar, _Options | Eigen::DontAlign> ResultT;
+};
+
+template<typename _Scalar, int _Options>
+struct TypeAlignmentTraits<Sophus::SO3<_Scalar, _Options>,TargetDeviceCUDA>
+{
+    typedef Sophus::SO3<_Scalar, _Options | Eigen::DontAlign> ResultT;
+};
+
+template<typename _Scalar, int _Options>
+struct TypeAlignmentTraits<Sophus::SE3<_Scalar, _Options>,TargetDeviceCUDA>
+{
+    typedef Sophus::SE3<_Scalar, _Options | Eigen::DontAlign> ResultT;
+};
+#endif // EIGEN_CUDA_MAX_ALIGN_BYTES
+#endif
     
 template<typename TT> struct TargetTraits { };
 

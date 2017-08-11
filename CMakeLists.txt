@@ -77,6 +77,7 @@ if(BUILD_TESTS AND GTest_FOUND)
   set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "" CACHE STRING "Flags used for linking binaries during coverage builds." FORCE )
   set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE "" CACHE STRING "Flags used by the shared libraries linker during coverage builds." FORCE)
   mark_as_advanced(CMAKE_CXX_FLAGS_COVERAGE CMAKE_C_FLAGS_COVERAGE CMAKE_EXE_LINKER_FLAGS_COVERAGE CMAKE_SHARED_LINKER_FLAGS_COVERAGE)
+  message("Testing enabled")
 endif()
 
 include(GenerateExportHeader)
@@ -111,6 +112,10 @@ try_run(EIGEN_IDEAL_MAX_ALIGN_BYTES EIGEN_GET_ALIGNMENT_OK
 if(EIGEN_GET_ALIGNMENT_OK)
   message("Eigen Host Alignment: ${EIGEN_IDEAL_MAX_ALIGN_BYTES}")
 endif()
+
+# TODO FIXME not supported by the mainline Eigen
+set(EIGEN_GET_ALIGNMENT_OK FALSE)
+
 if(USE_GLBINDING)
     find_package(glbinding REQUIRED QUIET)
     find_package(globjects REQUIRED QUIET)
@@ -328,6 +333,7 @@ if(CUDA_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE ${CUDA_curand_LIBRARY} ${CUDA_CUFFT_LIBRARIES})
     target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_INCLUDE_DIRS})
     target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_CUDA)
+    
     if(EIGEN_GET_ALIGNMENT_OK)
       target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_CUDA_MAX_ALIGN_BYTES=${EIGEN_IDEAL_MAX_ALIGN_BYTES})
     endif()

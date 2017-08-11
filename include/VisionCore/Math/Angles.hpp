@@ -37,6 +37,7 @@
 #define VISIONCORE_MATH_ANGLES_HPP
 
 #include <VisionCore/Platform.hpp>
+#include <VisionCore/EigenMissingBits.hpp>
 #include <VisionCore/Math/Statistics.hpp>
 #include <sophus/so3.hpp>
 
@@ -47,14 +48,14 @@ namespace math
 {
  
 template<typename Derived>
-static EIGEN_DEVICE_FUNC inline Eigen::Matrix<typename Sophus::SO3GroupBase<Derived>::Scalar, 3, 1> toEulerAngles(const Sophus::SO3GroupBase<Derived>& m)
+static EIGEN_DEVICE_FUNC inline Eigen::Matrix<typename Sophus::SO3Base<Derived>::Scalar, 3, 1> toEulerAngles(const Sophus::SO3Base<Derived>& m)
 {
     using Eigen::numext::atan2;
     using Eigen::numext::sqrt; 
     
-    Eigen::Matrix<typename Sophus::SO3GroupBase<Derived>::Scalar, 3, 1> ret;
+    Eigen::Matrix<typename Sophus::SO3Base<Derived>::Scalar, 3, 1> ret;
     
-    const typename Sophus::SO3GroupBase<Derived>::Transformation& rm = m.matrix();
+    const typename Sophus::SO3Base<Derived>::Transformation& rm = m.matrix();
     
     ret(0) = atan2(rm(2,1), rm(2,2)); // theta_x
     ret(1) = atan2(-rm(2,0), sqrt(rm(2,1) * rm(2,1) + rm(2,2) * rm(2,2))); // theta_y
@@ -64,11 +65,13 @@ static EIGEN_DEVICE_FUNC inline Eigen::Matrix<typename Sophus::SO3GroupBase<Deri
 }
 
 template<typename T>
-static EIGEN_DEVICE_FUNC inline Sophus::SO3Group<T> rotationBetweenTwoVectors(const Eigen::Matrix<T,3,1>& v1, const Eigen::Matrix<T,3,1>& v2)
+static EIGEN_DEVICE_FUNC inline Sophus::SO3<T> rotationBetweenTwoVectors(const Eigen::Matrix<T,3,1>& v1, 
+                                                                         const Eigen::Matrix<T,3,1>& v2)
 {
     const Eigen::Matrix<T,3,1> cab = v1.cross(v2);
-    const typename Sophus::SO3Group<T>::Transformation hcab = Sophus::SO3Group<T>::hat(cab);
-    return Sophus::SO3Group<T>(Sophus::SO3Group<T>::Transformation::Identity() + hcab + (hcab * hcab) * ( (1.0f - v1.dot(v2))/(cab.squaredNorm()) ));
+    const typename Sophus::SO3<T>::Transformation hcab = Sophus::SO3<T>::hat(cab);
+    return Sophus::SO3<T>(Sophus::SO3<T>::Transformation::Identity() + hcab + (hcab * hcab) * 
+                          ( (1.0f - v1.dot(v2))/(cab.squaredNorm()) ));
 }
     
 /**

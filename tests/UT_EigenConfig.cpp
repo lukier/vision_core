@@ -108,7 +108,7 @@ TEST_F(Test_EigenConfig, CPU)
     
 }
 
-#ifdef CORE_HAVE_CUDA
+#ifdef VISIONCORE_HAVE_CUDA
 extern void GetEigenConfigCUDAHost(float* data);
 extern void GetEigenConfigCUDADevice(float* data);
 
@@ -126,4 +126,4 @@ TEST_F(Test_EigenConfig, CUDADevice)
     reportEigen(buf);
 }
 
-#endif // CORE_HAVE_CUDA
+#endif // VISIONCORE_HAVE_CUDA

@@ -159,15 +159,15 @@ namespace Sophus
  * SO2
  */    
 template<typename Archive, typename Derived>
-void load(Archive & archive, SO2GroupBase<Derived>& m, std::uint32_t const version)
+void load(Archive & archive, SO2Base<Derived>& m, std::uint32_t const version)
 {
-    typename SO2GroupBase<Derived>::Point cplx;
+    typename SO2Base<Derived>::Point cplx;
     archive(cplx);
     m.setComplex(cplx);
 }
   
 template<typename Archive, typename Derived>
-void save(Archive & archive, SO2GroupBase<Derived> const & m, std::uint32_t const version)
+void save(Archive & archive, SO2Base<Derived> const & m, std::uint32_t const version)
 {
     archive(m.unit_complex());
 }
@@ -176,15 +176,15 @@ void save(Archive & archive, SO2GroupBase<Derived> const & m, std::uint32_t cons
  * SO3
  */    
 template<typename Archive, typename Derived>
-void load(Archive & archive, SO3GroupBase<Derived>& m, std::uint32_t const version)
+void load(Archive & archive, SO3Base<Derived>& m, std::uint32_t const version)
 {
-    Eigen::Quaternion<typename SO3GroupBase<Derived>::Scalar> quaternion;
+    Eigen::Quaternion<typename SO3Base<Derived>::Scalar> quaternion;
     archive(cereal::make_nvp("Quaternion", quaternion));
     m.setQuaternion(quaternion);
 }
   
 template<typename Archive, typename Derived>
-void save(Archive & archive, SO3GroupBase<Derived> const & m, std::uint32_t const version)
+void save(Archive & archive, SO3Base<Derived> const & m, std::uint32_t const version)
 {
     archive(cereal::make_nvp("Quaternion", m.unit_quaternion()));
 }
@@ -193,14 +193,14 @@ void save(Archive & archive, SO3GroupBase<Derived> const & m, std::uint32_t cons
  * SE2
  */    
 template<typename Archive, typename Derived>
-void load(Archive & archive, SE2GroupBase<Derived>& m, std::uint32_t const version)
+void load(Archive & archive, SE2Base<Derived>& m, std::uint32_t const version)
 {
     archive(cereal::make_nvp("Translation", m.translation()));
     archive(cereal::make_nvp("Rotation", m.so2()));
 }
   
 template<typename Archive, typename Derived>
-void save(Archive & archive, SE2GroupBase<Derived> const & m, std::uint32_t const version)
+void save(Archive & archive, SE2Base<Derived> const & m, std::uint32_t const version)
 {
     archive(cereal::make_nvp("Translation", m.translation()));
     archive(cereal::make_nvp("Rotation", m.so2()));
@@ -210,14 +210,14 @@ void save(Archive & archive, SE2GroupBase<Derived> const & m, std::uint32_t cons
  * SE3
  */    
 template<typename Archive, typename Derived>
-void load(Archive & archive, SE3GroupBase<Derived>& m, std::uint32_t const version)
+void load(Archive & archive, SE3Base<Derived>& m, std::uint32_t const version)
 {
     archive(cereal::make_nvp("Translation", m.translation()));
     archive(cereal::make_nvp("Rotation", m.so3()));
 }
   
 template<typename Archive, typename Derived>
-void save(Archive & archive, SE3GroupBase<Derived> const & m, std::uint32_t const version)
+void save(Archive & archive, SE3Base<Derived> const & m, std::uint32_t const version)
 {
     archive(cereal::make_nvp("Translation", m.translation()));
     archive(cereal::make_nvp("Rotation", m.so3()));
@@ -227,13 +227,13 @@ void save(Archive & archive, SE3GroupBase<Derived> const & m, std::uint32_t cons
  * RxSO3
  */    
 template<typename Archive, typename Derived>
-void load(Archive & archive, RxSO3GroupBase<Derived>& m, std::uint32_t const version)
+void load(Archive & archive, RxSO3Base<Derived>& m, std::uint32_t const version)
 {
     archive(cereal::make_nvp("Quaternion", m.quaternion()));
 }
   
 template<typename Archive, typename Derived>
-void save(Archive & archive, RxSO3GroupBase<Derived> const & m, std::uint32_t const version)
+void save(Archive & archive, RxSO3Base<Derived> const & m, std::uint32_t const version)
 {
     archive(cereal::make_nvp("Quaternion", m.quaternion()));
 }
@@ -242,14 +242,14 @@ void save(Archive & archive, RxSO3GroupBase<Derived> const & m, std::uint32_t co
  * Sim3
  */    
 template<typename Archive, typename Derived>
-void load(Archive & archive, Sim3GroupBase<Derived>& m, std::uint32_t const version)
+void load(Archive & archive, Sim3Base<Derived>& m, std::uint32_t const version)
 {
     archive(cereal::make_nvp("Translation", m.translation()));
     archive(cereal::make_nvp("Rotation", m.rxso3()));
 }
   
 template<typename Archive, typename Derived>
-void save(Archive & archive, Sim3GroupBase<Derived> const & m, std::uint32_t const version)
+void save(Archive & archive, Sim3Base<Derived> const & m, std::uint32_t const version)
 {
     archive(cereal::make_nvp("Translation", m.translation()));
     archive(cereal::make_nvp("Rotation", m.rxso3()));
@@ -264,28 +264,28 @@ namespace Sophus
 {
 
 template<typename Derived>
-inline std::ostream& operator<<(std::ostream& os, const SO2GroupBase<Derived>& p)
+inline std::ostream& operator<<(std::ostream& os, const SO2Base<Derived>& p)
 {
     os << "(" << p.log() << ")"; 
     return os;
 }
 
 template<typename Derived>
-inline std::ostream& operator<<(std::ostream& os, const SO3GroupBase<Derived>& p)
+inline std::ostream& operator<<(std::ostream& os, const SO3Base<Derived>& p)
 {
     os << "(" << p.unit_quaternion().x() << "," << p.unit_quaternion().y() << "," << p.unit_quaternion().z() << "|" << p.unit_quaternion().w() << ")"; 
     return os;
 }
 
 template<typename Derived>
-inline std::ostream& operator<<(std::ostream& os, const SE2GroupBase<Derived>& p)
+inline std::ostream& operator<<(std::ostream& os, const SE2Base<Derived>& p)
 {
     os << "[t = " << p.translation()(0) << "," << p.translation()(1) << " | r = " << p.so2() << ")";
     return os;
 }
 
 template<typename Derived>
-inline std::ostream& operator<<(std::ostream& os, const SE3GroupBase<Derived>& p)
+inline std::ostream& operator<<(std::ostream& os, const SE3Base<Derived>& p)
 {
     os << "[t = " << p.translation()(0) << "," << p.translation()(1) << "," << p.translation()(2) << " | r = " << p.so3() << ")";
     return os;

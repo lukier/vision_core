@@ -62,7 +62,7 @@ list(APPEND TEST_SOURCES
 )
 endif()
 
-target_add_executable(UT_VisionCore_Buffers ${TEST_SOURCES} ${TEST_KERNEL_SOURCES})
+add_executable(UT_VisionCore_Buffers ${TEST_SOURCES} ${TEST_KERNEL_SOURCES})
 target_link_libraries(UT_VisionCore_Buffers PUBLIC ${GTEST_LIBRARY} ${PROJECT_NAME})
 if(CUDA_FOUND)
     target_link_libraries(UT_VisionCore_Buffers PUBLIC ${CUDA_LIBRARIES})

@@ -37,6 +37,6 @@ UT_PID.cpp
 UT_VelocityProfile.cpp
 )
 
-target_add_executable(UT_VisionCore_Control ${TEST_SOURCES})
+add_executable(UT_VisionCore_Control ${TEST_SOURCES})
 target_link_libraries(UT_VisionCore_Control PUBLIC ${GTEST_LIBRARY} ${PROJECT_NAME})
 add_test(UT_VisionCore_Control UT_VisionCore_Control --gtest_output=xml:UT_VisionCore_Control.xml)

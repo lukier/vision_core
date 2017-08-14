@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # ------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.8)
 if(POLICY_CMP0058)
     cmake_policy(SET CMP0058 OLD) # Workaround for Ninja + FindCUDA
 endif()
@@ -47,20 +47,23 @@ endif()
 # ------------------------------------------------------------------------------
 # Project name & version
 # ------------------------------------------------------------------------------
-project(VisionCore)
+project(VisionCore LANGUAGES CXX CUDA)
 set(${PROJECT_NAME}_VERSION 1.0.0)
 
 # ------------------------------------------------------------------------------
 # Enable C++11 and high level warnings
 # ------------------------------------------------------------------------------
-set(CMAKE_CXX_STANDARD 11) 
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter -Wno-unused-variable)
+add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wall>)
+add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wextra>)
+add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-pedantic>)
+add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-unused-parameter>)
+add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-unused-variable>)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-march=native" COMPILER_OPT_ARCH_NATIVE_SUPPORTED)
 if(COMPILER_OPT_ARCH_NATIVE_SUPPORTED)
-    add_compile_options(-march=native -mtune=native)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-march=native>)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-mtune=native>)
 endif()
 
 # ------------------------------------------------------------------------------
@@ -88,11 +91,6 @@ include(GenerateExportHeader)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts)
 
 option(USE_GLBINDING "Use glbinding & globjects instead" OFF)
-
-# ------------------------------------------------------------------------------
-# Print Project Info
-# ------------------------------------------------------------------------------
-message("Project: ${PROJECT_NAME} / ${${PROJECT_NAME}_VERSION}, build type: ${CMAKE_BUILD_TYPE}, compiled on: ${CMAKE_SYSTEM}, flags: ${CMAKE_CXX_FLAGS}, GLBinding: ${USE_GLBINDING}")
 
 # ------------------------------------------------------------------------------
 # Dependencies
@@ -124,21 +122,32 @@ else()
     find_package(GLEW REQUIRED QUIET)
 endif()
 
+function(JOIN VALUES GLUE OUTPUT)
+  string (REPLACE ";" "${GLUE}" _TMP_STR "${VALUES}")
+  set (${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
+endfunction()
+
 find_package(CUDA QUIET)
 if(CUDA_FOUND)
     CUDA_SELECT_NVCC_ARCH_FLAGS(CUDA_NVCC_ARCH_FLAGS Auto)
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_ARCH_FLAGS};--expt-relaxed-constexpr;--expt-extended-lambda;-std=c++11;-use_fast_math;-O2)
+    set(CMAKE_CUDA_FLAGS ${CUDA_NVCC_ARCH_FLAGS};--expt-relaxed-constexpr;--expt-extended-lambda;-use_fast_math)
     if(CMAKE_BUILD_TYPE MATCHES Debug)
-        list(APPEND CUDA_NVCC_FLAGS -G;-g;-lineinfo;-Xcompiler;-rdynamic)
+        list(APPEND CMAKE_CUDA_FLAGS -G;-g;-lineinfo;-Xcompiler;-rdynamic)
     elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-        list(APPEND CUDA_NVCC_FLAGS -g;-lineinfo)
+        list(APPEND CMAKE_CUDA_FLAGS -g;-lineinfo)
     endif()
-    message("CUDA Flags: ${CUDA_NVCC_FLAGS}")
+    join("${CMAKE_CUDA_FLAGS}" " " CMAKE_CUDA_FLAGS)
+    message("CUDA Flags: ${CMAKE_CUDA_FLAGS}")
 endif()
 find_package(OpenCL QUIET)
 if(OpenCL_FOUND)
     message("OpenCL Version: ${OpenCL_VERSION_MAJOR}.${OpenCL_VERSION_MINOR}")
 endif()
+
+# ------------------------------------------------------------------------------
+# Print Project Info
+# ------------------------------------------------------------------------------
+message("Project: ${PROJECT_NAME} / ${${PROJECT_NAME}_VERSION}, build type: ${CMAKE_BUILD_TYPE}, compiled on: ${CMAKE_SYSTEM}, flags: ${CMAKE_CXX_FLAGS}, GLBinding: ${USE_GLBINDING} CUDA: ${CUDA_FOUND} OpenCL: ${OpenCL_FOUND}")
 
 find_package(OpenCV QUIET)
 find_package(Ceres QUIET)
@@ -151,43 +160,43 @@ find_package(FFTW QUIET)
 # ------------------------------------------------------------------------------
 # Fix for old-school stuff in FindCUDA.cmake
 # ------------------------------------------------------------------------------
-macro(TARGET_ADD_EXECUTABLE cuda_target)
-  if(CUDA_FOUND)
-    CUDA_ADD_CUDA_INCLUDE_ONCE()
-    CUDA_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _options ${ARGN})
-    CUDA_WRAP_SRCS( ${cuda_target} OBJ _generated_files ${_sources} OPTIONS ${_options} )
-    CUDA_COMPUTE_SEPARABLE_COMPILATION_OBJECT_FILE_NAME(link_file ${cuda_target} 
-      "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
-    add_executable(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
-    CUDA_LINK_SEPARABLE_COMPILATION_OBJECTS("${link_file}" ${cuda_target} "${_options}" "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
-    target_link_libraries(${cuda_target} PUBLIC ${CUDA_LIBRARIES})
-    set_target_properties(${cuda_target} PROPERTIES LINKER_LANGUAGE ${CUDA_C_OR_CXX})
-  else()
-    add_executable(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
-  endif()
-endmacro()
+#macro(TARGET_ADD_EXECUTABLE cuda_target)
+#  if(CUDA_FOUND)
+#    CUDA_ADD_CUDA_INCLUDE_ONCE()
+#    CUDA_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _options ${ARGN})
+#    CUDA_WRAP_SRCS( ${cuda_target} OBJ _generated_files ${_sources} OPTIONS ${_options} )
+#    CUDA_COMPUTE_SEPARABLE_COMPILATION_OBJECT_FILE_NAME(link_file ${cuda_target} 
+#      "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+#    add_executable(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
+#    CUDA_LINK_SEPARABLE_COMPILATION_OBJECTS("${link_file}" ${cuda_target} "${_options}" "${${cuda_target}#_SEPARABLE_COMPILATION_OBJECTS}")
+#    target_link_libraries(${cuda_target} PUBLIC ${CUDA_LIBRARIES})
+#    set_target_properties(${cuda_target} PROPERTIES LINKER_LANGUAGE ${CUDA_C_OR_CXX})
+#  else()
+#    add_executable(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
+#  endif()
+#endmacro()
 
-macro(TARGET_ADD_LIBRARY cuda_target)
-  if(CUDA_FOUND)
-    CUDA_ADD_CUDA_INCLUDE_ONCE()
-    CUDA_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _options ${ARGN})
-    CUDA_BUILD_SHARED_LIBRARY(_cuda_shared_flag ${ARGN})
-    CUDA_WRAP_SRCS( ${cuda_target} OBJ _generated_files ${_sources}
-      ${_cmake_options} ${_cuda_shared_flag} OPTIONS ${_options})
-    CUDA_COMPUTE_SEPARABLE_COMPILATION_OBJECT_FILE_NAME(link_file ${cuda_target} 
-      "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
-    add_library(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
-    CUDA_LINK_SEPARABLE_COMPILATION_OBJECTS("${link_file}" ${cuda_target} "${_options}" 
-    "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
-    target_link_libraries(${cuda_target} PUBLIC ${CUDA_LIBRARIES})
-    if(CUDA_SEPARABLE_COMPILATION)
-      target_link_libraries(${cuda_target} PUBLIC ${CUDA_cudadevrt_LIBRARY})
-    endif()
-    set_target_properties(${cuda_target} PROPERTIES LINKER_LANGUAGE ${CUDA_C_OR_CXX})
-  else()
-    add_library(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
-  endif()
-endmacro()
+#macro(TARGET_ADD_LIBRARY cuda_target)
+#  if(CUDA_FOUND)
+#    CUDA_ADD_CUDA_INCLUDE_ONCE()
+#    CUDA_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _options ${ARGN})
+#    CUDA_BUILD_SHARED_LIBRARY(_cuda_shared_flag ${ARGN})
+#    CUDA_WRAP_SRCS( ${cuda_target} OBJ _generated_files ${_sources}
+#      ${_cmake_options} ${_cuda_shared_flag} OPTIONS ${_options})
+#    CUDA_COMPUTE_SEPARABLE_COMPILATION_OBJECT_FILE_NAME(link_file ${cuda_target} 
+#      "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+#    add_library(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
+#    CUDA_LINK_SEPARABLE_COMPILATION_OBJECTS("${link_file}" ${cuda_target} "${_options}" 
+#    "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+#    target_link_libraries(${cuda_target} PUBLIC ${CUDA_LIBRARIES})
+#    if(CUDA_SEPARABLE_COMPILATION)
+#      target_link_libraries(${cuda_target} PUBLIC ${CUDA_cudadevrt_LIBRARY})
+#    endif()
+#    set_target_properties(${cuda_target} PROPERTIES LINKER_LANGUAGE ${CUDA_C_OR_CXX})
+#  else()
+#    add_library(${cuda_target} ${_cmake_options} ${_generated_files} ${_sources} ${link_file})
+#  endif()
+#endmacro()
 
 # ---------------------------------------------
 # List of sources
@@ -309,14 +318,20 @@ if(FFTW_FOUND)
     list(APPEND SOURCES sources/Math/FourierCPU.cpp)
 endif()
 
+set_source_files_properties(${KERNEL_SOURCES} PROPERTIES LANGUAGE CUDA)
+
 # ------------------------------------------------------------------------------
 # Build
 # ------------------------------------------------------------------------------
 if(CUDA_FOUND)
-    target_add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES} ${KERNEL_SOURCES})
+    add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES} ${KERNEL_SOURCES})
 else()
     add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 endif()
+
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
+set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

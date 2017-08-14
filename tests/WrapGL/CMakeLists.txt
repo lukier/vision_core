@@ -36,6 +36,6 @@ set(TEST_SOURCES
 UT_GLBinding.cpp
 )
 
-target_add_executable(UT_VisionCore_WrapGL ${TEST_SOURCES})
+add_executable(UT_VisionCore_WrapGL ${TEST_SOURCES})
 target_link_libraries(UT_VisionCore_WrapGL PUBLIC ${GTEST_LIBRARY} ${PROJECT_NAME})
 add_test(UT_VisionCore_WrapGL UT_VisionCore_WrapGL --gtest_output=xml:UT_VisionCore_WrapGL.xml)

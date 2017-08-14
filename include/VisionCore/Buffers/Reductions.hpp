@@ -44,18 +44,19 @@
 
 #include <VisionCore/Buffers/Buffer1D.hpp>
 
+#ifdef VISIONCORE_CUDA_COMPILER
 namespace vc
 {
 
 namespace internal
 {
-    
+
 template<typename T>
 inline EIGEN_PURE_DEVICE_FUNC void warpReduceSum(T& val)
 {
     for(unsigned int offset = warpSize / 2; offset > 0; offset /= 2)
     {
-        val += __shfl_down(val, offset);
+        val += vc::shfl_down(val, offset);
     }
 }
 
@@ -71,7 +72,7 @@ inline EIGEN_PURE_DEVICE_FUNC void warpReduceSum(
             #pragma unroll
             for(int r = 0; r < _Rows ; r++)
             {
-                val(r,c) += __shfl_down(val(r,c), offset);
+                val(r,c) += vc::shfl_down(val(r,c), offset);
             }
         }
     }
@@ -133,7 +134,7 @@ inline EIGEN_PURE_DEVICE_FUNC void finalizeReduction(T* block_scratch, T* curr_s
 */
     
 }
-
+#endif // VISIONCORE_CUDA_COMPILER
 #endif // VISIONCORE_HAVE_CUDA
 
 #endif // VISIONCORE_REDUCTIONS_HPP

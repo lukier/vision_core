@@ -9,11 +9,75 @@
 #include <cstdint>
 
 #ifdef VISIONCORE_HAVE_CUDA
+#ifdef VISIONCORE_CUDA_COMPILER
 
 #include <device_functions.h>
 
+namespace vc
+{
 namespace detail 
 {
+  
+__device__ __forceinline__ unsigned int ACTIVE_MASK()
+{
+#if CUDA_VERSION >= 9000
+    return __activemask();
+#else
+    // will be ignored anyway
+    return 0xffffffff;
+#endif
+}
+
+
+__device__ __forceinline__ int WARP_BALLOT(int predicate, unsigned int mask = 0xffffffff)
+{
+#if CUDA_VERSION >= 9000
+    return __ballot_sync(mask, predicate);
+#else
+    return __ballot(predicate);
+#endif
+}
+
+template <typename T>
+__device__ __forceinline__ T WARP_SHFL_XOR(T value, int laneMask, int width = warpSize, unsigned int mask = 0xffffffff)
+{
+#if CUDA_VERSION >= 9000
+    return __shfl_xor_sync(mask, value, laneMask, width);
+#else
+    return __shfl_xor(value, laneMask, width);
+#endif
+}
+
+template <typename T>
+__device__ __forceinline__ T WARP_SHFL(T value, int srcLane, int width = warpSize, unsigned int mask = 0xffffffff)
+{
+#if CUDA_VERSION >= 9000
+    return __shfl_sync(mask, value, srcLane, width);
+#else
+    return __shfl(value, srcLane, width);
+#endif
+}
+
+template <typename T>
+__device__ __forceinline__ T WARP_SHFL_UP(T value, unsigned int delta, int width = warpSize, unsigned int mask = 0xffffffff)
+{
+#if CUDA_VERSION >= 9000
+    return __shfl_up_sync(mask, value, delta, width);
+#else
+    return __shfl_up(value, delta, width);
+#endif
+}
+
+template <typename T>
+__device__ __forceinline__ T WARP_SHFL_DOWN(T value, unsigned int delta, int width = warpSize, unsigned int mask = 0xffffffff)
+{
+#if CUDA_VERSION >= 9000
+    return __shfl_down_sync(mask, value, delta, width);
+#else
+    return __shfl_down(value, delta, width);
+#endif
+}
+
     
 template<typename T, int m>
 struct array 
@@ -244,7 +308,7 @@ struct shuffle
 {
     __device__ __forceinline__ static void impl(array<int, s>& d, const int& i) 
     {
-        d.head = __shfl(d.head, i);
+        d.head = WARP_SHFL(d.head, i);
         shuffle<s-1>::impl(d.tail, i);
     }
 };
@@ -254,7 +318,7 @@ struct shuffle<1>
 {
     __device__ __forceinline__ static void impl(array<int, 1>& d, const int& i) 
     {
-        d.head = __shfl(d.head, i);
+        d.head = WARP_SHFL(d.head, i);
     }
 };
 
@@ -263,7 +327,7 @@ struct shuffle_down
 {
     __device__ __forceinline__ static void impl(array<int, s>& d, const int& i) 
     {
-        d.head = __shfl_down(d.head, i);
+        d.head = WARP_SHFL_DOWN(d.head, i);
         shuffle_down<s-1>::impl(d.tail, i);
     }
 };
@@ -273,7 +337,7 @@ struct shuffle_down<1>
 {
     __device__ __forceinline__ static void impl(array<int, 1>& d, const int& i) 
     {
-        d.head = __shfl_down(d.head, i);
+        d.head = WARP_SHFL_DOWN(d.head, i);
     }
 };
 
@@ -282,7 +346,7 @@ struct shuffle_up
 {
     __device__ __forceinline__ static void impl(array<int, s>& d, const int& i) 
     {
-        d.head = __shfl_up(d.head, i);
+        d.head = WARP_SHFL_UP(d.head, i);
         shuffle_up<s-1>::impl(d.tail, i);
     }
 };
@@ -292,7 +356,7 @@ struct shuffle_up<1>
 {
     __device__ __forceinline__ static void impl(array<int, 1>& d, const int& i) 
     {
-        d.head = __shfl_up(d.head, i);
+        d.head = WARP_SHFL_UP(d.head, i);
     }
 };
 
@@ -301,7 +365,7 @@ struct shuffle_xor
 {
     __device__ __forceinline__ static void impl(array<int, s>& d, const int& i) 
     {
-        d.head = __shfl_xor(d.head, i);
+        d.head = WARP_SHFL_XOR(d.head, i);
         shuffle_xor<s-1>::impl(d.tail, i);
     }
 };
@@ -311,7 +375,7 @@ struct shuffle_xor<1>
 {
     __device__ __forceinline__ static void impl(array<int, 1>& d, const int& i) 
     {
-        d.head = __shfl_xor(d.head, i);
+        d.head = WARP_SHFL_XOR(d.head, i);
     }
 };
     
@@ -320,7 +384,7 @@ struct shuffle_xor<1>
 #if __CUDA_ARCH__ >= 350
 // Device has ldg
 template<typename T>
-__device__ __forceinline__ T __ldg(const T* ptr) 
+__device__ __forceinline__ T ldg(const T* ptr) 
 {
     typedef typename detail::working_array<T>::type aliased;
     aliased storage = detail::load_storage<T>::impl(ptr);
@@ -329,14 +393,14 @@ __device__ __forceinline__ T __ldg(const T* ptr)
 #else
 //Device does not, fall back.
 template<typename T>
-__device__ __forceinline__ T __ldg(const T* ptr) 
+__device__ __forceinline__ T ldg(const T* ptr) 
 {
     return *ptr;
 }
 #endif // __CUDA_ARCH__ >= 350
 
 template<typename T>
-__device__ __forceinline__ T __shfl(const T& t, const int& i) 
+__device__ __forceinline__ T shfl(const T& t, const int& i) 
 {
     //X If you get a compiler error on this line, it is because
     //X sizeof(T) is not divisible by 4, and so this type is not
@@ -350,7 +414,7 @@ __device__ __forceinline__ T __shfl(const T& t, const int& i)
 }
 
 template<typename T>
-__device__ __forceinline__ T __shfl_down(const T& t, const int& i) 
+__device__ __forceinline__ T shfl_down(const T& t, const int& i) 
 {
     //X If you get a compiler error on this line, it is because
     //X sizeof(T) is not divisible by 4, and so this type is not
@@ -364,7 +428,7 @@ __device__ __forceinline__ T __shfl_down(const T& t, const int& i)
 }
 
 template<typename T>
-__device__ __forceinline__ T __shfl_up(const T& t, const int& i) 
+__device__ __forceinline__ T shfl_up(const T& t, const int& i) 
 {
     //X If you get a compiler error on this line, it is because
     //X sizeof(T) is not divisible by 4, and so this type is not
@@ -378,7 +442,7 @@ __device__ __forceinline__ T __shfl_up(const T& t, const int& i)
 }
 
 template<typename T>
-__device__ __forceinline__ T __shfl_xor(const T& t, const int& i) 
+__device__ __forceinline__ T shfl_xor(const T& t, const int& i) 
 {
     
     //X If you get a compiler error on this line, it is because
@@ -392,6 +456,8 @@ __device__ __forceinline__ T __shfl_xor(const T& t, const int& i)
     return detail::fuse<T>(lysed);
 }
 
+}
+#endif // VISIONCORE_CUDA_COMPILER
 #endif // VISIONCORE_HAVE_CUDA
 
 #endif // VISIONCORE_CUDA_GENERICS_HPP

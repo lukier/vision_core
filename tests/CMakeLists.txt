@@ -76,7 +76,7 @@ EigenConfigCUDA.cu
 )
 endif()
 
-target_add_executable(UT_VisionCore ${TEST_SOURCES} ${TEST_KERNEL_SOURCES})
+add_executable(UT_VisionCore ${TEST_SOURCES} ${TEST_KERNEL_SOURCES})
 target_link_libraries(UT_VisionCore PUBLIC ${GTEST_LIBRARY} ${PROJECT_NAME})
 if(CUDA_FOUND)
     target_link_libraries(UT_VisionCore PUBLIC ${CUDA_LIBRARIES})

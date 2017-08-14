@@ -43,6 +43,6 @@ UT_SDF.cpp
 UT_SquareUpperTriangularMatrix.cpp
 )
 
-target_add_executable(UT_VisionCore_Types ${TEST_SOURCES})
+add_executable(UT_VisionCore_Types ${TEST_SOURCES})
 target_link_libraries(UT_VisionCore_Types PUBLIC ${GTEST_LIBRARY} ${PROJECT_NAME})
 add_test(UT_VisionCore_Types UT_VisionCore_Types --gtest_output=xml:UT_VisionCore_Types.xml)

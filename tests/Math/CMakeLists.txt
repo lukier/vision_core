@@ -49,7 +49,7 @@ UT_Statistics.cpp
 #UT_TinySolver.cpp
 )
 
-target_add_executable(UT_VisionCore_Math ${TEST_SOURCES})
+add_executable(UT_VisionCore_Math ${TEST_SOURCES})
 target_link_libraries(UT_VisionCore_Math PUBLIC ${GTEST_LIBRARY} ${PROJECT_NAME})
 if(CUDA_FOUND)
     target_link_libraries(UT_VisionCore_Math PUBLIC ${CUDA_LIBRARIES})

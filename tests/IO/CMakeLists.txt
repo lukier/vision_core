@@ -36,6 +36,6 @@ set(TEST_SOURCES
 UT_PLYModel.cpp
 )
 
-target_add_executable(UT_VisionCore_IO ${TEST_SOURCES})
+add_executable(UT_VisionCore_IO ${TEST_SOURCES})
 target_link_libraries(UT_VisionCore_IO PUBLIC ${GTEST_LIBRARY} ${PROJECT_NAME})
 add_test(UT_VisionCore_IO UT_VisionCore_IO --gtest_output=xml:UT_VisionCore_IO.xml)

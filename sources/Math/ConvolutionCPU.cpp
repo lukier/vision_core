@@ -45,7 +45,8 @@ struct ConvolutionDispatcher<_Scalar, Target, Eigen::Matrix<_Scalar, _Rows, _Col
 {
     typedef Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> KernelT;
     
-    static void convolve1D(const vc::Buffer1DView<_Scalar,Target>& img_in, vc::Buffer1DView<_Scalar,Target>& img_out, const KernelT& kern)
+    static void convolve1D(const vc::Buffer1DView<_Scalar,Target>& img_in, 
+                           vc::Buffer1DView<_Scalar,Target>& img_out, const KernelT& kern)
     {
         int split_x = _Rows/2;
         
@@ -66,7 +67,8 @@ struct ConvolutionDispatcher<_Scalar, Target, Eigen::Matrix<_Scalar, _Rows, _Col
         });
     }
     
-    static void convolve2D(const vc::Buffer2DView<_Scalar,Target>& img_in, vc::Buffer2DView<_Scalar,Target>& img_out, const KernelT& kern)
+    static void convolve2D(const vc::Buffer2DView<_Scalar,Target>& img_in, 
+                           vc::Buffer2DView<_Scalar,Target>& img_out, const KernelT& kern)
     {
         int split_x = _Rows/2, split_y = _Cols/2;
         

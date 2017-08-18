@@ -273,6 +273,9 @@ template void vc::io::saveImage<vc::Image2DView<uint16_t, vc::TargetHost>>(const
 template vc::Image2DManaged<uchar3, vc::TargetHost> vc::io::loadImage<vc::Image2DManaged<uchar3, vc::TargetHost>>(const std::string& fn);
 template void vc::io::saveImage<vc::Image2DView<uchar3, vc::TargetHost>>(const std::string& fn, const vc::Image2DView<uchar3, vc::TargetHost>& input);
 
+template vc::Image2DManaged<float3, vc::TargetHost> vc::io::loadImage<vc::Image2DManaged<float3, vc::TargetHost>>(const std::string& fn);
+template void vc::io::saveImage<vc::Image2DView<float3, vc::TargetHost>>(const std::string& fn, const vc::Image2DView<float3, vc::TargetHost>& input);
+
 template vc::Buffer2DManaged<float, vc::TargetHost> vc::io::loadImage<vc::Buffer2DManaged<float, vc::TargetHost>>(const std::string& fn);
 template void vc::io::saveImage<vc::Buffer2DView<float, vc::TargetHost>>(const std::string& fn, const vc::Buffer2DView<float, vc::TargetHost>& input);
 
@@ -284,6 +287,9 @@ template void vc::io::saveImage<vc::Buffer2DView<uint16_t, vc::TargetHost>>(cons
 
 template vc::Buffer2DManaged<uchar3, vc::TargetHost> vc::io::loadImage<vc::Buffer2DManaged<uchar3, vc::TargetHost>>(const std::string& fn);
 template void vc::io::saveImage<vc::Buffer2DView<uchar3, vc::TargetHost>>(const std::string& fn, const vc::Buffer2DView<uchar3, vc::TargetHost>& input);
+
+template vc::Buffer2DManaged<float3, vc::TargetHost> vc::io::loadImage<vc::Buffer2DManaged<float3, vc::TargetHost>>(const std::string& fn);
+template void vc::io::saveImage<vc::Buffer2DView<float3, vc::TargetHost>>(const std::string& fn, const vc::Buffer2DView<float3, vc::TargetHost>& input);
 
 #ifdef VISIONCORE_HAVE_CAMERA_DRIVERS
 template drivers::camera::FrameBuffer vc::io::loadImage<drivers::camera::FrameBuffer>(const std::string& fn);

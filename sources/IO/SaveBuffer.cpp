@@ -37,6 +37,7 @@
 
 #include <VisionCore/Buffers/Buffer1D.hpp>
 #include <VisionCore/Buffers/Buffer2D.hpp>
+#include <VisionCore/Buffers/Image2D.hpp>
 
 #include <VisionCore/IO/File.hpp>
 #include <cstdio>
@@ -71,6 +72,15 @@ struct BinaryBufferSavingProxy<vc::Buffer2DView<T2, vc::TargetHost>>
     }
 };
 
+template<typename T2>
+struct BinaryBufferSavingProxy<vc::Image2DView<T2, vc::TargetHost>>
+{
+    static inline void save(const std::string& fn, const vc::Image2DView<T2, vc::TargetHost>& b) 
+    { 
+        BinaryBufferSavingProxy<vc::Buffer2DView<T2,vc::TargetHost>>::save(fn,b);
+    }
+};
+
 template<typename T>
 struct TextWriteElement { };
 
@@ -81,6 +91,15 @@ struct TextWriteElement<uint8_t>
     {
         of.printf("0x%02X ", (int)val);
     }
+};
+
+template<>
+struct TextWriteElement<uchar3> 
+{
+  static inline void write(vc::io::File& of, const uchar3& val)
+  {
+    of.printf("0x%02X 0x%02X 0x%02X ", (int)val.x, (int)val.y, (int)val.z);
+  }
 };
 
 template<>
@@ -99,6 +118,15 @@ struct TextWriteElement<float>
     {
         of.printf("%04.4g ", val);
     }
+};
+
+template<>
+struct TextWriteElement<float3> 
+{
+  static inline void write(vc::io::File& of, const float3& val)
+  {
+    of.printf("%04.4g %04.4g %04.4g ", val.x, val.y, val.z);
+  }
 };
 
 template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
@@ -178,6 +206,14 @@ struct TextBufferSavingProxy<vc::Buffer2DView<T2, vc::TargetHost>>
     }
 };
 
+template<typename T2>
+struct TextBufferSavingProxy<vc::Image2DView<T2, vc::TargetHost>>
+{
+    static inline void save(const std::string& fn, const vc::Image2DView<T2, vc::TargetHost>& b) 
+    {
+        TextBufferSavingProxy<vc::Buffer2DView<T2, vc::TargetHost>>::save(fn, b);
+    }
+};
 
 template<typename T>
 void vc::io::saveBufferAsText(const std::string& fn, const T& input)
@@ -201,16 +237,24 @@ template void vc::io::saveBufferAsBinary<vc::Buffer1DView<T, vc::TargetHost>>\
 template void vc::io::saveBufferAsText<vc::Buffer2DView<T, vc::TargetHost>>\
   (const std::string& fn, const vc::Buffer2DView<T, vc::TargetHost>& input);\
 template void vc::io::saveBufferAsBinary<vc::Buffer2DView<T, vc::TargetHost>>\
-  (const std::string& fn, const vc::Buffer2DView<T, vc::TargetHost>& input);
+  (const std::string& fn, const vc::Buffer2DView<T, vc::TargetHost>& input);\
+  template void vc::io::saveBufferAsText<vc::Image2DView<T, vc::TargetHost>>\
+  (const std::string& fn, const vc::Image2DView<T, vc::TargetHost>& input);\
+  template void vc::io::saveBufferAsBinary<vc::Image2DView<T, vc::TargetHost>>\
+  (const std::string& fn, const vc::Image2DView<T, vc::TargetHost>& input);
 
 INST1D_FOR_TYPE(uint8_t)
+INST1D_FOR_TYPE(uchar3)
 INST1D_FOR_TYPE(uint16_t)
 INST1D_FOR_TYPE(float)
+INST1D_FOR_TYPE(float3)
 INST1D_FOR_TYPE(Eigen::Vector2f)
 INST1D_FOR_TYPE(Eigen::Vector3f)
   
 INST2D_FOR_TYPE(uint8_t)
+INST2D_FOR_TYPE(uchar3)
 INST2D_FOR_TYPE(uint16_t)
 INST2D_FOR_TYPE(float)
+INST2D_FOR_TYPE(float3)
 INST2D_FOR_TYPE(Eigen::Vector2f)
 INST2D_FOR_TYPE(Eigen::Vector3f)

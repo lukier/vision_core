@@ -53,6 +53,8 @@ void convolve(const Buffer1DView<T,Target>& img_in, Buffer1DView<T,Target>& img_
 template<typename T, typename Target, typename T2>
 void convolve(const Buffer2DView<T,Target>& img_in, Buffer2DView<T,Target>& img_out, const T2& kern);
 
+// TODO add separable convolutions, see nVidia Sample
+
 }
     
 }

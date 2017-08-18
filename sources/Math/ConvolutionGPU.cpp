@@ -39,7 +39,8 @@
 #include <VisionCore/CUDAException.hpp>
 
 template<typename _Scalar, typename Target, typename KernelT>
-__global__ void Kernel_convolveBuffer1D(vc::Buffer1DView<_Scalar,Target> img_in, vc::Buffer1DView<_Scalar,Target> img_out, KernelT kern)
+__global__ void Kernel_convolveBuffer1D(vc::Buffer1DView<_Scalar,Target> img_in, 
+                                        vc::Buffer1DView<_Scalar,Target> img_out, KernelT kern)
 {
     // current point
     const std::size_t x = blockIdx.x*blockDim.x + threadIdx.x;
@@ -64,7 +65,8 @@ __global__ void Kernel_convolveBuffer1D(vc::Buffer1DView<_Scalar,Target> img_in,
 }
 
 template<typename _Scalar, typename Target, typename KernelT>
-__global__ void Kernel_convolveBuffer2D(vc::Buffer2DView<_Scalar,Target> img_in, vc::Buffer2DView<_Scalar,Target> img_out, KernelT kern)
+__global__ void Kernel_convolveBuffer2D(vc::Buffer2DView<_Scalar,Target> img_in, 
+                                        vc::Buffer2DView<_Scalar,Target> img_out, KernelT kern)
 {
     // current point
     const std::size_t x = blockIdx.x*blockDim.x + threadIdx.x;
@@ -101,7 +103,8 @@ struct ConvolutionDispatcherGPU<_Scalar, Target, Eigen::Matrix<_Scalar, _Rows, _
 {
     typedef Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> KernelT;
     
-    static void convolve1D(const vc::Buffer1DView<_Scalar,Target>& img_in, vc::Buffer1DView<_Scalar,Target>& img_out, const KernelT& kern)
+    static void convolve1D(const vc::Buffer1DView<_Scalar,Target>& img_in, 
+                           vc::Buffer1DView<_Scalar,Target>& img_out, const KernelT& kern)
     {
         dim3 gridDim, blockDim;
         
@@ -118,7 +121,8 @@ struct ConvolutionDispatcherGPU<_Scalar, Target, Eigen::Matrix<_Scalar, _Rows, _
         }
     }
     
-    static void convolve2D(const vc::Buffer2DView<_Scalar,Target>& img_in, vc::Buffer2DView<_Scalar,Target>& img_out, const KernelT& kern)
+    static void convolve2D(const vc::Buffer2DView<_Scalar,Target>& img_in, 
+                           vc::Buffer2DView<_Scalar,Target>& img_out, const KernelT& kern)
     {
         dim3 gridDim, blockDim;
         

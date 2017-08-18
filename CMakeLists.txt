@@ -292,12 +292,12 @@ sources/WrapGL/WrapGLFramebuffer.cpp
 )
 
 set(KERNEL_SOURCES
-sources/Image/BufferOpsGPU.cu
-sources/Image/ColorMapGPU.cu
-sources/Image/FiltersGPU.cu
-sources/Image/PixelConvertGPU.cu
-sources/Math/ConvolutionGPU.cu
-sources/Math/FourierGPU.cu
+sources/Image/BufferOpsGPU.cpp
+sources/Image/ColorMapGPU.cpp
+sources/Image/FiltersGPU.cpp
+sources/Image/PixelConvertGPU.cpp
+sources/Math/ConvolutionGPU.cpp
+sources/Math/FourierGPU.cpp
 )
 
 if(CUDA_FOUND)

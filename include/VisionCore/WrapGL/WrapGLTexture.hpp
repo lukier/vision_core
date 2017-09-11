@@ -266,7 +266,7 @@ public:
     template<typename T>
     void create(const Buffer2DView<T,TargetHost>& buf, GLenum int_format = GL_RGBA32F, int border = 0) 
     {
-        create(buf.width() * buf.height(), int_format, buf.ptr(), border);
+        create(buf.width(), buf.height(), int_format, (GLvoid*)buf.ptr(), border);
     }
     
     void create(GLint w, GLint h, GLenum int_format = GL_RGBA32F,  GLvoid* data = nullptr, int border = 0)

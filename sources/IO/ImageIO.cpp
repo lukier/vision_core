@@ -67,7 +67,7 @@ struct ImageIOProxy<cv::Mat,OpenCVBackend>
 {
     static inline cv::Mat load(const std::string& fn)
     {
-        cv::Mat ret = cv::imread(fn);
+        cv::Mat ret = cv::imread(fn, CV_LOAD_IMAGE_ANYDEPTH);
         
         if(!ret.data)
         {

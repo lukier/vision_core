@@ -253,7 +253,7 @@ public:
     }
     
     template<typename T>
-    Texture2D(const Buffer2DView<T,TargetHost>& buf, GLenum int_format = GL_RGBA32F, int border = 0) : Texture2DBase()
+    explicit Texture2D(const Buffer2DView<T,TargetHost>& buf, GLenum int_format = GL_RGBA32F, int border = 0) : Texture2DBase()
     {
         create(buf, int_format, border);
     }
@@ -302,6 +302,65 @@ public:
 template<typename T, typename Target>
 class GPUTexture2DFromOpenGL { };
 
+template<typename T, typename Target>
+class Buffer2DFromOpenGLTexture { };
+
+/**
+ * Host Buffer2D From OpenGL texture.
+ * Note glMapBuffer doesn't work here, so we have to fake it.
+ * It is Buffer2DManaged but copies the texture data.
+ */
+template<typename T>
+class Buffer2DFromOpenGLTexture<T,TargetHost> : public Buffer2DView<T,TargetHost>
+{
+public:
+    typedef Buffer2DView<T,TargetHost> ViewT;
+    
+    Buffer2DFromOpenGLTexture() = delete;
+    
+    inline Buffer2DFromOpenGLTexture(wrapgl::Texture2D& gltex) : ViewT()
+    {        
+        typename TargetHost::template PointerType<T> ptr = nullptr;
+        ViewT::xsize = gltex.width();
+        ViewT::ysize = gltex.height();
+        
+        std::size_t line_pitch = 0;
+        TargetHost::template AllocatePitchedMem<T>(&ptr, &line_pitch, gltex.width(), gltex.height());
+        
+        ViewT::memptr = ptr;
+        ViewT::line_pitch = line_pitch;
+        
+        // copy the OpenGL texture
+        gltex.download(*this);
+    }
+    
+    inline ~Buffer2DFromOpenGLTexture()
+    {
+        if(ViewT::isValid())
+        {
+            TargetHost::template DeallocatePitchedMem<T>(ViewT::memptr);
+        }
+    }
+    
+    Buffer2DFromOpenGLTexture(const Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& img) = delete;
+    
+    inline Buffer2DFromOpenGLTexture(Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>&& img) : ViewT(std::move(img))
+    {
+      
+    }
+    
+    Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& operator=(const Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& img) = delete;
+    
+    inline Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& operator=(Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        return *this;
+    }
+    
+    inline const ViewT& view() const { return (const ViewT&)*this; }
+    inline ViewT& view() { return (ViewT&)*this; }
+};
+
 }
 
 #ifdef VISIONCORE_HAVE_CUDA
@@ -327,7 +386,7 @@ public:
     
     GPUTexture2DFromOpenGL() = delete;
     
-    inline GPUTexture2DFromOpenGL(const wrapgl::Texture2D& gltex) : ViewT(), cuda_res(0)
+    inline GPUTexture2DFromOpenGL(wrapgl::Texture2D& gltex) : ViewT(), cuda_res(0)
     {
         cuda_res = internal::registerOpenGLTexture(GL_TEXTURE_2D, gltex.id());
         
@@ -399,6 +458,73 @@ private:
     cudaTextureDesc texDesc;
 };
 
+/**
+ * CUDA Buffer2D From OpenGL texture.
+ */
+template<typename T>
+class Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA> : public Buffer2DView<T, TargetDeviceCUDA>
+{
+public:
+    typedef Buffer2DView<T, TargetDeviceCUDA> ViewT;
+    
+    Buffer2DFromOpenGLTexture() = delete;
+    
+    inline Buffer2DFromOpenGLTexture(wrapgl::Texture2D& gltex) : 
+        ViewT(), cuda_res(0)
+    {        
+        cuda_res = internal::registerOpenGLTexture(GL_TEXTURE_2D, gltex.id());
+      
+        cudaError_t err = cudaGraphicsMapResources(1, &cuda_res);
+        assert(err == cudaSuccess);
+        
+        std::size_t totSize = 0;
+        typename TargetDeviceCUDA::template PointerType<T> ptr = nullptr;
+        ViewT::xsize = gltex.width();
+        ViewT::ysize = gltex.height();
+        
+        err = cudaGraphicsResourceGetMappedPointer(&ptr, &totSize, cuda_res);
+        assert(err == cudaSuccess);
+        
+        ViewT::memptr = ptr;
+        ViewT::line_pitch = totSize / gltex.height();
+    }
+    
+    inline ~Buffer2DFromOpenGLTexture()
+    {
+        if(ViewT::isValid())
+        {
+            if(cuda_res)
+            {
+                cudaError_t err = cudaGraphicsUnmapResources(1, &cuda_res);
+                assert(err == cudaSuccess);
+                
+                err = cudaGraphicsUnregisterResource(cuda_res);
+                assert(err == cudaSuccess);
+            }
+        }
+    }
+    
+    Buffer2DFromOpenGLTexture(const Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& img) = delete;
+    
+    inline Buffer2DFromOpenGLTexture(Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>&& img) : ViewT(std::move(img))
+    {
+      
+    }
+    
+    Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& operator=(const Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& img) = delete;
+    
+    inline Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& operator=(Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        return *this;
+    }
+
+    inline const ViewT& view() const { return (const ViewT&)*this; }
+    inline ViewT& view() { return (ViewT&)*this; }
+private:
+    cudaGraphicsResource* cuda_res;
+};
+
 }
 
 #endif // VISIONCORE_HAVE_CUDA
@@ -416,7 +542,7 @@ public:
     
     GPUTexture2DFromOpenGL() = delete;
     
-    inline GPUTexture2DFromOpenGL(const wrapgl::Texture2D& gltex) : ViewT()
+    inline GPUTexture2DFromOpenGL(wrapgl::Texture2D& gltex) : ViewT()
     {
         
     }

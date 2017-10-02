@@ -269,7 +269,8 @@ public:
     
     EIGEN_DEVICE_FUNC inline const T& getWithClampedRange(int x, int y) const
     {
-        return rowPtr(BaseT::indexClampedY(y))[BaseT::indexClampedX(x)];
+        //return rowPtr(BaseT::indexClampedY(y))[BaseT::indexClampedX(x)];
+        return *ptr(BaseT::indexClampedX(x),BaseT::indexClampedY(y));
     }
     
     EIGEN_DEVICE_FUNC inline const T& getWithCircularRange(int x, int y) const
@@ -602,14 +603,19 @@ public:
 struct Buffer2DMapper
 {
     template<typename T>
-    static inline Buffer2DView<T,TargetHost> map(const cl::CommandQueue& queue, cl_map_flags flags, const Buffer2DView<T,TargetDeviceOpenCL>& buf, const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
+    static inline Buffer2DView<T,TargetHost> map(const cl::CommandQueue& queue, cl_map_flags flags, 
+                                                 const Buffer2DView<T,TargetDeviceOpenCL>& buf, 
+                                                 const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
     {
-        typename TargetHost::template PointerType<T> ptr = queue.enqueueMapBuffer(buf.clType(), true, flags, 0, buf.bytes(), events, event);
+        typename TargetHost::template PointerType<T> ptr = queue.enqueueMapBuffer(buf.clType(), true, flags, 
+                                                                                  0, buf.bytes(), events, event);
         return Buffer2DView<T,TargetHost>(ptr, buf.width(), buf.height());
     }
     
     template<typename T>
-    static inline void unmap(const cl::CommandQueue& queue, const Buffer2DView<T,TargetDeviceOpenCL>& buf, const Buffer2DView<T,TargetHost>& bufcpu,  const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
+    static inline void unmap(const cl::CommandQueue& queue, const Buffer2DView<T,TargetDeviceOpenCL>& buf, 
+                             const Buffer2DView<T,TargetHost>& bufcpu,  const std::vector<cl::Event>* events = nullptr, 
+                             cl::Event* event = nullptr)
     {
         queue.enqueueUnmapMemObject(buf.clType(), bufcpu.rawPtr(), events, event);
     }

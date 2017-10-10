@@ -105,6 +105,13 @@ namespace internal
     template<> struct GLTypeTraits<float> { static constexpr GLenum opengl_data_type = GL_FLOAT; };
     template<> struct GLTypeTraits<double> { static constexpr GLenum opengl_data_type = GL_DOUBLE; };
     
+    template<int chan> struct GLChannelTraits;
+    
+    template<> struct GLChannelTraits<1> { static constexpr GLenum opengl_data_format = GL_LUMINANCE; };
+    template<> struct GLChannelTraits<2> { static constexpr GLenum opengl_data_format = GL_RG; };
+    template<> struct GLChannelTraits<3> { static constexpr GLenum opengl_data_format = GL_RGB; };
+    template<> struct GLChannelTraits<4> { static constexpr GLenum opengl_data_format = GL_RGBA; };
+    
     template<typename T>
     struct OpenGLGetter;
     

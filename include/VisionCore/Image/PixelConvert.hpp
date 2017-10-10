@@ -80,7 +80,7 @@ template<> EIGEN_DEVICE_FUNC inline float convertPixel(double p) { return p; }
 // from uchar3
 template<> EIGEN_DEVICE_FUNC inline uint8_t convertPixel(uchar3 p) { const unsigned sum = p.x + p.y + p.z; return sum / 3; }
 template<> EIGEN_DEVICE_FUNC inline uchar4 convertPixel(uchar3 p) { return make_uchar4(p.x, p.y, p.z, 255); }
-template<> EIGEN_DEVICE_FUNC inline float convertPixel(uchar3 p) { return (p.x + p.y + p.z) / (3.0f * 255.0f); }
+template<> EIGEN_DEVICE_FUNC inline float convertPixel(uchar3 p) { return (float)(p.x + p.y + p.z) / (3.0f * 255.0f); }
 template<> EIGEN_DEVICE_FUNC inline float3 convertPixel(uchar3 p) { return make_float3(p.x / 255.0f, p.y / 255.0f, p.z / 255.0f); }
 template<> EIGEN_DEVICE_FUNC inline float4 convertPixel(uchar3 p) { return make_float4(p.x / 255.0f, p.y / 255.0f, p.z / 255.0f, 1.0f); }
 template<> EIGEN_DEVICE_FUNC inline Eigen::Vector3f convertPixel(uchar3 p) { return Eigen::Vector3f(p.x / 255.0f, p.y / 255.0f, p.z / 255.0f); }

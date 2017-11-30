@@ -384,24 +384,32 @@ public:
     inline void copyFrom(const Buffer2DView<T,TargetHost>& img)
     {
         typedef TargetHost TargetFrom;
-        TargetTransfer<TargetFrom,TargetType>::template memcpy2D<T>(BaseT::rawPtr(), BaseT::pitch(), (typename TargetFrom::template PointerType<T>)img.ptr(), img.pitch(), std::min(img.width(),BaseT::width())*sizeof(T), std::min(img.height(),BaseT::height()));
+        TargetTransfer<TargetFrom,TargetType>::template memcpy2D<T>(BaseT::rawPtr(), BaseT::pitch(), 
+                                                                    (typename TargetFrom::template PointerType<T>)img.ptr(),
+                                                                    img.pitch(), std::min(img.width(),BaseT::width())*sizeof(T),
+                                                                    std::min(img.height(),BaseT::height()));
     }
     
 #ifdef VISIONCORE_HAVE_CUDA
     inline void copyFrom(const Buffer2DView<T,TargetDeviceCUDA>& img)
     {
         typedef TargetDeviceCUDA TargetFrom;
-        TargetTransfer<TargetFrom,TargetType>::template memcpy2D<T>(BaseT::rawPtr(), BaseT::pitch(), (typename TargetFrom::template PointerType<T>)img.ptr(), img.pitch(), std::min(img.width(),BaseT::width())*sizeof(T), std::min(img.height(),BaseT::height()));
+        TargetTransfer<TargetFrom,TargetType>::template memcpy2D<T>(BaseT::rawPtr(), BaseT::pitch(), 
+                                                                    (typename TargetFrom::template PointerType<T>)img.ptr(),
+                                                                    img.pitch(), std::min(img.width(),BaseT::width())*sizeof(T),
+                                                                    std::min(img.height(),BaseT::height()));
     }
 #endif // VISIONCORE_HAVE_CUDA
     
 #ifdef VISIONCORE_HAVE_OPENCL
-    inline void copyFrom(const cl::CommandQueue& queue, const Buffer2DView<T,TargetDeviceOpenCL>& img, const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
+    inline void copyFrom(const cl::CommandQueue& queue, const Buffer2DView<T,TargetDeviceOpenCL>& img, 
+                         const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
     {
         queue.enqueueReadBuffer(img.clType(), true, 0, std::min(BaseT::bytes(), img.bytes()), BaseT::rawPtr(), events, event);
     }
 
-    inline void copyFrom(const cl::CommandQueue& queue, const Image2DView<T,TargetDeviceOpenCL>& img, const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
+    inline void copyFrom(const cl::CommandQueue& queue, const Image2DView<T,TargetDeviceOpenCL>& img, 
+                         const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
     {
         std::array<std::size_t,3> origin, region;
         origin[0] = 0;
@@ -468,7 +476,10 @@ public:
     {
         static_assert(std::is_same<TargetFrom,TargetDeviceOpenCL>::value != true, "Not possible to do OpenCL-CUDA copy");
         
-        TargetTransfer<TargetFrom,TargetType>::template memcpy2D<T>(BaseT::rawPtr(), BaseT::pitch(), (typename TargetFrom::template PointerType<T>)img.ptr(), img.pitch(), std::min(img.width(),BaseT::width())*sizeof(T), std::min(img.height(),BaseT::height()));
+        TargetTransfer<TargetFrom,TargetType>::template memcpy2D<T>(BaseT::rawPtr(), BaseT::pitch(), 
+                                                                    (typename TargetFrom::template PointerType<T>)img.ptr(), 
+                                                                    img.pitch(), std::min(img.width(),BaseT::width())*sizeof(T),
+                                                                    std::min(img.height(),BaseT::height()));
     }
     
     inline void memset(unsigned char v = 0)
@@ -527,7 +538,6 @@ public:
 #endif // VISIONCORE_HAVE_CUDA
 
 #ifdef VISIONCORE_HAVE_OPENCL
-
 /**
  * View on a 2D Buffer Specialization - OpenCL.
  */ 
@@ -568,17 +578,20 @@ public:
     inline const cl::Buffer& clType() const { return *static_cast<const cl::Buffer*>(BaseT::rawPtr()); }
     inline cl::Buffer& clType() { return *static_cast<cl::Buffer*>(BaseT::rawPtr()); }
     
-    inline void copyFrom(const cl::CommandQueue& queue, const Buffer2DView<T,TargetHost>& img, const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
+    inline void copyFrom(const cl::CommandQueue& queue, const Buffer2DView<T,TargetHost>& img, 
+                         const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
     {
         queue.enqueueWriteBuffer(clType(), true, 0, std::min(BaseT::bytes(), img.bytes()), img.rawPtr(), events, event);
     }
     
-    inline void copyFrom(const cl::CommandQueue& queue, const Buffer2DView<T,TargetDeviceOpenCL>& img, const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
+    inline void copyFrom(const cl::CommandQueue& queue, const Buffer2DView<T,TargetDeviceOpenCL>& img, 
+                         const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
     {
         queue.enqueueCopyBuffer(img.clType(), clType(), 0, 0, std::min(BaseT::bytes(), img.bytes()), events, event);
     }
     
-    inline void copyFrom(const cl::CommandQueue& queue, const Image2DView<T,TargetDeviceOpenCL>& img, const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
+    inline void copyFrom(const cl::CommandQueue& queue, const Image2DView<T,TargetDeviceOpenCL>& img, 
+                         const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
     {
         std::array<std::size_t,3> origin, region;
         origin[0] = 0;
@@ -591,7 +604,8 @@ public:
         queue.enqueueCopyImageToBuffer(img.clType(), clType(), origin, region, 0, events, event);
     }
     
-    inline void memset(const cl::CommandQueue& queue, T v, const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
+    inline void memset(const cl::CommandQueue& queue, T v, 
+                       const std::vector<cl::Event>* events = nullptr, cl::Event* event = nullptr)
     {
         queue.enqueueFillBuffer(clType(), v, 0, BaseT::bytes(), events, event);
     }
@@ -620,7 +634,6 @@ struct Buffer2DMapper
         queue.enqueueUnmapMemObject(buf.clType(), bufcpu.rawPtr(), events, event);
     }
 };
-
 #endif // VISIONCORE_HAVE_OPENCL
 
 /// ***********************************************************************
@@ -699,7 +712,6 @@ public:
 };
 
 #ifdef VISIONCORE_HAVE_OPENCL
-
 /**
  * OpenCL Buffer 2D Creation.
  */
@@ -712,7 +724,8 @@ public:
     
     Buffer2DManaged() = delete;
     
-    inline Buffer2DManaged(std::size_t w, std::size_t h, const cl::Context& context, cl_mem_flags flags, typename TargetHost::template PointerType<T> hostptr = nullptr) : ViewT()
+    inline Buffer2DManaged(std::size_t w, std::size_t h, const cl::Context& context, 
+                           cl_mem_flags flags, typename TargetHost::template PointerType<T> hostptr = nullptr) : ViewT()
     {        
         ViewT::memptr = new cl::Buffer(context, flags, w*h*sizeof(T), hostptr);
         ViewT::xsize = w;
@@ -751,7 +764,6 @@ public:
     inline const ViewT& view() const { return (const ViewT&)*this; }
     inline ViewT& view() { return (ViewT&)*this; }
 };
-
 #endif // VISIONCORE_HAVE_OPENCL
 
 }

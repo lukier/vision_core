@@ -1,6 +1,6 @@
 /**
  * ****************************************************************************
- * Copyright (c) 2015, Robert Lukierski.
+ * Copyright (c) 2017, Robert Lukierski.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,49 +33,78 @@
  * ****************************************************************************
  */
 
-#ifndef VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_HPP
-#define VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_HPP
-
-#include <VisionCore/WrapGL/WrapGLCommon.hpp>
-
-namespace vc
+#ifndef VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_IMPL_HPP
+#define VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_IMPL_HPP
+    
+vc::wrapgl::TransformFeedback::TransformFeedback() : tbid(0)
 {
-
-namespace wrapgl
+    create();
+}
+    
+void vc::wrapgl::TransformFeedback::create()
 {
+    destroy();
     
-class TransformFeedback
-{
-public:    
-    typedef ScopeBinder<TransformFeedback> Binder;
-    
-    inline TransformFeedback();
-    virtual ~TransformFeedback() { destroy(); }
-    
-    inline void create();
-    inline void destroy();
-    inline bool isValid() const;
-    
-    inline void bind() const;
-    inline void unbind() const;
-    
-    inline void draw(GLenum mode = GL_POINTS) const;
-    inline void draw(GLenum mode, GLsizei instcnt) const;
-    
-    inline static void begin(GLenum primode);
-    inline static void end();
-    inline static void pause();
-    inline static void resume();
-    
-    inline GLuint id() const;
-private:
-    GLuint tbid;
-};
-    
+    glGenTransformFeedbacks(1, &tbid);
 }
 
+void vc::wrapgl::TransformFeedback::destroy()
+{
+    if(tbid != 0)
+    {
+        glDeleteTransformFeedbacks(1, &tbid);
+        tbid = 0;
+    }
 }
 
-#include <VisionCore/WrapGL/impl/WrapGLTransformFeedback_impl.hpp>
+bool vc::wrapgl::TransformFeedback::isValid() const 
+{ 
+    return tbid != 0; 
+}
 
-#endif // VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_HPP
+void vc::wrapgl::TransformFeedback::bind() const
+{
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tbid);
+}
+
+void vc::wrapgl::TransformFeedback::unbind() const
+{
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tbid);
+}
+
+void vc::wrapgl::TransformFeedback::draw(GLenum mode) const
+{
+    glDrawTransformFeedback(mode, tbid);
+}
+
+void vc::wrapgl::TransformFeedback::draw(GLenum mode, GLsizei instcnt) const
+{
+    glDrawTransformFeedbackInstanced(mode, tbid, instcnt);
+}
+
+void vc::wrapgl::TransformFeedback::begin(GLenum primode)
+{
+    glBeginTransformFeedback(primode);
+}
+
+void vc::wrapgl::TransformFeedback::end()
+{
+    glEndTransformFeedback();
+}
+
+void vc::wrapgl::TransformFeedback::pause()
+{
+    glPauseTransformFeedback();
+}
+
+void vc::wrapgl::TransformFeedback::resume()
+{
+    glPauseTransformFeedback();
+}
+
+GLuint vc::wrapgl::TransformFeedback::id() const 
+{ 
+    return tbid; 
+}
+
+#endif // VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_IMPL_HPP

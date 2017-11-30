@@ -1,6 +1,6 @@
 /**
  * ****************************************************************************
- * Copyright (c) 2015, Robert Lukierski.
+ * Copyright (c) 2017, Robert Lukierski.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,53 +29,73 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * ****************************************************************************
- * Transform feedback.
+ * Texture Samplers.
  * ****************************************************************************
  */
 
-#ifndef VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_HPP
-#define VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_HPP
+#ifndef VISIONCORE_WRAPGL_SAMPLER_IMPL_HPP
+#define VISIONCORE_WRAPGL_SAMPLER_IMPL_HPP
 
-#include <VisionCore/WrapGL/WrapGLCommon.hpp>
 
-namespace vc
+vc::wrapgl::Sampler::Sampler() : sid(0)
 {
-
-namespace wrapgl
-{
-    
-class TransformFeedback
-{
-public:    
-    typedef ScopeBinder<TransformFeedback> Binder;
-    
-    inline TransformFeedback();
-    virtual ~TransformFeedback() { destroy(); }
-    
-    inline void create();
-    inline void destroy();
-    inline bool isValid() const;
-    
-    inline void bind() const;
-    inline void unbind() const;
-    
-    inline void draw(GLenum mode = GL_POINTS) const;
-    inline void draw(GLenum mode, GLsizei instcnt) const;
-    
-    inline static void begin(GLenum primode);
-    inline static void end();
-    inline static void pause();
-    inline static void resume();
-    
-    inline GLuint id() const;
-private:
-    GLuint tbid;
-};
-    
+    create(0);
 }
 
+vc::wrapgl::Sampler::Sampler(GLuint texu) : sid(0)
+{
+    create(texu);
 }
 
-#include <VisionCore/WrapGL/impl/WrapGLTransformFeedback_impl.hpp>
+void vc::wrapgl::Sampler::create(GLuint texu)
+{
+    destroy();
+    
+    glGenSamplers(1, &sid);
+    texunit = texu;
+}
 
-#endif // VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_HPP
+void vc::wrapgl::Sampler::destroy()
+{
+    if(sid != 0)
+    {
+        glDeleteSamplers(1, &sid);
+        sid = 0;
+    }
+}
+
+bool vc::wrapgl::Sampler::isValid() const 
+{ 
+    return sid != 0; 
+}
+
+void vc::wrapgl::Sampler::bind() const
+{
+    glBindSampler(texunit, sid);
+}
+
+void vc::wrapgl::Sampler::unbind() const
+{
+    glBindSampler(texunit, 0);
+}
+
+template<typename T>
+T vc::wrapgl::Sampler::get(GLenum param)
+{
+    T ret;
+    glGetSamplerParameterfv(sid, param, &ret);
+    return ret;
+}
+
+template<typename T>
+void vc::wrapgl::Sampler::set(GLenum param, T val)
+{
+    glSamplerParameterf(sid, param, val);
+}
+
+GLuint vc::wrapgl::Sampler::id() const 
+{ 
+    return sid; 
+}
+
+#endif // VISIONCORE_WRAPGL_SAMPLER_IMPL_HPP

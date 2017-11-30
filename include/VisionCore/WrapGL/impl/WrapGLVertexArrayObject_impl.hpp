@@ -1,6 +1,6 @@
 /**
  * ****************************************************************************
- * Copyright (c) 2015, Robert Lukierski.
+ * Copyright (c) 2017, Robert Lukierski.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,53 +29,57 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * ****************************************************************************
- * Transform feedback.
+ * VAO.
  * ****************************************************************************
  */
 
-#ifndef VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_HPP
-#define VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_HPP
+#ifndef VISIONCORE_WRAPGL_VERTEX_ARRAY_OBJECT_IMPL_HPP
+#define VISIONCORE_WRAPGL_VERTEX_ARRAY_OBJECT_IMPL_HPP
 
-#include <VisionCore/WrapGL/WrapGLCommon.hpp>
-
-namespace vc
+vc::wrapgl::VertexArrayObject::VertexArrayObject() : vaoid(0)
 {
-
-namespace wrapgl
-{
-    
-class TransformFeedback
-{
-public:    
-    typedef ScopeBinder<TransformFeedback> Binder;
-    
-    inline TransformFeedback();
-    virtual ~TransformFeedback() { destroy(); }
-    
-    inline void create();
-    inline void destroy();
-    inline bool isValid() const;
-    
-    inline void bind() const;
-    inline void unbind() const;
-    
-    inline void draw(GLenum mode = GL_POINTS) const;
-    inline void draw(GLenum mode, GLsizei instcnt) const;
-    
-    inline static void begin(GLenum primode);
-    inline static void end();
-    inline static void pause();
-    inline static void resume();
-    
-    inline GLuint id() const;
-private:
-    GLuint tbid;
-};
-    
+    create();
 }
 
+void vc::wrapgl::VertexArrayObject::create()
+{
+    destroy();
+    
+    glGenVertexArrays(1, &vaoid);
 }
 
-#include <VisionCore/WrapGL/impl/WrapGLTransformFeedback_impl.hpp>
+void vc::wrapgl::VertexArrayObject::destroy()
+{
+    if(vaoid != 0)
+    {
+        glDeleteVertexArrays(1, &vaoid);
+        vaoid = 0;
+    }
+}
 
-#endif // VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_HPP
+bool vc::wrapgl::VertexArrayObject::isValid() const 
+{ 
+    return vaoid != 0; 
+}
+
+void vc::wrapgl::VertexArrayObject::bind() const
+{
+    glBindVertexArray(vaoid);
+}
+
+void vc::wrapgl::VertexArrayObject::unbind() const
+{
+    glBindVertexArray(0);
+}
+
+GLuint vc::wrapgl::VertexArrayObject::id() const 
+{ 
+    return vaoid; 
+}
+
+void vc::wrapgl::VertexArrayObject::setDivisor(GLuint bindingindex, GLuint divisor)
+{
+    glVertexArrayBindingDivisor(vaoid, bindingindex, divisor);
+}
+
+#endif // VISIONCORE_WRAPGL_VERTEX_ARRAY_OBJECT_IMPL_HPP

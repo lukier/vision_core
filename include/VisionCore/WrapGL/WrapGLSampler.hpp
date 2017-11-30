@@ -53,65 +53,25 @@ namespace wrapgl
 class Sampler
 {
 public:    
-    Sampler() : sid(0)
-    {
-        create(0);
-    }
+    typedef ScopeBinder<Sampler> Binder;
     
-    Sampler(GLuint texu) : sid(0)
-    {
-        create(texu);
-    }
+    inline Sampler();
+    inline Sampler(GLuint texu);
+    virtual ~Sampler() { destroy(); }
     
-    virtual ~Sampler()
-    {
-        destroy();
-    }
+    inline void create(GLuint texu);
+    inline void destroy();
+    inline bool isValid() const;
     
-    void create(GLuint texu)
-    {
-        destroy();
-        
-        glGenSamplers(1, &sid);
-        texunit = texu;
-    }
-    
-    void destroy()
-    {
-        if(sid != 0)
-        {
-            glDeleteSamplers(1, &sid);
-            sid = 0;
-        }
-    }
-    
-    inline bool isValid() const { return sid != 0; }
-    
-    inline void bind() const
-    {
-        glBindSampler(texunit, sid);
-    }
-    
-    inline void unbind() const
-    {
-        glBindSampler(texunit, 0);
-    }
+    inline void bind() const;
+    inline void unbind() const;
     
     template<typename T>
-    inline T get(GLenum param)
-    {
-        T ret;
-        glGetSamplerParameterfv(sid, param, &ret);
-        return ret;
-    }
-    
+    inline T get(GLenum param);    
     template<typename T>
-    inline void set(GLenum param, T val)
-    {
-        glSamplerParameterf(sid, param, val);
-    }
+    inline void set(GLenum param, T val);
     
-    inline GLuint id() const { return sid; }
+    inline GLuint id() const;
 private:
     GLuint sid;
     GLuint texunit;
@@ -120,5 +80,7 @@ private:
 }
     
 }
+
+#include <VisionCore/WrapGL/impl/WrapGLSampler_impl.hpp>
 
 #endif // VISIONCORE_WRAPGL_SAMPLER_HPP

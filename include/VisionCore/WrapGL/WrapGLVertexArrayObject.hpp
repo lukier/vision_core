@@ -53,45 +53,21 @@ namespace wrapgl
 class VertexArrayObject
 {
 public:    
-    VertexArrayObject() : vaoid(0)
-    {
-        create();
-    }
+    typedef ScopeBinder<VertexArrayObject> Binder;
     
-    virtual ~VertexArrayObject()
-    {
-        destroy();
-    }
+    inline VertexArrayObject();
+    virtual ~VertexArrayObject() { destroy(); }
     
-    void create()
-    {
-        destroy();
-        
-        glGenVertexArrays(1, &vaoid);
-    }
+    inline void create();
+    inline void destroy();
+    inline bool isValid() const;
     
-    void destroy()
-    {
-        if(vaoid != 0)
-        {
-            glDeleteVertexArrays(1, &vaoid);
-            vaoid = 0;
-        }
-    }
+    inline void bind() const;
+    inline void unbind() const;
     
-    inline bool isValid() const { return vaoid != 0; }
+    inline GLuint id() const;
     
-    void bind() const
-    {
-        glBindVertexArray(vaoid);
-    }
-    
-    void unbind() const
-    {
-        glBindVertexArray(0);
-    }
-    
-    inline GLuint id() const { return vaoid; }
+    inline void setDivisor(GLuint bindingindex, GLuint divisor);
 private:
     GLuint vaoid;
 };
@@ -99,5 +75,7 @@ private:
 }
 
 }
+
+#include <VisionCore/WrapGL/impl/WrapGLVertexArrayObject_impl.hpp>
 
 #endif // VISIONCORE_WRAPGL_VERTEX_ARRAY_OBJECT_HPP

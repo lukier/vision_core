@@ -35,6 +35,9 @@
 
 #include <VisionCore/WrapGL/WrapGLContext.hpp>
 
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glx.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #define __gl_h_

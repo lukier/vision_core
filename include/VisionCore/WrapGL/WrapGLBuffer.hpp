@@ -61,223 +61,92 @@ namespace wrapgl
 class Buffer
 {
 public:
-   
-    Buffer() : 
-        bufid(0), 
-        buffer_type(GL_ARRAY_BUFFER), 
-        num_elements(0), 
-        datatype(GL_BYTE), 
-        count_per_element(1), 
-        bufuse(GL_DYNAMIC_DRAW)
-    {
-        
-    }
+    typedef ScopeBinder<Buffer> Binder;
+  
+    inline Buffer();
     
-    Buffer(GLenum bt, GLuint numel, GLenum dtype, GLuint cpe, GLenum gluse = GL_DYNAMIC_DRAW, const GLvoid* data = nullptr) : bufid(0)
-    {
-        create(bt, numel, dtype, cpe, gluse, data);
-    }
+    inline Buffer(GLenum bt, GLuint numel, GLenum dtype, GLuint cpe, 
+                  GLenum gluse = GL_DYNAMIC_DRAW, const GLvoid* data = nullptr);
     
     template<typename T, typename AllocatorT>
-    Buffer(GLenum bt, const std::vector<T,AllocatorT>& vec, GLenum gluse = GL_DYNAMIC_DRAW) : bufid(0)
-    {
-        create(bt, vec, gluse);
-    }
+    inline Buffer(GLenum bt, const std::vector<T,AllocatorT>& vec, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    Buffer(GLenum bt, GLuint numel, GLenum gluse = GL_DYNAMIC_DRAW, const T* data = nullptr) : bufid(0)
-    {
-        create<T>(bt, numel, gluse, data);
-    }
+    inline Buffer(GLenum bt, GLuint numel, GLenum gluse = GL_DYNAMIC_DRAW, const T* data = nullptr);
     
     template<typename T>
-    Buffer(GLenum bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW) : bufid(0)
-    {
-        create(bt, buf, gluse);
-    }
+    inline Buffer(GLenum bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    Buffer(GLenum bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW) : bufid(0)
-    {
-        create(bt, buf, gluse);
-    }
+    inline Buffer(GLenum bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    Buffer(GLenum bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW) : bufid(0)
-    {
-        create(bt, buf, gluse);
-    }
+    inline Buffer(GLenum bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
-    virtual ~Buffer()
-    {
-        destroy();
-    }
+    virtual ~Buffer() { destroy(); }
     
     template<typename T, typename AllocatorT>
-    void create(GLenum bt, const std::vector<T,AllocatorT>& vec, GLenum gluse = GL_DYNAMIC_DRAW)
-    {
-        create(bt, vec.size(), internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type, type_traits<T>::ChannelCount, gluse, static_cast<const GLvoid*>(vec.data()));
-    }
+    inline void create(GLenum bt, const std::vector<T,AllocatorT>& vec, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    void create(GLenum bt, GLuint numel, GLenum gluse = GL_DYNAMIC_DRAW, const T* data = nullptr) 
-    {
-        create(bt, numel, internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type, type_traits<T>::ChannelCount, gluse, static_cast<const GLvoid*>(data));
-    }
+    inline void create(GLenum bt, GLuint numel, GLenum gluse = GL_DYNAMIC_DRAW, const T* data = nullptr);
     
     template<typename T>
-    void create(GLenum bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW) 
-    {
-        create(bt, buf.size(), internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type, type_traits<T>::ChannelCount, gluse, buf.ptr());
-    }
+    inline void create(GLenum bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    void create(GLenum bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW) 
-    {
-        create(bt, buf.width() * buf.height(), internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type, type_traits<T>::ChannelCount, gluse, buf.ptr());
-    }
+    inline void create(GLenum bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    void create(GLenum bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW) 
-    {
-        create(bt, buf.width() * buf.height() * buf.depth(), internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type, type_traits<T>::ChannelCount, gluse, buf.ptr());
-    }
+    inline void create(GLenum bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
-    void create(GLenum bt, GLuint numel, GLenum dtype, GLuint cpe, GLenum gluse = GL_DYNAMIC_DRAW, const GLvoid* data = nullptr)
-    {
-        if(isValid()) { destroy(); }
-        
-        buffer_type = bt;
-        num_elements = numel;
-        datatype = dtype;
-        count_per_element = cpe;
-        bufuse = gluse;
-        
-        glGenBuffers(1, &bufid);
-        
-        bind();
-        glBufferData(buffer_type, num_elements*internal::getByteSize(datatype)*count_per_element, data, gluse);
-        unbind();
-    }
+    inline void create(GLenum bt, GLuint numel, GLenum dtype, GLuint cpe, 
+                       GLenum gluse = GL_DYNAMIC_DRAW, 
+                       const GLvoid* data = nullptr);
     
-    void destroy()
-    {
-        if(bufid != 0) 
-        {
-            glDeleteBuffers(1, &bufid);
-            bufid = 0;
-        }
-    }
+    inline void destroy();
     
-    inline bool isValid() const { return bufid != 0; }
+    inline bool isValid() const;
+    inline void resize(GLuint new_num_elements, GLenum gluse = GL_DYNAMIC_DRAW);
     
-    void resize(GLuint new_num_elements, GLenum gluse = GL_DYNAMIC_DRAW)
-    {
-        bind();
-        glBufferData(buffer_type, new_num_elements*internal::getByteSize(datatype)*count_per_element, 0, gluse);
-        unbind();
-        num_elements = new_num_elements;
-    }
+    inline void bind() const;
+    inline void unbind() const;
     
-    void bind() const
-    {
-        glBindBuffer(buffer_type, bufid);
-    }
-    
-    void unbind() const
-    {
-        glBindBuffer(buffer_type, 0);
-    }
-    
-    void upload(const GLvoid* data, GLsizeiptr size_bytes, GLintptr offset = 0)
-    {
-        bind();
-        glBufferSubData(buffer_type,offset,size_bytes, data);
-        unbind();
-    }
+    inline void upload(const GLvoid* data, GLsizeiptr size_bytes, GLintptr offset = 0);
     
     template<typename T, typename AllocatorT>
-    void upload(const std::vector<T,AllocatorT>& vec, GLintptr offset = 0)
-    {
-        upload(vec.data(), vec.size() * sizeof(T), offset * sizeof(T));
-    }
+    inline void upload(const std::vector<T,AllocatorT>& vec, GLintptr offset = 0);
     
     template<typename T>
-    void upload(const Buffer1DView<T,TargetHost>& buf, GLintptr offset = 0)
-    {
-        upload(buf.ptr(), buf.size() * sizeof(T), offset * sizeof(T));
-    }
+    inline void upload(const Buffer1DView<T,TargetHost>& buf, GLintptr offset = 0);
     
     template<typename T>
-    void upload(const Buffer2DView<T,TargetHost>& buf, GLintptr offset = 0)
-    {
-        upload(buf.ptr(), buf.width() * buf.height() * sizeof(T), offset * sizeof(T));
-    }
+    inline void upload(const Buffer2DView<T,TargetHost>& buf, GLintptr offset = 0);
     
     template<typename T>
-    void upload(const Buffer3DView<T,TargetHost>& buf, GLintptr offset = 0)
-    {
-        upload(buf.ptr(), buf.width() * buf.height() * buf.depth() * sizeof(T), offset * sizeof(T));
-    }
+    inline void upload(const Buffer3DView<T,TargetHost>& buf, GLintptr offset = 0);
     
-    void download(GLvoid* data, GLsizeiptr size_bytes, GLintptr offset = 0)
-    {
-        bind();
-        glGetBufferSubData(buffer_type,offset,size_bytes, data);
-        unbind();
-    }
+    
+    inline void download(GLvoid* data, GLsizeiptr size_bytes, GLintptr offset = 0);
     
     template<typename T, typename AllocatorT>
-    void download(std::vector<T,AllocatorT>& vec, GLintptr offset = 0)
-    {
-        download(vec.data(), vec.size() * sizeof(T), offset * sizeof(T));
-    }
+    inline void download(std::vector<T,AllocatorT>& vec, GLintptr offset = 0);
     
     template<typename T>
-    void download(Buffer1DView<T,TargetHost>& buf, GLintptr offset = 0)
-    {
-        download(buf.ptr(), buf.size() * sizeof(T), offset * sizeof(T));
-    }
+    inline void download(Buffer1DView<T,TargetHost>& buf, GLintptr offset = 0);    
     
     template<typename T>
-    void download(Buffer2DView<T,TargetHost>& buf, GLintptr offset = 0)
-    {
-        download(buf.ptr(), buf.width() * buf.height() * sizeof(T), offset * sizeof(T));
-    }
+    inline void download(Buffer2DView<T,TargetHost>& buf, GLintptr offset = 0);
     
     template<typename T>
-    void download(Buffer3DView<T,TargetHost>& buf, GLintptr offset = 0)
-    {
-        download(buf.ptr(), buf.width() * buf.height() * buf.depth() * sizeof(T), offset * sizeof(T));
-    }
+    inline void download(Buffer3DView<T,TargetHost>& buf, GLintptr offset = 0);
     
-    inline GLuint id() const { return bufid; }
-    inline GLenum type() const { return buffer_type; }
-    inline GLuint size() const { return num_elements; }
-    inline GLuint sizeBytes() const { return num_elements * count_per_element * internal::getByteSize(datatype); }
-    inline GLenum dataType() const { return datatype; }
-    inline GLuint countPerElement() const { return count_per_element; }
-    
-    struct MapPtr
-    {
-        MapPtr(Buffer& b, GLenum acc) : buf(b)
-        {
-            ptr = glMapBuffer(buf.type(), acc);
-        }
-        
-        ~MapPtr()
-        {
-            glUnmapBuffer(buf.type());
-        }
-        
-        inline GLvoid* operator*() { return ptr; }
-        inline GLvoid* get() { return ptr; }
-    private:
-        Buffer& buf;
-        GLvoid* ptr;
-    };
-    
-    MapPtr map(GLenum acc = GL_READ_ONLY) { return MapPtr(*this, acc); }
+    inline GLuint id() const;
+    inline GLenum type() const;
+    inline GLuint size() const;
+    inline GLuint sizeBytes() const;
+    inline GLenum dataType() const;
+    inline GLuint countPerElement() const;
 private:
     GLuint bufid;
     GLenum buffer_type;
@@ -296,6 +165,75 @@ class Buffer2DFromOpenGL;
 template<typename T, typename Target>
 class Buffer3DFromOpenGL;
 
+template<typename T>
+class Buffer1DFromOpenGL<T,TargetHost> : public Buffer1DView<T,TargetHost>
+{
+public:
+    typedef Buffer1DView<T,TargetHost> ViewT;
+    
+    inline Buffer1DFromOpenGL() = delete;
+    
+    inline Buffer1DFromOpenGL(wrapgl::Buffer& glbuf, GLenum acc = GL_READ_WRITE);
+    inline ~Buffer1DFromOpenGL();
+    
+    inline Buffer1DFromOpenGL(const Buffer1DFromOpenGL<T,TargetHost>& img) = delete;
+    inline Buffer1DFromOpenGL(Buffer1DFromOpenGL<T,TargetHost>&& img);
+    inline Buffer1DFromOpenGL<T,TargetHost>& operator=(const Buffer1DFromOpenGL<T,TargetHost>& img) = delete;
+    inline Buffer1DFromOpenGL<T,TargetHost>& operator=(Buffer1DFromOpenGL<T,TargetHost>&& img);
+    
+    inline const ViewT& view() const;
+    inline ViewT& view();
+  
+private:
+    wrapgl::Buffer& buf;
+};
+
+template<typename T>
+class Buffer2DFromOpenGL<T,TargetHost> : public Buffer2DView<T,TargetHost>
+{
+public:
+    typedef Buffer2DView<T,TargetHost> ViewT;
+    
+    inline Buffer2DFromOpenGL() = delete;
+    
+    inline Buffer2DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height, GLenum acc = GL_READ_WRITE);
+    inline ~Buffer2DFromOpenGL();
+    
+    inline Buffer2DFromOpenGL(const Buffer2DFromOpenGL<T,TargetHost>& img) = delete;
+    inline Buffer2DFromOpenGL(Buffer2DFromOpenGL<T,TargetHost>&& img);
+    inline Buffer2DFromOpenGL<T,TargetHost>& operator=(const Buffer2DFromOpenGL<T,TargetHost>& img) = delete;
+    inline Buffer2DFromOpenGL<T,TargetHost>& operator=(Buffer2DFromOpenGL<T,TargetHost>&& img);
+    
+    inline const ViewT& view() const;
+    inline ViewT& view();
+    
+private:
+    wrapgl::Buffer& buf;
+};
+
+template<typename T>
+class Buffer3DFromOpenGL<T,TargetHost> : public Buffer3DView<T,TargetHost>
+{
+public:
+    typedef Buffer3DView<T,TargetHost> ViewT;
+    
+    inline Buffer3DFromOpenGL() = delete;
+    
+    inline Buffer3DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height, std::size_t depth, GLenum acc = GL_READ_WRITE);
+    inline ~Buffer3DFromOpenGL();
+    
+    inline Buffer3DFromOpenGL(const Buffer3DFromOpenGL<T,TargetHost>& img) = delete;
+    inline Buffer3DFromOpenGL(Buffer3DFromOpenGL<T,TargetHost>&& img);
+    inline Buffer3DFromOpenGL<T,TargetHost>& operator=(const Buffer3DFromOpenGL<T,TargetHost>& img) = delete;
+    inline Buffer3DFromOpenGL<T,TargetHost>& operator=(Buffer3DFromOpenGL<T,TargetHost>&& img);
+    
+    inline const ViewT& view() const;
+    inline ViewT& view();
+    
+private:
+    wrapgl::Buffer& buf;
+};
+
 }
 
 #ifdef VISIONCORE_HAVE_CUDA
@@ -310,7 +248,7 @@ namespace vc
 // some functions wrapper here as cuda_gl_interop header leaks horrible stuff
 namespace internal
 {
-    cudaGraphicsResource* registerOpenGLBuffer(GLuint id, unsigned int flags = cudaGraphicsMapFlagsNone);
+cudaGraphicsResource* registerOpenGLBuffer(GLuint id, unsigned int flags = cudaGraphicsMapFlagsNone);
 }
     
 template<typename T>
@@ -319,55 +257,18 @@ class Buffer1DFromOpenGL<T,TargetDeviceCUDA> : public Buffer1DView<T,TargetDevic
 public:
     typedef Buffer1DView<T,TargetDeviceCUDA> ViewT;
     
-    Buffer1DFromOpenGL() = delete;
+    inline Buffer1DFromOpenGL() = delete;
     
-    Buffer1DFromOpenGL(wrapgl::Buffer& glbuf) : cuda_res(0)
-    {
-        if((wrapgl::internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type != glbuf.dataType()) || (type_traits<T>::ChannelCount != glbuf.countPerElement()))
-        {
-            throw std::runtime_error("Buffer format error");
-        }
-        
-        cuda_res = internal::registerOpenGLBuffer(glbuf.id());
-        
-        cudaError_t err = cudaGraphicsMapResources(1, &cuda_res);
-        if(err != cudaSuccess) { throw CUDAException(err, "Error mapping OpenGL buffer"); }
-        
-        err = cudaGraphicsResourceGetMappedPointer(&(ViewT::memptr), &(ViewT::xsize), cuda_res);
-        if(err != cudaSuccess) { throw CUDAException(err, "Error getting OpenGL buffer ptr"); }
-    }
-    
-    ~Buffer1DFromOpenGL()
-    {
-        if(cuda_res) 
-        {   
-            cudaError_t err = cudaGraphicsUnmapResources(1, &cuda_res);
-            assert(err == cudaSuccess);
-            
-            err = cudaGraphicsUnregisterResource(cuda_res);
-            assert(err == cudaSuccess);
-        }
-    }
+    inline Buffer1DFromOpenGL(wrapgl::Buffer& glbuf);
+    inline ~Buffer1DFromOpenGL();
     
     inline Buffer1DFromOpenGL(const Buffer1DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
-    
-    inline Buffer1DFromOpenGL(Buffer1DFromOpenGL<T,TargetDeviceCUDA>&& img) : ViewT(std::move(img)), cuda_res(img.cuda_res)
-    {
-        img.cuda_res = 0;
-    }
-    
+    inline Buffer1DFromOpenGL(Buffer1DFromOpenGL<T,TargetDeviceCUDA>&& img);
     inline Buffer1DFromOpenGL<T,TargetDeviceCUDA>& operator=(const Buffer1DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
+    inline Buffer1DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer1DFromOpenGL<T,TargetDeviceCUDA>&& img);
     
-    inline Buffer1DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer1DFromOpenGL<T,TargetDeviceCUDA>&& img)
-    {
-        ViewT::operator=(std::move(img));
-        cuda_res = img.cuda_res;
-        img.cuda_res = 0;
-        return *this;
-    }
-    
-    inline const ViewT& view() const { return (const ViewT&)*this; }
-    inline ViewT& view() { return (ViewT&)*this; }
+    inline const ViewT& view() const;
+    inline ViewT& view();
     
 private:
     cudaGraphicsResource* cuda_res;
@@ -379,60 +280,18 @@ class Buffer2DFromOpenGL<T,TargetDeviceCUDA> : public Buffer2DView<T,TargetDevic
 public:
     typedef Buffer2DView<T,TargetDeviceCUDA> ViewT;
     
-    Buffer2DFromOpenGL() = delete;
+    inline Buffer2DFromOpenGL() = delete;
     
-    Buffer2DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height) : cuda_res(0)
-    {
-        if((wrapgl::internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type != glbuf.dataType()) || (type_traits<T>::ChannelCount != glbuf.countPerElement()))
-        {
-            throw std::runtime_error("Buffer format error");
-        }
-        
-        cuda_res = internal::registerOpenGLBuffer(glbuf.id());
-        
-        cudaError_t err = cudaGraphicsMapResources(1, &cuda_res);
-        if(err != cudaSuccess) { throw CUDAException(err, "Error mapping OpenGL buffer"); }
-        
-        std::size_t totalSize;
-        err = cudaGraphicsResourceGetMappedPointer(&(ViewT::memptr), &(totalSize), cuda_res);
-        if(err != cudaSuccess) { throw CUDAException(err, "Error getting OpenGL buffer ptr"); }
-        
-        ViewT::xsize = totalSize / height;
-        ViewT::ysize = height;
-        ViewT::line_pitch = (ViewT::xsize * sizeof(T));
-    }
-    
-    ~Buffer2DFromOpenGL()
-    {
-        if(cuda_res) 
-        {   
-            cudaError_t err = cudaGraphicsUnmapResources(1, &cuda_res);
-            assert(err == cudaSuccess);
-            
-            err = cudaGraphicsUnregisterResource(cuda_res);
-            assert(err == cudaSuccess);
-        }
-    }
+    inline Buffer2DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height);
+    inline ~Buffer2DFromOpenGL();
     
     inline Buffer2DFromOpenGL(const Buffer2DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
-    
-    inline Buffer2DFromOpenGL(Buffer2DFromOpenGL<T,TargetDeviceCUDA>&& img) : ViewT(std::move(img)), cuda_res(img.cuda_res)
-    {
-        img.cuda_res = 0;
-    }
-    
+    inline Buffer2DFromOpenGL(Buffer2DFromOpenGL<T,TargetDeviceCUDA>&& img);
     inline Buffer2DFromOpenGL<T,TargetDeviceCUDA>& operator=(const Buffer2DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
+    inline Buffer2DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer2DFromOpenGL<T,TargetDeviceCUDA>&& img);
     
-    inline Buffer2DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer2DFromOpenGL<T,TargetDeviceCUDA>&& img)
-    {
-        ViewT::operator=(std::move(img));
-        cuda_res = img.cuda_res;
-        img.cuda_res = 0;
-        return *this;
-    }
-    
-    inline const ViewT& view() const { return (const ViewT&)*this; }
-    inline ViewT& view() { return (ViewT&)*this; }
+    inline const ViewT& view() const;
+    inline ViewT& view();
     
 private:
     cudaGraphicsResource* cuda_res;
@@ -444,62 +303,18 @@ class Buffer3DFromOpenGL<T,TargetDeviceCUDA> : public Buffer3DView<T,TargetDevic
 public:
     typedef Buffer3DView<T,TargetDeviceCUDA> ViewT;
     
-    Buffer3DFromOpenGL() = delete;
+    inline Buffer3DFromOpenGL() = delete;
     
-    Buffer3DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height, std::size_t depth) : cuda_res(0)
-    {
-        if((wrapgl::internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type != glbuf.dataType()) || (type_traits<T>::ChannelCount != glbuf.countPerElement()))
-        {
-            throw std::runtime_error("Buffer format error");
-        }
-        
-        cuda_res = internal::registerOpenGLBuffer(glbuf.id());
-        
-        cudaError_t err = cudaGraphicsMapResources(1, &cuda_res);
-        if(err != cudaSuccess) { throw CUDAException(err, "Error mapping OpenGL buffer"); }
-        
-        std::size_t totalSize;
-        err = cudaGraphicsResourceGetMappedPointer(&(ViewT::memptr), &(totalSize), cuda_res);
-        if(err != cudaSuccess) { throw CUDAException(err, "Error getting OpenGL buffer ptr"); }
-        
-        ViewT::xsize = totalSize / (height * depth);
-        ViewT::ysize = height;
-        ViewT::zsize = depth;
-        ViewT::line_pitch = (ViewT::xsize * sizeof(T));
-        ViewT::plane_pitch = (ViewT::ysize * ViewT::xsize * sizeof(T));
-    }
-    
-    ~Buffer3DFromOpenGL()
-    {
-        if(cuda_res) 
-        {   
-            cudaError_t err = cudaGraphicsUnmapResources(1, &cuda_res);
-            assert(err == cudaSuccess);
-            
-            err = cudaGraphicsUnregisterResource(cuda_res);
-            assert(err == cudaSuccess);
-        }
-    }
+    inline Buffer3DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height, std::size_t depth);
+    inline ~Buffer3DFromOpenGL();
     
     inline Buffer3DFromOpenGL(const Buffer3DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
-    
-    inline Buffer3DFromOpenGL(Buffer3DFromOpenGL<T,TargetDeviceCUDA>&& img) : ViewT(std::move(img)), cuda_res(img.cuda_res)
-    {
-        img.cuda_res = 0;
-    }
-    
+    inline Buffer3DFromOpenGL(Buffer3DFromOpenGL<T,TargetDeviceCUDA>&& img);
     inline Buffer3DFromOpenGL<T,TargetDeviceCUDA>& operator=(const Buffer3DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
+    inline Buffer3DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer3DFromOpenGL<T,TargetDeviceCUDA>&& img);
     
-    inline Buffer3DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer3DFromOpenGL<T,TargetDeviceCUDA>&& img)
-    {
-        ViewT::operator=(std::move(img));
-        cuda_res = img.cuda_res;
-        img.cuda_res = 0;
-        return *this;
-    }
-    
-    inline const ViewT& view() const { return (const ViewT&)*this; }
-    inline ViewT& view() { return (ViewT&)*this; }
+    inline const ViewT& view() const;
+    inline ViewT& view();
     
 private:
     cudaGraphicsResource* cuda_res;
@@ -510,7 +325,6 @@ private:
 #endif // VISIONCORE_HAVE_CUDA
 
 #ifdef VISIONCORE_HAVE_OPENCL
-
 namespace vc
 {
     
@@ -520,39 +334,18 @@ class Buffer1DFromOpenGL<T,TargetDeviceOpenCL> : public Buffer1DView<T,TargetDev
 public:
     typedef Buffer1DView<T,TargetDeviceOpenCL> ViewT;
     
-    Buffer1DFromOpenGL() = delete;
+    inline Buffer1DFromOpenGL() = delete;
     
-    Buffer1DFromOpenGL(const cl::Context& context, cl_mem_flags flags, wrapgl::Buffer& glbuf) 
-    {
-        ViewT::memptr = new cl::BufferGL(context, flags, glbuf.id());
-        ViewT::xsize = glbuf.size();
-    }
-    
-    ~Buffer1DFromOpenGL()
-    {
-        if(ViewT::isValid()) 
-        {   
-            cl::BufferGL* clb = static_cast<cl::BufferGL*>(ViewT::memptr);
-            delete clb;
-            ViewT::memptr = nullptr;
-            ViewT::xsize = 0;
-        }
-    }
+    inline Buffer1DFromOpenGL(const cl::Context& context, cl_mem_flags flags, wrapgl::Buffer& glbuf);
+    inline ~Buffer1DFromOpenGL();
     
     inline Buffer1DFromOpenGL(const Buffer1DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
-    
-    inline Buffer1DFromOpenGL(Buffer1DFromOpenGL<T,TargetDeviceOpenCL>&& img) : ViewT(std::move(img)) { }
-    
+    inline Buffer1DFromOpenGL(Buffer1DFromOpenGL<T,TargetDeviceOpenCL>&& img);
     inline Buffer1DFromOpenGL<T,TargetDeviceOpenCL>& operator=(const Buffer1DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
+    inline Buffer1DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer1DFromOpenGL<T,TargetDeviceOpenCL>&& img);
     
-    inline Buffer1DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer1DFromOpenGL<T,TargetDeviceOpenCL>&& img)
-    {
-        ViewT::operator=(std::move(img));
-        return *this;
-    }
-    
-    inline const ViewT& view() const { return (const ViewT&)*this; }
-    inline ViewT& view() { return (ViewT&)*this; }
+    inline const ViewT& view() const;
+    inline ViewT& view();
 };
 
 template<typename T>
@@ -561,43 +354,18 @@ class Buffer2DFromOpenGL<T,TargetDeviceOpenCL> : public Buffer2DView<T,TargetDev
 public:
     typedef Buffer2DView<T,TargetDeviceOpenCL> ViewT;
     
-    Buffer2DFromOpenGL() = delete;
+    inline Buffer2DFromOpenGL() = delete;
     
-    Buffer2DFromOpenGL(const cl::Context& context, cl_mem_flags flags, wrapgl::Buffer& glbuf, std::size_t height) 
-    {
-        ViewT::memptr = new cl::BufferGL(context, flags, glbuf.id());
-        ViewT::xsize = glbuf.size() / height;
-        ViewT::ysize = height;
-        ViewT::line_pitch = (ViewT::xsize * sizeof(T));
-    }
+    inline Buffer2DFromOpenGL(const cl::Context& context, cl_mem_flags flags, wrapgl::Buffer& glbuf, std::size_t height);
+    inline ~Buffer2DFromOpenGL();
     
-    ~Buffer2DFromOpenGL()
-    {
-        if(ViewT::isValid()) 
-        {   
-            cl::BufferGL* clb = static_cast<cl::BufferGL*>(ViewT::memptr);
-            delete clb;
-            ViewT::memptr = nullptr;
-            ViewT::xsize = 0;
-            ViewT::ysize = 0;
-            ViewT::line_pitch = 0;
-        }
-    }
-    
-    inline Buffer2DFromOpenGL(const Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
-    
-    inline Buffer2DFromOpenGL(Buffer2DFromOpenGL<T,TargetDeviceOpenCL>&& img) : ViewT(std::move(img)) { }
-    
+    inline Buffer2DFromOpenGL(const Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& img);
+    inline Buffer2DFromOpenGL(Buffer2DFromOpenGL<T,TargetDeviceOpenCL>&& img);
     inline Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& operator=(const Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
+    inline Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer2DFromOpenGL<T,TargetDeviceOpenCL>&& img);
     
-    inline Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer2DFromOpenGL<T,TargetDeviceOpenCL>&& img)
-    {
-        ViewT::operator=(std::move(img));
-        return *this;
-    }
-    
-    inline const ViewT& view() const { return (const ViewT&)*this; }
-    inline ViewT& view() { return (ViewT&)*this; }
+    inline const ViewT& view() const;
+    inline ViewT& view();
 };
 
 template<typename T>
@@ -606,51 +374,24 @@ class Buffer3DFromOpenGL<T,TargetDeviceOpenCL> : public Buffer3DView<T,TargetDev
 public:
     typedef Buffer3DView<T,TargetDeviceOpenCL> ViewT;
     
-    Buffer3DFromOpenGL() = delete;
+    inline Buffer3DFromOpenGL() = delete;
     
-    Buffer3DFromOpenGL(const cl::Context& context, cl_mem_flags flags, wrapgl::Buffer& glbuf, std::size_t height, std::size_t depth) 
-    {
-        ViewT::memptr = new cl::BufferGL(context, flags, glbuf.id());
-        ViewT::xsize = glbuf.size() / (height * depth);
-        ViewT::ysize = height;
-        ViewT::zsize = depth;
-        ViewT::line_pitch = (ViewT::xsize * sizeof(T));
-        ViewT::plane_pitch = (ViewT::ysize * ViewT::xsize * sizeof(T));
-    }
+    inline Buffer3DFromOpenGL(const cl::Context& context, cl_mem_flags flags, 
+                              wrapgl::Buffer& glbuf, std::size_t height, std::size_t depth);
+    inline ~Buffer3DFromOpenGL();
     
-    ~Buffer3DFromOpenGL()
-    {
-        if(ViewT::isValid()) 
-        {   
-            cl::BufferGL* clb = static_cast<cl::BufferGL*>(ViewT::memptr);
-            delete clb;
-            ViewT::memptr = nullptr;
-            ViewT::xsize = 0;
-            ViewT::ysize = 0;
-            ViewT::zsize = 0;
-            ViewT::line_pitch = 0;
-            ViewT::plane_pitch = 0;
-        }
-    }
-    
-    inline Buffer3DFromOpenGL(const Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
-    
-    inline Buffer3DFromOpenGL(Buffer3DFromOpenGL<T,TargetDeviceOpenCL>&& img) : ViewT(std::move(img)) { }
-    
+    inline Buffer3DFromOpenGL(const Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& img);
+    inline Buffer3DFromOpenGL(Buffer3DFromOpenGL<T,TargetDeviceOpenCL>&& img);
     inline Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& operator=(const Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
+    inline Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer3DFromOpenGL<T,TargetDeviceOpenCL>&& img);
     
-    inline Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer3DFromOpenGL<T,TargetDeviceOpenCL>&& img)
-    {
-        ViewT::operator=(std::move(img));
-        return *this;
-    }
-    
-    inline const ViewT& view() const { return (const ViewT&)*this; }
-    inline ViewT& view() { return (ViewT&)*this; }
+    inline const ViewT& view() const;
+    inline ViewT& view();
 };  
     
 }
-
 #endif // VISIONCORE_HAVE_OPENCL
+
+#include <VisionCore/WrapGL/impl/WrapGLBuffer_impl.hpp>
 
 #endif // VISIONCORE_WRAPGL_BUFFER_HPP

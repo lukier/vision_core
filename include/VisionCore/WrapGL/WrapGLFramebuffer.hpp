@@ -50,69 +50,30 @@ namespace wrapgl
 class RenderBuffer
 {
 public:    
-    RenderBuffer() : rbid(0), rbw(0), rbh(0)
-    {
-        
-    }
-    
-    RenderBuffer(GLint w, GLint h, GLenum internal_format = GL_DEPTH_COMPONENT24) : rbid(0)
-    {
-        create(w,h,internal_format);
-    }
+    typedef ScopeBinder<RenderBuffer> Binder;
+  
+    inline RenderBuffer();
+    inline RenderBuffer(GLint w, GLint h, GLenum internal_format = GL_DEPTH_COMPONENT24);
     
     virtual ~RenderBuffer()
     {
         destroy();
     }
     
-    void create(GLint w, GLint h, GLenum internal_format = GL_DEPTH_COMPONENT24)
-    {
-        destroy();
-        
-        rbw = w;
-        rbh = h;
-        
-        glGenRenderbuffers(1, &rbid);
-        bind();
-        glRenderbufferStorage(GL_RENDERBUFFER, internal_format, rbw, rbh);
-        unbind();
-    }
+    inline void create(GLint w, GLint h, GLenum internal_format = GL_DEPTH_COMPONENT24);
+    inline void destroy();
+    inline bool isValid() const;
     
-    void destroy()
-    {
-        if(rbid != 0)
-        {
-            glDeleteRenderbuffers(1, &rbid);
-            rbid = 0;
-        }
-    }
-    
-    inline bool isValid() const { return rbid != 0; }
-    
-    void bind() const
-    {
-        glBindRenderbuffer(GL_RENDERBUFFER, rbid);
-    }
-    
-    void unbind() const
-    {
-        glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    }
+    inline void bind() const;
+    inline void unbind() const;
     
     template<typename T>
-    void download(Buffer2DView<T,TargetHost>& buf, GLenum data_format = GL_DEPTH_COMPONENT)
-    {
-        download(buf.ptr(), data_format, internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type);
-    }
+    inline void download(Buffer2DView<T,TargetHost>& buf, GLenum data_format = GL_DEPTH_COMPONENT);
     
-    void download(GLvoid* data, GLenum data_format = GL_DEPTH_COMPONENT, GLenum data_type = GL_FLOAT)
-    {
-        glReadPixels(0,0,width(),height(),data_format,data_type,data);
-    }
-    
-    inline GLuint id() const { return rbid; }
-    inline GLint width() const { return rbw; }
-    inline GLint height() const { return rbh; }
+    inline void download(GLvoid* data, GLenum data_format = GL_DEPTH_COMPONENT, GLenum data_type = GL_FLOAT);
+    inline GLuint id() const;
+    inline GLint width() const;
+    inline GLint height() const;
 private:
     GLuint rbid;
     GLint rbw;
@@ -124,10 +85,9 @@ class FrameBuffer
     constexpr static std::size_t MAX_ATTACHMENTS = 8;
     static std::array<GLenum,MAX_ATTACHMENTS> attachment_buffers;
 public:    
-    FrameBuffer() : attachments(0)
-    {
-        glGenFramebuffers(1, &fbid);
-    }
+    typedef ScopeBinder<FrameBuffer> Binder;
+    
+    inline FrameBuffer();
     
     virtual ~FrameBuffer()
     {
@@ -135,63 +95,25 @@ public:
         fbid = 0;
     }
     
-    inline GLenum attach(Texture2D& tex)
-    {
-        const GLenum color_attachment = GL_COLOR_ATTACHMENT0 + attachments;
-        glFramebufferTexture2D(GL_FRAMEBUFFER, color_attachment, GL_TEXTURE_2D, tex.id(), 0);
-        attachments++;
-        return color_attachment;
-    }
+    inline bool isValid() const;
+    inline GLuint id() const;
     
-    /**
-     * This needs GL_DEPTH_COMPONENT24 / GL_DEPTH texture.
-     */
-    inline GLenum attachDepth(Texture2D& tex)
-    {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex.id(), 0);
-        return GL_DEPTH_ATTACHMENT;
-    }
+    inline GLenum attach(Texture2D& tex);
     
-    inline GLenum attachDepth(RenderBuffer& rb )
-    {
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb.id());
-        return GL_DEPTH_ATTACHMENT;
-    }
+    inline unsigned int colorAttachmentCount() const;
+
+    // This needs GL_DEPTH_COMPONENT24 / GL_DEPTH texture.
+    inline GLenum attachDepth(Texture2D& tex);
+    inline GLenum attachDepth(RenderBuffer& rb);
     
-    inline bool isValid() const { return fbid != 0; }
+    inline void bind() const;
+    inline void unbind() const;
     
-    void bind() const
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, fbid);   
-    }
+    inline void drawInto() const;
+    inline static GLenum checkComplete();
     
-    void unbind() const
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-    
-    void drawInto() const
-    {
-        glDrawBuffers( attachments, attachment_buffers.data() );
-    }
-    
-    static GLenum checkComplete() 
-    {
-        return glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    }
-    
-    void clearBuffer(unsigned int idx, float* val)
-    {
-        glClearBufferfv(GL_COLOR, idx, val);
-    }
-    
-    void clearDepthBuffer(float val)
-    {
-        glClearBufferfv(GL_DEPTH, 0, &val);
-    }
-    
-    inline GLuint id() const { return fbid; }
-    inline unsigned int colorAttachmentCount() const { return attachments; }
+    inline void clearBuffer(unsigned int idx, float* val);
+    inline void clearDepthBuffer(float val);
 private:
     GLuint fbid;
     unsigned int attachments;
@@ -200,5 +122,7 @@ private:
 }
     
 }
+
+#include <VisionCore/WrapGL/impl/WrapGLFramebuffer_impl.hpp>
 
 #endif // VISIONCORE_WRAPGL_FRAME_BUFFER_HPP

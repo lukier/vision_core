@@ -118,6 +118,8 @@ protected:
 class Texture2DBase : public TextureBase
 {
 public:
+    typedef ScopeBinder<Texture2DBase> Binder;
+    
     Texture2DBase() : TextureBase(), texw(0), texh(0)
     {
         
@@ -242,6 +244,8 @@ protected:
 class Texture2D : public Texture2DBase
 {
 public:
+    typedef typename Texture2DBase::Binder Binder;
+    
     Texture2D() : Texture2DBase()
     {
         
@@ -306,6 +310,7 @@ template<typename T, typename Target>
 class Buffer2DFromOpenGLTexture { };
 
 /**
+ * NOTE:
  * Host Buffer2D From OpenGL texture.
  * Note glMapBuffer doesn't work here, so we have to fake it.
  * It is Buffer2DManaged but copies the texture data.

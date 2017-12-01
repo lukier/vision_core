@@ -62,45 +62,63 @@ class Buffer
 {
 public:
     typedef ScopeBinder<Buffer> Binder;
+    
+    enum class Type
+    {
+        eArray = GL_ARRAY_BUFFER, 
+        eAtomicCounter = GL_ATOMIC_COUNTER_BUFFER, 
+        eCopyRead = GL_COPY_READ_BUFFER, 
+        eCopyWrite = GL_COPY_WRITE_BUFFER, 
+        eDrawIndirect = GL_DRAW_INDIRECT_BUFFER, 
+        eDispatchIndirect = GL_DISPATCH_INDIRECT_BUFFER, 
+        eElementArray = GL_ELEMENT_ARRAY_BUFFER, 
+        ePixelPack = GL_PIXEL_PACK_BUFFER, 
+        ePixelUnpack = GL_PIXEL_UNPACK_BUFFER, 
+        eQuery = GL_QUERY_BUFFER, 
+        eShaderStorage = GL_SHADER_STORAGE_BUFFER, 
+        eTexture = GL_TEXTURE_BUFFER, 
+        eTransformFeedback = GL_TRANSFORM_FEEDBACK_BUFFER,
+        eUniform = GL_UNIFORM_BUFFER
+    };
   
     inline Buffer();
     
-    inline Buffer(GLenum bt, GLuint numel, GLenum dtype, GLuint cpe, 
+    inline Buffer(Type bt, GLuint numel, GLenum dtype, GLuint cpe, 
                   GLenum gluse = GL_DYNAMIC_DRAW, const GLvoid* data = nullptr);
     
     template<typename T, typename AllocatorT>
-    inline Buffer(GLenum bt, const std::vector<T,AllocatorT>& vec, GLenum gluse = GL_DYNAMIC_DRAW);
+    inline Buffer(Type bt, const std::vector<T,AllocatorT>& vec, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    inline Buffer(GLenum bt, GLuint numel, GLenum gluse = GL_DYNAMIC_DRAW, const T* data = nullptr);
+    inline Buffer(Type bt, GLuint numel, GLenum gluse = GL_DYNAMIC_DRAW, const T* data = nullptr);
     
     template<typename T>
-    inline Buffer(GLenum bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
+    inline Buffer(Type bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    inline Buffer(GLenum bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
+    inline Buffer(Type bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    inline Buffer(GLenum bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
+    inline Buffer(Type bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
-    virtual ~Buffer() { destroy(); }
+    inline ~Buffer();
     
     template<typename T, typename AllocatorT>
-    inline void create(GLenum bt, const std::vector<T,AllocatorT>& vec, GLenum gluse = GL_DYNAMIC_DRAW);
+    inline void create(Type bt, const std::vector<T,AllocatorT>& vec, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    inline void create(GLenum bt, GLuint numel, GLenum gluse = GL_DYNAMIC_DRAW, const T* data = nullptr);
+    inline void create(Type bt, GLuint numel, GLenum gluse = GL_DYNAMIC_DRAW, const T* data = nullptr);
     
     template<typename T>
-    inline void create(GLenum bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
+    inline void create(Type bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    inline void create(GLenum bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
+    inline void create(Type bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
     template<typename T>
-    inline void create(GLenum bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
+    inline void create(Type bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
     
-    inline void create(GLenum bt, GLuint numel, GLenum dtype, GLuint cpe, 
+    inline void create(Type bt, GLuint numel, GLenum dtype, GLuint cpe, 
                        GLenum gluse = GL_DYNAMIC_DRAW, 
                        const GLvoid* data = nullptr);
     
@@ -126,7 +144,6 @@ public:
     template<typename T>
     inline void upload(const Buffer3DView<T,TargetHost>& buf, GLintptr offset = 0);
     
-    
     inline void download(GLvoid* data, GLsizeiptr size_bytes, GLintptr offset = 0);
     
     template<typename T, typename AllocatorT>
@@ -142,14 +159,14 @@ public:
     inline void download(Buffer3DView<T,TargetHost>& buf, GLintptr offset = 0);
     
     inline GLuint id() const;
-    inline GLenum type() const;
+    inline Type   type() const;
     inline GLuint size() const;
     inline GLuint sizeBytes() const;
     inline GLenum dataType() const;
     inline GLuint countPerElement() const;
 private:
     GLuint bufid;
-    GLenum buffer_type;
+    Type   buffer_type;
     GLuint num_elements;
     GLenum datatype;
     GLuint count_per_element;
@@ -177,12 +194,17 @@ public:
     inline ~Buffer1DFromOpenGL();
     
     inline Buffer1DFromOpenGL(const Buffer1DFromOpenGL<T,TargetHost>& img) = delete;
-    inline Buffer1DFromOpenGL(Buffer1DFromOpenGL<T,TargetHost>&& img);
+    inline Buffer1DFromOpenGL(Buffer1DFromOpenGL<T,TargetHost>&& img) : ViewT(std::move(img)), buf(std::move(img.buf)) { }
     inline Buffer1DFromOpenGL<T,TargetHost>& operator=(const Buffer1DFromOpenGL<T,TargetHost>& img) = delete;
-    inline Buffer1DFromOpenGL<T,TargetHost>& operator=(Buffer1DFromOpenGL<T,TargetHost>&& img);
+    inline Buffer1DFromOpenGL<T,TargetHost>& operator=(Buffer1DFromOpenGL<T,TargetHost>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        buf = std::move(img.buf);
+        return *this;
+    }
     
-    inline const ViewT& view() const;
-    inline ViewT& view();
+    inline const ViewT& view() const { return static_cast<const ViewT&>(*this);  }
+    inline ViewT& view() { return static_cast<ViewT&>(*this); }
   
 private:
     wrapgl::Buffer& buf;
@@ -200,12 +222,17 @@ public:
     inline ~Buffer2DFromOpenGL();
     
     inline Buffer2DFromOpenGL(const Buffer2DFromOpenGL<T,TargetHost>& img) = delete;
-    inline Buffer2DFromOpenGL(Buffer2DFromOpenGL<T,TargetHost>&& img);
+    inline Buffer2DFromOpenGL(Buffer2DFromOpenGL<T,TargetHost>&& img) : ViewT(std::move(img)), buf(std::move(img.buf)) { }
     inline Buffer2DFromOpenGL<T,TargetHost>& operator=(const Buffer2DFromOpenGL<T,TargetHost>& img) = delete;
-    inline Buffer2DFromOpenGL<T,TargetHost>& operator=(Buffer2DFromOpenGL<T,TargetHost>&& img);
+    inline Buffer2DFromOpenGL<T,TargetHost>& operator=(Buffer2DFromOpenGL<T,TargetHost>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        buf = std::move(img.buf);
+        return *this;
+    }
     
-    inline const ViewT& view() const;
-    inline ViewT& view();
+    inline const ViewT& view() const { return static_cast<const ViewT&>(*this);  }
+    inline ViewT& view() { return static_cast<ViewT&>(*this); }
     
 private:
     wrapgl::Buffer& buf;
@@ -223,12 +250,17 @@ public:
     inline ~Buffer3DFromOpenGL();
     
     inline Buffer3DFromOpenGL(const Buffer3DFromOpenGL<T,TargetHost>& img) = delete;
-    inline Buffer3DFromOpenGL(Buffer3DFromOpenGL<T,TargetHost>&& img);
+    inline Buffer3DFromOpenGL(Buffer3DFromOpenGL<T,TargetHost>&& img) : ViewT(std::move(img)), buf(std::move(img.buf)) { }
     inline Buffer3DFromOpenGL<T,TargetHost>& operator=(const Buffer3DFromOpenGL<T,TargetHost>& img) = delete;
-    inline Buffer3DFromOpenGL<T,TargetHost>& operator=(Buffer3DFromOpenGL<T,TargetHost>&& img);
+    inline Buffer3DFromOpenGL<T,TargetHost>& operator=(Buffer3DFromOpenGL<T,TargetHost>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        buf = std::move(img.buf);
+        return *this;
+    }
     
-    inline const ViewT& view() const;
-    inline ViewT& view();
+    inline const ViewT& view() const { return static_cast<const ViewT&>(*this);  }
+    inline ViewT& view() { return static_cast<ViewT&>(*this); }
     
 private:
     wrapgl::Buffer& buf;
@@ -263,12 +295,22 @@ public:
     inline ~Buffer1DFromOpenGL();
     
     inline Buffer1DFromOpenGL(const Buffer1DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
-    inline Buffer1DFromOpenGL(Buffer1DFromOpenGL<T,TargetDeviceCUDA>&& img);
+    inline Buffer1DFromOpenGL(Buffer1DFromOpenGL<T,TargetDeviceCUDA>&& img)
+        : ViewT(std::move(img)), cuda_res(img.cuda_res)
+    {
+        img.cuda_res = 0;
+    }
     inline Buffer1DFromOpenGL<T,TargetDeviceCUDA>& operator=(const Buffer1DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
-    inline Buffer1DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer1DFromOpenGL<T,TargetDeviceCUDA>&& img);
+    inline Buffer1DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer1DFromOpenGL<T,TargetDeviceCUDA>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        cuda_res = img.cuda_res;
+        img.cuda_res = 0;
+        return *this;
+    }
     
-    inline const ViewT& view() const;
-    inline ViewT& view();
+    inline const ViewT& view() const { return static_cast<const ViewT&>(*this);  }
+    inline ViewT& view() { return static_cast<ViewT&>(*this); }
     
 private:
     cudaGraphicsResource* cuda_res;
@@ -286,12 +328,22 @@ public:
     inline ~Buffer2DFromOpenGL();
     
     inline Buffer2DFromOpenGL(const Buffer2DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
-    inline Buffer2DFromOpenGL(Buffer2DFromOpenGL<T,TargetDeviceCUDA>&& img);
+    inline Buffer2DFromOpenGL(Buffer2DFromOpenGL<T,TargetDeviceCUDA>&& img)
+        : ViewT(std::move(img)), cuda_res(img.cuda_res)
+    {
+        img.cuda_res = 0;
+    }
     inline Buffer2DFromOpenGL<T,TargetDeviceCUDA>& operator=(const Buffer2DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
-    inline Buffer2DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer2DFromOpenGL<T,TargetDeviceCUDA>&& img);
+    inline Buffer2DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer2DFromOpenGL<T,TargetDeviceCUDA>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        cuda_res = img.cuda_res;
+        img.cuda_res = 0;
+        return *this;
+    }
     
-    inline const ViewT& view() const;
-    inline ViewT& view();
+    inline const ViewT& view() const { return static_cast<const ViewT&>(*this);  }
+    inline ViewT& view() { return static_cast<ViewT&>(*this); }
     
 private:
     cudaGraphicsResource* cuda_res;
@@ -309,19 +361,28 @@ public:
     inline ~Buffer3DFromOpenGL();
     
     inline Buffer3DFromOpenGL(const Buffer3DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
-    inline Buffer3DFromOpenGL(Buffer3DFromOpenGL<T,TargetDeviceCUDA>&& img);
+    inline Buffer3DFromOpenGL(Buffer3DFromOpenGL<T,TargetDeviceCUDA>&& img)
+        : ViewT(std::move(img)), cuda_res(img.cuda_res)
+    {
+        img.cuda_res = 0;
+    }
     inline Buffer3DFromOpenGL<T,TargetDeviceCUDA>& operator=(const Buffer3DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
-    inline Buffer3DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer3DFromOpenGL<T,TargetDeviceCUDA>&& img);
+    inline Buffer3DFromOpenGL<T,TargetDeviceCUDA>& operator=(Buffer3DFromOpenGL<T,TargetDeviceCUDA>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        cuda_res = img.cuda_res;
+        img.cuda_res = 0;
+        return *this;
+    }
     
-    inline const ViewT& view() const;
-    inline ViewT& view();
+    inline const ViewT& view() const { return static_cast<const ViewT&>(*this);  }
+    inline ViewT& view() { return static_cast<ViewT&>(*this); }
     
 private:
     cudaGraphicsResource* cuda_res;
 };
     
 }
-
 #endif // VISIONCORE_HAVE_CUDA
 
 #ifdef VISIONCORE_HAVE_OPENCL
@@ -340,12 +401,16 @@ public:
     inline ~Buffer1DFromOpenGL();
     
     inline Buffer1DFromOpenGL(const Buffer1DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
-    inline Buffer1DFromOpenGL(Buffer1DFromOpenGL<T,TargetDeviceOpenCL>&& img);
+    inline Buffer1DFromOpenGL(Buffer1DFromOpenGL<T,TargetDeviceOpenCL>&& img) : ViewT(std::move(img)) { }
     inline Buffer1DFromOpenGL<T,TargetDeviceOpenCL>& operator=(const Buffer1DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
-    inline Buffer1DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer1DFromOpenGL<T,TargetDeviceOpenCL>&& img);
+    inline Buffer1DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer1DFromOpenGL<T,TargetDeviceOpenCL>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        return *this;
+    }
     
-    inline const ViewT& view() const;
-    inline ViewT& view();
+    inline const ViewT& view() const { return static_cast<const ViewT&>(*this);  }
+    inline ViewT& view() { return static_cast<ViewT&>(*this); }
 };
 
 template<typename T>
@@ -359,13 +424,17 @@ public:
     inline Buffer2DFromOpenGL(const cl::Context& context, cl_mem_flags flags, wrapgl::Buffer& glbuf, std::size_t height);
     inline ~Buffer2DFromOpenGL();
     
-    inline Buffer2DFromOpenGL(const Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& img);
-    inline Buffer2DFromOpenGL(Buffer2DFromOpenGL<T,TargetDeviceOpenCL>&& img);
+    inline Buffer2DFromOpenGL(const Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
+    inline Buffer2DFromOpenGL(Buffer2DFromOpenGL<T,TargetDeviceOpenCL>&& img) : ViewT(std::move(img)) { }
     inline Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& operator=(const Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
-    inline Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer2DFromOpenGL<T,TargetDeviceOpenCL>&& img);
+    inline Buffer2DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer2DFromOpenGL<T,TargetDeviceOpenCL>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        return *this;
+    }
     
-    inline const ViewT& view() const;
-    inline ViewT& view();
+    inline const ViewT& view() const { return static_cast<const ViewT&>(*this);  }
+    inline ViewT& view() { return static_cast<ViewT&>(*this); }
 };
 
 template<typename T>
@@ -380,13 +449,17 @@ public:
                               wrapgl::Buffer& glbuf, std::size_t height, std::size_t depth);
     inline ~Buffer3DFromOpenGL();
     
-    inline Buffer3DFromOpenGL(const Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& img);
-    inline Buffer3DFromOpenGL(Buffer3DFromOpenGL<T,TargetDeviceOpenCL>&& img);
+    inline Buffer3DFromOpenGL(const Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
+    inline Buffer3DFromOpenGL(Buffer3DFromOpenGL<T,TargetDeviceOpenCL>&& img) : ViewT(std::move(img)) { }
     inline Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& operator=(const Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
-    inline Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer3DFromOpenGL<T,TargetDeviceOpenCL>&& img);
+    inline Buffer3DFromOpenGL<T,TargetDeviceOpenCL>& operator=(Buffer3DFromOpenGL<T,TargetDeviceOpenCL>&& img)
+    {
+        ViewT::operator=(std::move(img));
+        return *this;
+    }
     
-    inline const ViewT& view() const;
-    inline ViewT& view();
+    inline const ViewT& view() const { return static_cast<const ViewT&>(*this);  }
+    inline ViewT& view() { return static_cast<ViewT&>(*this); }
 };  
     
 }

@@ -72,44 +72,18 @@ namespace wrapgl
 class TextureBase
 {
 public:
-    TextureBase() : texid(0), internal_format((GLenum)0)
-    {
-        
-    }
+    inline TextureBase();
+    inline ~TextureBase();
     
-    virtual ~TextureBase()
-    {
-        destroy();
-    }
+    inline void create(GLenum int_format = GL_RGBA);
+    inline void destroy();
+    inline bool isValid() const;
     
-    void create(GLenum int_format = GL_RGBA)
-    {
-        if(isValid()) { destroy(); }
-        
-        internal_format = int_format;
-        glGenTextures(1,&texid);
-    }
+    inline GLuint id() const;
     
-    void destroy()
-    {
-        if(isValid()) 
-        {
-            glDeleteTextures(1,&texid);
-            internal_format = (GLenum)0;
-            texid = 0;
-        }
-    }
+    inline GLenum intFormat() const;
     
-    inline GLuint id() const { return texid; }
-    inline GLenum intFormat() const { return internal_format; }
-    
-    inline bool isValid() const { return texid != 0; }
-    
-    static void bind(const GLenum unit)
-    {
-        glActiveTexture(unit);
-    }
-    
+    inline static void bind(const GLenum unit);
 protected:
     GLuint texid;
     GLenum internal_format;
@@ -120,121 +94,36 @@ class Texture2DBase : public TextureBase
 public:
     typedef ScopeBinder<Texture2DBase> Binder;
     
-    Texture2DBase() : TextureBase(), texw(0), texh(0)
-    {
-        
-    }
+    inline Texture2DBase();
     
     template<typename T>
-    void upload(const Buffer2DView<T,TargetHost>& buf, GLenum data_format = GL_LUMINANCE)
-    {
-        upload(buf.ptr(), data_format, internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type);
-    }
-    
-    void upload(const GLvoid* data, GLenum data_format = GL_LUMINANCE, GLenum data_type = GL_FLOAT)
-    {
-        glTexSubImage2D(GL_TEXTURE_2D,0,0,0,texw,texh,data_format,data_type,data);
-    }
+    inline void upload(const Buffer2DView<T,TargetHost>& buf, GLenum data_format = GL_LUMINANCE);
+    inline void upload(const GLvoid* data, GLenum data_format = GL_LUMINANCE, GLenum data_type = GL_FLOAT);
     
     template<typename T>
-    void download(Buffer2DView<T,TargetHost>& buf, GLenum data_format = GL_LUMINANCE)
-    {
-        download(buf.ptr(), data_format, internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type);
-    }
+    inline void download(Buffer2DView<T,TargetHost>& buf, GLenum data_format = GL_LUMINANCE);
+    inline void download(GLvoid* data, GLenum data_format = GL_LUMINANCE, GLenum data_type = GL_FLOAT);
     
-    void download(GLvoid* data, GLenum data_format = GL_LUMINANCE, GLenum data_type = GL_FLOAT)
-    {
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glGetTexImage(GL_TEXTURE_2D, 0, data_format, data_type, data);
-    }
+    inline void setSamplingLinear();
+    inline void setSamplingNearestNeighbour();
+    inline void setWrapClamp();
+    inline void setWrapClampToEdge();
+    inline void setWrapClampToBorder();
+    inline void setWrapRepeat();
+    inline void setWrapMirroredRepeat();
+    inline void setDepthParameters();
     
-    inline void setSamplingLinear()
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);
-    }
+    inline void setBorderColor(float3 color);
+    inline void setBorderColor(float4 color);
+    inline void setBorderColor(const Eigen::Matrix<float,3,1>& color);
+    inline void setBorderColor(const Eigen::Matrix<float,4,1>& color);
+    inline void setBorderColor(float r, float g, float b, float a = 1.0f);
     
-    inline void setSamplingNearestNeighbour()
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_NEAREST);
-    }
+    inline void bind() const;
+    inline void unbind() const;
     
-    inline void setWrapClamp()
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_CLAMP);
-    }
-    
-    inline void setWrapClampToEdge()
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_CLAMP_TO_EDGE);
-    }
-    
-    inline void setWrapClampToBorder()
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_CLAMP_TO_BORDER);
-    }
-    
-    inline void setWrapRepeat()
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_REPEAT);
-    }
-    
-    inline void setWrapMirroredRepeat()
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_MIRRORED_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_MIRRORED_REPEAT);
-    }
-    
-    inline void setDepthParameters()
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, (GLint)GL_INTENSITY);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, (GLint)GL_COMPARE_R_TO_TEXTURE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, (GLint)GL_LEQUAL);
-    }
-    
-    inline void setBorderColor(float3 color)
-    {
-        setBorderColor(color.x, color.y, color.z, 1.0f);
-    }
-    
-    inline void setBorderColor(float4 color)
-    {
-        setBorderColor(color.x, color.y, color.z, color.w);
-    }
-    
-    inline void setBorderColor(const Eigen::Matrix<float,3,1>& color)
-    {
-        setBorderColor(color(0), color(1), color(2), 1.0f);
-    }
-    
-    inline void setBorderColor(const Eigen::Matrix<float,4,1>& color)
-    {
-        setBorderColor(color(0), color(1), color(2), color(3));
-    }
-    
-    inline void setBorderColor(float r, float g, float b, float a)
-    {
-        GLfloat params[4] = {r,g,b,a};
-        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, params);
-    }
-    
-    void bind() const
-    {
-        glBindTexture(GL_TEXTURE_2D, texid);
-    }
-    
-    void unbind() const
-    {
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-    
-    inline GLint width() const { return texw; }
-    inline GLint height() const { return texh; }
+    inline GLint width() const;
+    inline GLint height() const;
     
 protected:
     GLint texw;
@@ -246,59 +135,17 @@ class Texture2D : public Texture2DBase
 public:
     typedef typename Texture2DBase::Binder Binder;
     
-    Texture2D() : Texture2DBase()
-    {
-        
-    }
-    
-    Texture2D(GLint w, GLint h, GLenum int_format = GL_RGBA32F, GLvoid* data = nullptr, int border = 0) : Texture2DBase()
-    {
-        create(w, h, int_format, data, border);
-    }
+    inline Texture2D();
+    inline Texture2D(GLint w, GLint h, GLenum int_format = GL_RGBA32F, GLvoid* data = nullptr, int border = 0);
+    template<typename T>
+    inline explicit Texture2D(const Buffer2DView<T,TargetHost>& buf, GLenum int_format = GL_RGBA32F, int border = 0);
+    inline ~Texture2D();
     
     template<typename T>
-    explicit Texture2D(const Buffer2DView<T,TargetHost>& buf, GLenum int_format = GL_RGBA32F, int border = 0) : Texture2DBase()
-    {
-        create(buf, int_format, border);
-    }
+    inline void create(const Buffer2DView<T,TargetHost>& buf, GLenum int_format = GL_RGBA32F, int border = 0);
+    inline void create(GLint w, GLint h, GLenum int_format = GL_RGBA32F,  GLvoid* data = nullptr, int border = 0);
     
-    virtual ~Texture2D()
-    {
-        destroy();
-    }
-    
-    template<typename T>
-    void create(const Buffer2DView<T,TargetHost>& buf, GLenum int_format = GL_RGBA32F, int border = 0) 
-    {
-        create(buf.width(), buf.height(), int_format, (GLvoid*)buf.ptr(), border);
-    }
-    
-    void create(GLint w, GLint h, GLenum int_format = GL_RGBA32F,  GLvoid* data = nullptr, int border = 0)
-    {
-        if(isValid()) { destroy(); }
-        
-        TextureBase::create(int_format);
-        
-        texw = w;
-        texh = h;
-
-        bind();
-        
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_REPEAT);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_REPEAT);
-        
-        glTexStorage2D(GL_TEXTURE_2D, 1, internal_format, texw, texh );
-        
-        unbind();
-    }
-    
-    void destroy()
-    {
-        TextureBase::destroy();
-    }
- 
+    inline void destroy();
 };
 
 }
@@ -358,7 +205,6 @@ public:
 }
 
 #ifdef VISIONCORE_HAVE_CUDA
-
 #include <VisionCore/CUDAException.hpp>
 
 #include <VisionCore/Buffers/CUDATexture.hpp>
@@ -380,59 +226,19 @@ public:
     
     GPUTexture2DFromOpenGL() = delete;
     
-    inline GPUTexture2DFromOpenGL(wrapgl::Texture2D& gltex) : ViewT(), cuda_res(0)
-    {
-        cuda_res = internal::registerOpenGLTexture(GL_TEXTURE_2D, gltex.id());
-        
-        cudaError_t err = cudaGraphicsMapResources(1, &cuda_res);
-        if(err != cudaSuccess) { throw CUDAException(err, "Error mapping OpenGL texture"); }
-
-        err = cudaGraphicsSubResourceGetMappedArray(&array, cuda_res, 0, 0);
-        if(err != cudaSuccess) { throw CUDAException(err, "Error getting cudaArray from OpenGL texture"); }
-        
-        memset(&resDesc, 0, sizeof(resDesc));
-        resDesc.resType = cudaResourceTypeArray;
-        resDesc.res.array.array = array;
-        
-        memset(&texDesc, 0, sizeof(texDesc));
-        texDesc.readMode = cudaReadModeElementType;
-        texDesc.addressMode[0]   = cudaAddressModeWrap;
-        texDesc.addressMode[1]   = cudaAddressModeWrap;
-        texDesc.filterMode       = cudaFilterModeLinear;
-        texDesc.normalizedCoords = 0;
-        
-        err = cudaCreateTextureObject(&(ViewT::handle()), &resDesc, &texDesc, NULL);
-        if(err != cudaSuccess)
-        {
-            throw CUDAException(err, "Cannot create texture object");
-        }
-    }
+    inline GPUTexture2DFromOpenGL(wrapgl::Texture2D& gltex);
     
-    inline ~GPUTexture2DFromOpenGL()
-    {
-        if(cuda_res) 
-        {
-            cudaError_t err;
-            
-            err = cudaDestroyTextureObject(ViewT::handle());
-            assert(err == cudaSuccess);
-            
-            err = cudaGraphicsUnmapResources(1, &cuda_res);
-            assert(err == cudaSuccess);
-
-            err = cudaGraphicsUnregisterResource(cuda_res);
-            assert(err == cudaSuccess);
-        }
-    }
+    inline ~GPUTexture2DFromOpenGL();
     
     inline GPUTexture2DFromOpenGL(const GPUTexture2DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
     
-    inline GPUTexture2DFromOpenGL(GPUTexture2DFromOpenGL<T,TargetDeviceCUDA>&& img) : ViewT(std::move(img)), resDesc(img.resDesc), texDesc(img.texDesc)
+    inline GPUTexture2DFromOpenGL(GPUTexture2DFromOpenGL<T,TargetDeviceCUDA>&& img)
+      : ViewT(std::move(img)), resDesc(img.resDesc), texDesc(img.texDesc)
     {
         img.texref = 0;
     }
     
-    inline GPUTexture2DFromOpenGL<T,TargetDeviceCUDA>& operator=(const GPUTexture2DFromOpenGL<T,TargetDeviceCUDA>& img) = delete;
+    inline GPUTexture2DFromOpenGL<T,TargetDeviceCUDA>& operator=(const GPUTexture2DFromOpenGL<T,TargetDeviceCUDA>&) = delete;
     
     inline GPUTexture2DFromOpenGL<T,TargetDeviceCUDA>& operator=(GPUTexture2DFromOpenGL<T,TargetDeviceCUDA>&& img)
     {
@@ -464,44 +270,15 @@ public:
     
     Buffer2DFromOpenGLTexture() = delete;
     
-    inline Buffer2DFromOpenGLTexture(wrapgl::Texture2D& gltex) : 
-        Buffer2DManaged<T,TargetDeviceCUDA>(gltex.width(),gltex.height())
-    {    
-        cudaArray* textPtr = nullptr;
-        
-        cudaGraphicsResource* cuda_res = internal::registerOpenGLTexture(GL_TEXTURE_2D, gltex.id());
-        if(cuda_res == nullptr) { throw std::runtime_error("Cannot register the texture"); }
-      
-        cudaError_t err = cudaGraphicsMapResources(1, &cuda_res);
-        if( err != cudaSuccess ) { throw CUDAException(err, "Unable to map CUDA resources"); }
-        
-        err = cudaGraphicsSubResourceGetMappedArray(&textPtr, cuda_res, 0, 0);
-        if( err != cudaSuccess ) { throw CUDAException(err, "Unable to get mapped array"); }
-        
-        err = cudaMemcpy2DFromArray(ViewT::memptr, ViewT::line_pitch, textPtr, 0, 0, 
-                                    ViewT::xsize * sizeof(T), ViewT::ysize, cudaMemcpyDeviceToDevice);
-        if( err != cudaSuccess ) { throw CUDAException(err, "Unable memcpy from Array"); }
-        
-        err = cudaGraphicsUnmapResources(1, &cuda_res);
-        if( err != cudaSuccess ) { throw CUDAException(err, "Unable unmap CUDA resources"); }
-        
-        err = cudaGraphicsUnregisterResource(cuda_res);
-        if( err != cudaSuccess ) { throw CUDAException(err, "Unable unregister CUDA resources"); }
-    }
+    inline Buffer2DFromOpenGLTexture(wrapgl::Texture2D& gltex);
     
-    inline ~Buffer2DFromOpenGLTexture()
-    {
-      
-    }
+    inline ~Buffer2DFromOpenGLTexture() { }
     
     Buffer2DFromOpenGLTexture(const Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& img) = delete;
     
-    inline Buffer2DFromOpenGLTexture(Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>&& img) : ViewT(std::move(img))
-    {
-      
-    }
+    inline Buffer2DFromOpenGLTexture(Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>&& img) : ViewT(std::move(img)) { }
     
-    Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& operator=(const Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& img) = delete;
+    Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& operator=(const Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>&) = delete;
     
     inline Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>& operator=(Buffer2DFromOpenGLTexture<T,TargetDeviceCUDA>&& img)
     {
@@ -520,7 +297,6 @@ private:
 #endif // VISIONCORE_HAVE_CUDA
 
 #ifdef VISIONCORE_HAVE_OPENCL
-
 namespace vc
 {
     
@@ -532,24 +308,15 @@ public:
     
     GPUTexture2DFromOpenGL() = delete;
     
-    inline GPUTexture2DFromOpenGL(wrapgl::Texture2D& gltex) : ViewT()
-    {
-        
-    }
+    inline GPUTexture2DFromOpenGL(wrapgl::Texture2D& gltex) : ViewT() { }
     
-    inline ~GPUTexture2DFromOpenGL()
-    {
-        if(ViewT::isValid()) 
-        {
-            
-        }
-    }
+    inline ~GPUTexture2DFromOpenGL() { if(ViewT::isValid()) { } }
     
     inline GPUTexture2DFromOpenGL(const GPUTexture2DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
     
     inline GPUTexture2DFromOpenGL(GPUTexture2DFromOpenGL<T,TargetDeviceOpenCL>&& img) : ViewT(std::move(img)) { }
     
-    inline GPUTexture2DFromOpenGL<T,TargetDeviceOpenCL>& operator=(const GPUTexture2DFromOpenGL<T,TargetDeviceOpenCL>& img) = delete;
+    inline GPUTexture2DFromOpenGL<T,TargetDeviceOpenCL>& operator=(const GPUTexture2DFromOpenGL<T,TargetDeviceOpenCL>&) = delete;
     
     inline GPUTexture2DFromOpenGL<T,TargetDeviceOpenCL>& operator=(GPUTexture2DFromOpenGL<T,TargetDeviceOpenCL>&& img)
     {
@@ -562,7 +329,8 @@ public:
 };
     
 }
-
 #endif // VISIONCORE_HAVE_OPENCL
+
+#include <VisionCore/WrapGL/impl/WrapGLTexture_impl.hpp>
 
 #endif // VISIONCORE_WRAPGL_TEXTURE_HPP

@@ -50,7 +50,7 @@ public:
     typedef ScopeBinder<TransformFeedback> Binder;
     
     inline TransformFeedback();
-    virtual ~TransformFeedback() { destroy(); }
+    inline ~TransformFeedback();
     
     inline void create();
     inline void destroy();

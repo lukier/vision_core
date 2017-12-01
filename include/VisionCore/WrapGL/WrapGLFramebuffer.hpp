@@ -54,11 +54,7 @@ public:
   
     inline RenderBuffer();
     inline RenderBuffer(GLint w, GLint h, GLenum internal_format = GL_DEPTH_COMPONENT24);
-    
-    virtual ~RenderBuffer()
-    {
-        destroy();
-    }
+    inline ~RenderBuffer();
     
     inline void create(GLint w, GLint h, GLenum internal_format = GL_DEPTH_COMPONENT24);
     inline void destroy();
@@ -88,12 +84,7 @@ public:
     typedef ScopeBinder<FrameBuffer> Binder;
     
     inline FrameBuffer();
-    
-    virtual ~FrameBuffer()
-    {
-        glDeleteFramebuffers(1, &fbid);
-        fbid = 0;
-    }
+    inline ~FrameBuffer();
     
     inline bool isValid() const;
     inline GLuint id() const;

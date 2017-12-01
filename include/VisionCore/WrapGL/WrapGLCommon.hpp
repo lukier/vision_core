@@ -37,6 +37,7 @@
 #define VISIONCORE_WRAPGL_COMMON_HPP
 
 #include <functional>
+#include <stdexcept>
 
 #include <VisionCore/Platform.hpp>
 
@@ -54,6 +55,12 @@ using namespace gl;
 #include <GL/glx.h>
 typedef GLbitfield MemoryBarrierMask;
 #endif // VISIONCORE_HAVE_GLBINDING
+
+#ifndef WRAPGL_ERROR_CHECK_DISABLE
+#define WRAPGL_CHECK_ERROR_SWITCH 1
+#else // WRAPGL_ERROR_CHECK_DISABLE
+#define WRAPGL_CHECK_ERROR_SWITCH 0
+#endif // WRAPGL_ERROR_CHECK_DISABLE
 
 /**
  * General TODO:
@@ -73,7 +80,6 @@ namespace wrapgl
 
 namespace internal
 {
-    
     static constexpr std::array<GLuint,11> GLTypeToSize = 
     {{
         1, //  #define GL_BYTE 0x1400
@@ -195,6 +201,8 @@ namespace internal
     
     template<typename T>
     static inline void getParameterArray(GLenum param, GLuint idx, T* data) { return OpenGLGetter<T>::runArray(param,idx,data); }
+    
+    const char* getErrorString(const GLenum err);
 }
 // 
 template<typename WrapGLT>
@@ -228,8 +236,46 @@ struct Debug
     static void insert(GLenum source, GLenum type, GLuint id, GLenum severity, const std::string& msg);   
 };
 
+class OpenGLException : public std::exception
+{
+public:
+    inline OpenGLException(GLenum err = GL_NO_ERROR, const char* fn = nullptr, int line = 0)
+        : errcode(err), src_fn(fn), src_line(line)
+    { 
+        
+    }
+    
+    virtual ~OpenGLException() throw() { }
+    virtual const char* what() const throw()  
+    { 
+        std::stringstream ss;
+        ss << "OpenGLException: " << (int)errcode << " / " << internal::getErrorString(errcode) 
+           << " at " << src_fn << ":" << src_line;
+        return ss.str().c_str(); 
+    }
+    GLenum getError() const { return errcode; }
+private:
+    GLenum errcode;
+    const char* src_fn;
+    int src_line;
+};
+
+namespace internal
+{
+    static inline void checkError(const char* fn, const int line)
+    {
+        const GLenum rc = glGetError();
+        if(rc != GL_NO_ERROR) 
+        {
+            throw OpenGLException(rc, fn, line);
+        }
+    }
 }
 
 }
+
+}
+
+#define WRAPGL_CHECK_ERROR() do { if(WRAPGL_CHECK_ERROR_SWITCH) { vc::wrapgl::internal::checkError(__FILE__,__LINE__); } } while (0)
 
 #endif // VISIONCORE_WRAPGL_COMMON_HPP

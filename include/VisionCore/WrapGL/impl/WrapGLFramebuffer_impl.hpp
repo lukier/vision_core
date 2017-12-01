@@ -41,6 +41,11 @@ vc::wrapgl::RenderBuffer::RenderBuffer() : rbid(0), rbw(0), rbh(0)
 {
     
 }
+
+vc::wrapgl::RenderBuffer::~RenderBuffer()
+{
+    destroy();
+}
     
 vc::wrapgl::RenderBuffer::RenderBuffer(GLint w, GLint h, GLenum internal_format) : rbid(0)
 {
@@ -55,8 +60,10 @@ void vc::wrapgl::RenderBuffer::create(GLint w, GLint h, GLenum internal_format)
     rbh = h;
     
     glGenRenderbuffers(1, &rbid);
+    WRAPGL_CHECK_ERROR();
     bind();
     glRenderbufferStorage(GL_RENDERBUFFER, internal_format, rbw, rbh);
+    WRAPGL_CHECK_ERROR();
     unbind();
 }
 
@@ -65,6 +72,7 @@ void vc::wrapgl::RenderBuffer::destroy()
     if(rbid != 0)
     {
         glDeleteRenderbuffers(1, &rbid);
+        WRAPGL_CHECK_ERROR();
         rbid = 0;
     }
 }
@@ -77,11 +85,13 @@ bool vc::wrapgl::RenderBuffer::isValid() const
 void vc::wrapgl::RenderBuffer::bind() const
 {
     glBindRenderbuffer(GL_RENDERBUFFER, rbid);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::RenderBuffer::unbind() const
 {
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    WRAPGL_CHECK_ERROR();
 }
 
 template<typename T>
@@ -113,12 +123,21 @@ GLint vc::wrapgl::RenderBuffer::height() const
 vc::wrapgl::FrameBuffer::FrameBuffer() : attachments(0)
 {
     glGenFramebuffers(1, &fbid);
+    WRAPGL_CHECK_ERROR();
+}
+
+vc::wrapgl::FrameBuffer::~FrameBuffer()
+{
+    glDeleteFramebuffers(1, &fbid); 
+    WRAPGL_CHECK_ERROR();
+    fbid = 0; 
 }
 
 GLenum vc::wrapgl::FrameBuffer::attach(Texture2D& tex)
 {
     const GLenum color_attachment = GL_COLOR_ATTACHMENT0 + attachments;
     glFramebufferTexture2D(GL_FRAMEBUFFER, color_attachment, GL_TEXTURE_2D, tex.id(), 0);
+    WRAPGL_CHECK_ERROR();
     attachments++;
     return color_attachment;
 }
@@ -126,12 +145,14 @@ GLenum vc::wrapgl::FrameBuffer::attach(Texture2D& tex)
 GLenum vc::wrapgl::FrameBuffer::attachDepth(Texture2D& tex)
 {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex.id(), 0);
+    WRAPGL_CHECK_ERROR();
     return GL_DEPTH_ATTACHMENT;
 }
 
 GLenum vc::wrapgl::FrameBuffer::attachDepth(RenderBuffer& rb)
 {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb.id());
+    WRAPGL_CHECK_ERROR();
     return GL_DEPTH_ATTACHMENT;
 }
 
@@ -143,31 +164,38 @@ bool vc::wrapgl::FrameBuffer::isValid() const
 void vc::wrapgl::FrameBuffer::bind() const
 {
     glBindFramebuffer(GL_FRAMEBUFFER, fbid);   
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::FrameBuffer::unbind() const
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::FrameBuffer::drawInto() const
 {
     glDrawBuffers( attachments, attachment_buffers.data() );
+    WRAPGL_CHECK_ERROR();
 }
 
 GLenum vc::wrapgl::FrameBuffer::checkComplete() 
 {
-    return glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    const GLenum ret = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    WRAPGL_CHECK_ERROR();
+    return ret;
 }
 
 void vc::wrapgl::FrameBuffer::clearBuffer(unsigned int idx, float* val)
 {
     glClearBufferfv(GL_COLOR, idx, val);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::FrameBuffer::clearDepthBuffer(float val)
 {
     glClearBufferfv(GL_DEPTH, 0, &val);
+    WRAPGL_CHECK_ERROR();
 }
 
 GLuint vc::wrapgl::FrameBuffer::id() const 

@@ -47,11 +47,17 @@ vc::wrapgl::Sampler::Sampler(GLuint texu) : sid(0)
     create(texu);
 }
 
+vc::wrapgl::Sampler::~Sampler()
+{
+    destroy();
+}
+
 void vc::wrapgl::Sampler::create(GLuint texu)
 {
     destroy();
     
     glGenSamplers(1, &sid);
+    WRAPGL_CHECK_ERROR();
     texunit = texu;
 }
 
@@ -60,6 +66,7 @@ void vc::wrapgl::Sampler::destroy()
     if(sid != 0)
     {
         glDeleteSamplers(1, &sid);
+        WRAPGL_CHECK_ERROR();
         sid = 0;
     }
 }
@@ -72,11 +79,13 @@ bool vc::wrapgl::Sampler::isValid() const
 void vc::wrapgl::Sampler::bind() const
 {
     glBindSampler(texunit, sid);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Sampler::unbind() const
 {
     glBindSampler(texunit, 0);
+    WRAPGL_CHECK_ERROR();
 }
 
 template<typename T>
@@ -84,6 +93,7 @@ T vc::wrapgl::Sampler::get(GLenum param)
 {
     T ret;
     glGetSamplerParameterfv(sid, param, &ret);
+    WRAPGL_CHECK_ERROR();
     return ret;
 }
 
@@ -91,6 +101,7 @@ template<typename T>
 void vc::wrapgl::Sampler::set(GLenum param, T val)
 {
     glSamplerParameterf(sid, param, val);
+    WRAPGL_CHECK_ERROR();
 }
 
 GLuint vc::wrapgl::Sampler::id() const 

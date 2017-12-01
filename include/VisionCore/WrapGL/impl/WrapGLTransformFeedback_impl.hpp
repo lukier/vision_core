@@ -40,12 +40,18 @@ vc::wrapgl::TransformFeedback::TransformFeedback() : tbid(0)
 {
     create();
 }
+
+vc::wrapgl::TransformFeedback::~TransformFeedback() 
+{
+    destroy();
+}
     
 void vc::wrapgl::TransformFeedback::create()
 {
     destroy();
     
     glGenTransformFeedbacks(1, &tbid);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::TransformFeedback::destroy()
@@ -53,6 +59,7 @@ void vc::wrapgl::TransformFeedback::destroy()
     if(tbid != 0)
     {
         glDeleteTransformFeedbacks(1, &tbid);
+        WRAPGL_CHECK_ERROR();
         tbid = 0;
     }
 }
@@ -65,41 +72,49 @@ bool vc::wrapgl::TransformFeedback::isValid() const
 void vc::wrapgl::TransformFeedback::bind() const
 {
     glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tbid);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::TransformFeedback::unbind() const
 {
     glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tbid);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::TransformFeedback::draw(GLenum mode) const
 {
     glDrawTransformFeedback(mode, tbid);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::TransformFeedback::draw(GLenum mode, GLsizei instcnt) const
 {
     glDrawTransformFeedbackInstanced(mode, tbid, instcnt);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::TransformFeedback::begin(GLenum primode)
 {
     glBeginTransformFeedback(primode);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::TransformFeedback::end()
 {
     glEndTransformFeedback();
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::TransformFeedback::pause()
 {
     glPauseTransformFeedback();
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::TransformFeedback::resume()
 {
     glPauseTransformFeedback();
+    WRAPGL_CHECK_ERROR();
 }
 
 GLuint vc::wrapgl::TransformFeedback::id() const 

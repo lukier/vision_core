@@ -46,6 +46,7 @@ void vc::wrapgl::VertexArrayObject::create()
     destroy();
     
     glGenVertexArrays(1, &vaoid);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::VertexArrayObject::destroy()
@@ -53,6 +54,7 @@ void vc::wrapgl::VertexArrayObject::destroy()
     if(vaoid != 0)
     {
         glDeleteVertexArrays(1, &vaoid);
+        WRAPGL_CHECK_ERROR();
         vaoid = 0;
     }
 }
@@ -65,11 +67,13 @@ bool vc::wrapgl::VertexArrayObject::isValid() const
 void vc::wrapgl::VertexArrayObject::bind() const
 {
     glBindVertexArray(vaoid);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::VertexArrayObject::unbind() const
 {
     glBindVertexArray(0);
+    WRAPGL_CHECK_ERROR();
 }
 
 GLuint vc::wrapgl::VertexArrayObject::id() const 
@@ -80,6 +84,7 @@ GLuint vc::wrapgl::VertexArrayObject::id() const
 void vc::wrapgl::VertexArrayObject::setDivisor(GLuint bindingindex, GLuint divisor)
 {
     glVertexArrayBindingDivisor(vaoid, bindingindex, divisor);
+    WRAPGL_CHECK_ERROR();
 }
 
 #endif // VISIONCORE_WRAPGL_VERTEX_ARRAY_OBJECT_IMPL_HPP

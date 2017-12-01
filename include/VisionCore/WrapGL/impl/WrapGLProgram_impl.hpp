@@ -33,8 +33,8 @@
  * ****************************************************************************
  */
 
-#ifndef VISIONCORE_WRAPGL_SHADER_IMPL_HPP
-#define VISIONCORE_WRAPGL_SHADER_IMPL_HPP
+#ifndef VISIONCORE_WRAPGL_PROGRAM_IMPL_HPP
+#define VISIONCORE_WRAPGL_PROGRAM_IMPL_HPP
 
 
 vc::wrapgl::Program::Program() : progid(0), linked(false)
@@ -53,23 +53,32 @@ std::pair<bool,std::string> vc::wrapgl::Program::addShaderFromSourceCode(Type ty
     std::string err_log;
     
     GLhandleARB shader = glCreateShader((GLenum)type);
+    WRAPGL_CHECK_ERROR();
+    
     glShaderSource(shader, 1, &source, NULL);
+    WRAPGL_CHECK_ERROR();
+    
     glCompileShader(shader);
+    WRAPGL_CHECK_ERROR();
     
     GLint status;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+    WRAPGL_CHECK_ERROR();
+    
     if(status != (GLint)GL_TRUE) 
     {
         constexpr std::size_t SHADER_LOG_MAX_LEN = 10240;
         err_log.resize(SHADER_LOG_MAX_LEN);
         GLsizei len;
         glGetShaderInfoLog(shader, SHADER_LOG_MAX_LEN, &len, const_cast<char*>(err_log.data()));
+        WRAPGL_CHECK_ERROR();
         err_log.resize(len);
     }
     else
     {
         was_ok = true;
         glAttachShader(progid, shader);
+        WRAPGL_CHECK_ERROR();
     }
     
     return std::make_pair(was_ok,err_log);
@@ -99,7 +108,9 @@ void vc::wrapgl::Program::removeAllShaders()
         for(auto& sh : shaders)
         {
             glDetachShader(progid, sh);
+            WRAPGL_CHECK_ERROR();
             glDeleteShader(sh);
+            WRAPGL_CHECK_ERROR();
         }
         
         linked = false;
@@ -112,15 +123,18 @@ std::pair<bool,std::string> vc::wrapgl::Program::link()
     std::string err_log;
     
     glLinkProgram(progid);
+    WRAPGL_CHECK_ERROR();
     
     GLint status;
     glGetProgramiv(progid, GL_LINK_STATUS, &status);
+    WRAPGL_CHECK_ERROR();
     if(status != (GLint)GL_TRUE) 
     {
         constexpr std::size_t PROGRAM_LOG_MAX_LEN = 10240;
         err_log.resize(PROGRAM_LOG_MAX_LEN);
         GLsizei len;
         glGetProgramInfoLog(progid, PROGRAM_LOG_MAX_LEN, &len, const_cast<char*>(err_log.data()));
+        WRAPGL_CHECK_ERROR();
         err_log.resize(len);
     }
     else
@@ -148,9 +162,11 @@ std::pair<bool,std::string> vc::wrapgl::Program::validate()
     std::string err_log;
   
     glValidateProgram(progid);
+    WRAPGL_CHECK_ERROR();
     
     GLint status;
     glGetProgramiv(progid, GL_VALIDATE_STATUS, &status);
+    WRAPGL_CHECK_ERROR();
     
     if(status != (GLint)GL_TRUE) 
     {
@@ -158,6 +174,7 @@ std::pair<bool,std::string> vc::wrapgl::Program::validate()
         err_log.resize(PROGRAM_LOG_MAX_LEN);
         GLsizei len;
         glGetProgramInfoLog(progid, PROGRAM_LOG_MAX_LEN, &len, const_cast<char*>(err_log.data()));
+        WRAPGL_CHECK_ERROR();
         err_log.resize(len);
     }
     else
@@ -171,11 +188,13 @@ std::pair<bool,std::string> vc::wrapgl::Program::validate()
 void vc::wrapgl::Program::bind() const
 {
     glUseProgram(progid);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::unbind() const
 {
     glUseProgram(0);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::create()
@@ -183,6 +202,7 @@ void vc::wrapgl::Program::create()
     if(isValid()) { destroy(); }
     
     progid = glCreateProgram();
+    WRAPGL_CHECK_ERROR();
     linked = false;
 }
 
@@ -192,6 +212,7 @@ void vc::wrapgl::Program::destroy()
     {
         removeAllShaders();
         glDeleteProgram(progid);
+        WRAPGL_CHECK_ERROR();
         progid = 0;
     }
 }
@@ -199,11 +220,13 @@ void vc::wrapgl::Program::destroy()
 void vc::wrapgl::Program::dispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z) const
 {
     glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::memoryBarrier(MemoryBarrierMask mbm)
 {
     glMemoryBarrier(mbm);
+    WRAPGL_CHECK_ERROR();
 }
 
 GLuint vc::wrapgl::Program::id() const 
@@ -214,32 +237,39 @@ GLuint vc::wrapgl::Program::id() const
 void vc::wrapgl::Program::bindAttributeLocation(const char* name, int location)
 {
     glBindAttribLocation(progid, location, name);
+    WRAPGL_CHECK_ERROR();
     linked = false;
 }
 
 GLint vc::wrapgl::Program::attributeLocation(const char* name) const 
 { 
-    return glGetAttribLocation(progid, name); 
+    const GLint ret = glGetAttribLocation(progid, name); 
+    WRAPGL_CHECK_ERROR();
+    return ret;
 }
 
 void vc::wrapgl::Program::setAttributeValue(int location, GLfloat value)
 {
     glVertexAttrib1f(location, value);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setAttributeValue(int location, GLfloat x, GLfloat y)
 {
     glVertexAttrib2f(location, x, y);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setAttributeValue(int location, GLfloat x, GLfloat y, GLfloat z)
 {
     glVertexAttrib3f(location, x, y, z);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setAttributeValue(int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
     glVertexAttrib4f(location, x, y, z, w);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setAttributeValue(int location, const Eigen::Matrix<float,2,1>& value) 
@@ -254,7 +284,7 @@ void vc::wrapgl::Program::setAttributeValue(int location, const Eigen::Matrix<fl
 
 void vc::wrapgl::Program::setAttributeValue(int location, const Eigen::Matrix<float,4,1>& value) 
 { 
-    setAttributeValue(location, value(0), value(1), value(2), value(3)); 
+    setAttributeValue(location, value(0), value(1), value(2), value(3));
 }
 
 void vc::wrapgl::Program::setAttributeValue(int location, const float2& value) 
@@ -327,6 +357,7 @@ void vc::wrapgl::Program::setAttributeArray(int location, int tupleSize, GLenum 
 {
     glVertexAttribPointer(location, tupleSize, type, normalize ? GL_TRUE : GL_FALSE, 
                           stride, reinterpret_cast<const GLvoid*>(offset));
+    WRAPGL_CHECK_ERROR();
 }
 
 template<typename T>
@@ -358,6 +389,7 @@ void vc::wrapgl::Program::setAttributeArray(const char* name, bool normalize, ui
 void vc::wrapgl::Program::enableAttributeArray(int location)
 {
     glEnableVertexAttribArray(location);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::enableAttributeArray(const char* name) 
@@ -368,6 +400,7 @@ void vc::wrapgl::Program::enableAttributeArray(const char* name)
 void vc::wrapgl::Program::disableAttributeArray(int location)
 {
     glDisableVertexAttribArray(location);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::disableAttributeArray(const char* name) 
@@ -377,37 +410,45 @@ void vc::wrapgl::Program::disableAttributeArray(const char* name)
 
 GLint vc::wrapgl::Program::uniformLocation(const char* name) const 
 { 
-    return glGetUniformLocation(progid, name); 
+    const GLint ret = glGetUniformLocation(progid, name); 
+    WRAPGL_CHECK_ERROR();
+    return ret;
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, GLfloat value)
 {
     glUniform1f(location, value);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, GLint value)
 {
     glUniform1i(location, value);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, GLuint value)
 {
     glUniform1ui(location, value);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, GLfloat x, GLfloat y)
 {
     glUniform2f(location, x, y);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, GLfloat x, GLfloat y, GLfloat z)
 {
     glUniform3f(location, x, y, z);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
     glUniform4f(location, x, y, z, w);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,1>& value) 
@@ -443,67 +484,80 @@ void vc::wrapgl::Program::setUniformValue(int location, const float4& value)
 void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,2>& value) 
 { 
     glUniformMatrix2fv(location, 1, GL_FALSE, value.data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,3>& value) 
 { 
     glUniformMatrix2x3fv(location, 1, GL_FALSE, value.data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,4>& value) 
 { 
     glUniformMatrix2x4fv(location, 1, GL_FALSE, value.data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,3,2>& value) 
 { 
     glUniformMatrix3x2fv(location, 1, GL_FALSE, value.data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,3,3>& value) 
 { 
-    glUniformMatrix3fv(location, 1, GL_FALSE, value.data());       
+    glUniformMatrix3fv(location, 1, GL_FALSE, value.data());   
+    WRAPGL_CHECK_ERROR();    
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,3,4>& value) 
 { 
-    glUniformMatrix3x4fv(location, 1, GL_FALSE, value.data()); 
+    glUniformMatrix3x4fv(location, 1, GL_FALSE, value.data());
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,4,2>& value) 
 { 
     glUniformMatrix4x2fv(location, 1, GL_FALSE, value.data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,4,3>& value) 
 { 
     glUniformMatrix4x3fv(location, 1, GL_FALSE, value.data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,4,4>& value) 
 { 
     glUniformMatrix4fv(location, 1, GL_FALSE, value.data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const GLfloat value[2][2]) 
 { 
     glUniformMatrix2fv(location, 1, GL_FALSE, value[0]); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const GLfloat value[3][3]) 
 { 
     glUniformMatrix3fv(location, 1, GL_FALSE, value[0]); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const GLfloat value[4][4]) 
 { 
     glUniformMatrix4fv(location, 1, GL_FALSE, value[0]);       
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(int location, const Sophus::SE3f& value)
 {
     const Sophus::SE3f::Transformation m = value.matrix();
     glUniformMatrix4fv(location, 1, GL_FALSE, m.data());
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValue(const char* name, GLfloat value) 
@@ -649,76 +703,91 @@ void vc::wrapgl::Program::setUniformValueArray(int location, const GLfloat* valu
     {
         glUniform4fv(location, count, values);
     }
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const GLint* values, int count) 
 { 
     glUniform1iv(location, count, values); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const GLuint* values, int count) 
 { 
     glUniform1uiv(location, count, values); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,1>* values, int count) 
 { 
     glUniform2fv(location, count, values[0].data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,1>* values, int count) 
 { 
     glUniform3fv(location, count, values[0].data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,1>* values, int count) 
 { 
     glUniform4fv(location, count, values[0].data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,2>* values, int count) 
 { 
     glUniformMatrix2fv(location, count, GL_FALSE, values[0].data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,3>* values, int count) 
 { 
     glUniformMatrix2x3fv(location, count, GL_FALSE, values[0].data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,4>* values, int count) 
 { 
-    glUniformMatrix2x4fv(location, count, GL_FALSE, values[0].data()); 
+    glUniformMatrix2x4fv(location, count, GL_FALSE, values[0].data());
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,2>* values, int count) 
 { 
     glUniformMatrix3x2fv(location, count, GL_FALSE, values[0].data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,3>* values, int count) 
 { 
     glUniformMatrix3fv(location, count, GL_FALSE, values[0].data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,4>* values, int count) 
 { 
     glUniformMatrix3x4fv(location, count, GL_FALSE, values[0].data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,2>* values, int count) 
 { 
     glUniformMatrix4x2fv(location, count, GL_FALSE, values[0].data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,3>* values, int count) 
 { 
     glUniformMatrix4x3fv(location, count, GL_FALSE, values[0].data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,4>* values, int count) 
 { 
     glUniformMatrix4fv(location, count, GL_FALSE, values[0].data()); 
+    WRAPGL_CHECK_ERROR();
 }
 
 template<typename T, std::size_t N>
@@ -817,72 +886,92 @@ void vc::wrapgl::Program::bindImage(const wrapgl::Texture2D& tex, GLuint unit, G
                             0, /* this is ignored */
                             access, /* we're only writing to it */
                             intfmt/* interpret format as 32-bit float */);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::unbindImage(GLuint unit)
 {
     glBindImageTexture(unit, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
+    WRAPGL_CHECK_ERROR();
 }
 
 GLuint vc::wrapgl::Program::getMaxImageUnits() const 
 { 
-    return internal::getParameter<GLint>(GL_MAX_IMAGE_UNITS); 
+    const GLuint ret = internal::getParameter<GLint>(GL_MAX_IMAGE_UNITS); 
+    WRAPGL_CHECK_ERROR();
+    return ret;
 }
 
 GLint vc::wrapgl::Program::getFragmentDataLocation(const char* name) const 
 { 
-    return glGetFragDataLocation(progid, name); 
+    const GLint ret = glGetFragDataLocation(progid, name); 
+    WRAPGL_CHECK_ERROR();
+    return ret;
 }
 
 void vc::wrapgl::Program::bindFragmentDataLocation(const char* name, GLuint color) 
 { 
     glBindFragDataLocation(progid, color, name); 
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::setTransformFeedbackVaryings(GLsizei count, const char **varyings, GLenum bufmode)
 {
     glTransformFeedbackVaryings(progid, count, varyings, bufmode);
+    WRAPGL_CHECK_ERROR();
 }
 
 template<std::size_t N>
-void vc::wrapgl::Program::setTransformFeedbackVaryings(const std::array<char*,N>& varyings, GLenum bufmode)
+void vc::wrapgl::Program::setTransformFeedbackVaryings(const std::array<const char*,N>& varyings, GLenum bufmode)
 {
     glTransformFeedbackVaryings(progid, N, varyings.data(), bufmode);
+    WRAPGL_CHECK_ERROR();
+}
+
+void vc::wrapgl::Program::bindShaderStorageBlock(GLuint storageBlockIndex, GLuint storageBlockBinding)
+{
+    glShaderStorageBlockBinding(progid, storageBlockIndex, storageBlockBinding);
+    WRAPGL_CHECK_ERROR();
+}
+
+void vc::wrapgl::Program::bindBufferBase(GLuint location, const Buffer& buf)
+{
+    glBindBufferBase(static_cast<GLenum>(buf.type()), location, buf.id());
+    WRAPGL_CHECK_ERROR();
+}
+
+void vc::wrapgl::Program::bindBufferBase(const char* name, const Buffer& buf)
+{
+    bindBufferBase(uniformBlockLocation(name),buf);
+}
+
+void vc::wrapgl::Program::bindBufferRange(GLuint location, const Buffer& buf, GLintptr offset, GLsizeiptr size)
+{
+    glBindBufferRange(static_cast<GLenum>(buf.type()), location, buf.id(), offset, size);
+    WRAPGL_CHECK_ERROR();
+}
+
+void vc::wrapgl::Program::bindBufferRange(const char* name, const Buffer& buf, GLintptr offset, GLsizeiptr size)
+{
+    bindBufferRange(uniformBlockLocation(name), buf, offset, size);
 }
 
 GLuint vc::wrapgl::Program::uniformBlockLocation(const char* name) const 
 { 
-    return glGetUniformBlockIndex(progid, name); 
-}
-
-void vc::wrapgl::Program::bindUniformBuffer(GLuint location, const Buffer& buf)
-{
-    glBindBufferBase(buf.type(), location, buf.id());
+    const GLuint ret = glGetUniformBlockIndex(progid, name); 
+    WRAPGL_CHECK_ERROR();
+    return ret;
 }
 
 void vc::wrapgl::Program::bindUniformBuffer(GLuint location, GLuint uniformBlockBinding)
 {
     glUniformBlockBinding(progid, location, uniformBlockBinding);
-}
-
-void vc::wrapgl::Program::bindUniformBuffer(const char* name, const Buffer& buf)
-{
-    bindUniformBuffer(uniformBlockLocation(name),buf);
+    WRAPGL_CHECK_ERROR();
 }
 
 void vc::wrapgl::Program::bindUniformBuffer(const char* name, GLuint uniformBlockBinding)
 {
     bindUniformBuffer(uniformBlockLocation(name),uniformBlockBinding);
 }
-
-void vc::wrapgl::Program::bindUniformBufferRange(GLuint location, const Buffer& buf, GLintptr offset, GLsizeiptr size)
-{
-    glBindBufferRange(buf.type(), location, buf.id(), offset, size);
-}
-
-void vc::wrapgl::Program::bindUniformBufferRange(const char* name, const Buffer& buf, GLintptr offset, GLsizeiptr size)
-{
-    bindUniformBufferRange(uniformBlockLocation(name), buf, offset, size);
-}
  
-#endif // VISIONCORE_WRAPGL_SHADER_IMPL_HPP
+#endif // VISIONCORE_WRAPGL_PROGRAM_IMPL_HPP

@@ -57,7 +57,7 @@ public:
     
     inline Sampler();
     inline Sampler(GLuint texu);
-    virtual ~Sampler() { destroy(); }
+    inline ~Sampler();
     
     inline void create(GLuint texu);
     inline void destroy();

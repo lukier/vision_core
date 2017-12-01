@@ -33,8 +33,8 @@
  * ****************************************************************************
  */
 
-#ifndef VISIONCORE_WRAPGL_SHADER_HPP
-#define VISIONCORE_WRAPGL_SHADER_HPP
+#ifndef VISIONCORE_WRAPGL_PROGRAM_HPP
+#define VISIONCORE_WRAPGL_PROGRAM_HPP
 
 #include <string>
 #include <sstream>
@@ -174,7 +174,16 @@ public:
     // Transform Feedback
     inline void setTransformFeedbackVaryings(GLsizei count, const char** varyings, GLenum bufmode = GL_INTERLEAVED_ATTRIBS);
     template<std::size_t N>
-    inline void setTransformFeedbackVaryings(const std::array<char*,N>& varyings, GLenum bufmode = GL_INTERLEAVED_ATTRIBS);
+    inline void setTransformFeedbackVaryings(const std::array<const char*,N>& varyings, GLenum bufmode = GL_INTERLEAVED_ATTRIBS);
+    
+    // Shader Storage Blocks
+    inline void bindShaderStorageBlock(GLuint storageBlockIndex, GLuint storageBlockBinding);
+    
+    // Binding Buffers (UBO,SSBO)
+    inline void bindBufferBase(GLuint location, const Buffer& buf);
+    inline void bindBufferBase(const char* name, const Buffer& buf);
+    inline void bindBufferRange(GLuint location, const Buffer& buf, GLintptr offset, GLsizeiptr size);
+    inline void bindBufferRange(const char* name, const Buffer& buf, GLintptr offset, GLsizeiptr size);
     
     /// Uniform variables
     inline GLint uniformLocation(const char* name) const;
@@ -270,12 +279,8 @@ public:
     
     // Uniform interface blocks
     inline GLuint uniformBlockLocation(const char* name) const;
-    inline void bindUniformBuffer(GLuint location, const Buffer& buf);
     inline void bindUniformBuffer(GLuint location, GLuint uniformBlockBinding);
-    inline void bindUniformBuffer(const char* name, const Buffer& buf);
     inline void bindUniformBuffer(const char* name, GLuint uniformBlockBinding);
-    inline void bindUniformBufferRange(GLuint location, const Buffer& buf, GLintptr offset, GLsizeiptr size);
-    inline void bindUniformBufferRange(const char* name, const Buffer& buf, GLintptr offset, GLsizeiptr size);
     
 private:
     GLuint progid;
@@ -287,6 +292,6 @@ private:
 
 }
 
-#include <VisionCore/WrapGL/impl/WrapGLShader_impl.hpp>
+#include <VisionCore/WrapGL/impl/WrapGLProgram_impl.hpp>
 
-#endif // VISIONCORE_WRAPGL_SHADER_HPP
+#endif // VISIONCORE_WRAPGL_PROGRAM_HPP

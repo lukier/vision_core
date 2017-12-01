@@ -38,15 +38,6 @@
 
 #include <VisionCore/WrapGL/WrapGLCommon.hpp>
 
-/**
- * TODO:
- * 
- * glGetQueryObject
- * 
- * glGetQueryiv
- * glGetQueryIndexed
- */
-
 namespace vc
 {
 
@@ -55,81 +46,79 @@ namespace wrapgl
     
 class Query
 {
-public:    
-    Query() : qid(0)
+public:
+    typedef ScopeBinder<Query> Binder;
+    
+    enum class Target
     {
-        create();
-    }
+        eSamplesPassed = GL_SAMPLES_PASSED, 
+        eAnySamplesPasses = GL_ANY_SAMPLES_PASSED, 
+        eTransformFeedbackPrimitivesWritten = GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, 
+        eTimeElapsed = GL_TIME_ELAPSED, 
+        eTimestamp = GL_TIMESTAMP
+    };
     
-    virtual ~Query()
+    enum class Parameter
     {
-        destroy();
-    }
+        eCurrent = GL_CURRENT_QUERY,
+        eCounterBits = GL_QUERY_COUNTER_BITS,
+        eResult = GL_QUERY_RESULT, 
+        eResultNoWait = GL_QUERY_RESULT_NO_WAIT,
+        eResultAvailable = GL_QUERY_RESULT_AVAILABLE
+    };
     
-    void create()
-    {
-        destroy();
-        
-        glGenQueries(1, &qid);
-    }
+    inline Query();
+    virtual ~Query();
     
-    void destroy()
-    {
-        if(qid != 0)
-        {
-            glDeleteQueries(1, &qid);
-            qid = 0;
-        }
-    }
+    inline void create();
+    inline void destroy();
+    inline bool isValid() const;
     
-    inline bool isValid() const { return qid != 0; }
+    // 
+    inline void begin(Target target) const;
+    inline void end(Target target) const;
     
-    void begin(GLenum target) const
-    {
-        glBeginQuery(target, qid);
-    }
+    inline void begin(Target target, GLuint idx) const;
+    inline void end(Target target, GLuint idx) const;
     
-    void end(GLenum target) const
-    {
-        glEndQuery(target);
-    }
+    inline GLint get(Target target, Parameter pname);
+    inline GLint get(Target target, GLuint index, Parameter pname);
+    template<typename T>
+    inline void getObject(Parameter pname, T* params = nullptr);
     
-    void begin(GLenum target, GLuint idx) const
-    {
-        glBeginQueryIndexed(target, idx, qid);
-    }
+    inline void queryTimestamp();
     
-    void end(GLenum target, GLuint idx) const
-    {
-        glEndQueryIndexed(target, idx);
-    }
-    
-    GLint get(GLenum target, GLenum pname)
-    {
-        GLint ret = 0;
-        glGetQueryiv(target, pname, &ret);
-        return ret;
-    }
-    
-    GLint get(GLenum target, GLuint index, GLenum pname)
-    {
-        GLint ret = 0;
-        glGetQueryIndexediv(target, index, pname, &ret);
-        return ret;
-    }
-    
-    void queryTimestamp()
-    {
-        glQueryCounter(qid, GL_TIMESTAMP);
-    }
-    
-    inline GLuint id() const { return qid; }
+    inline GLuint id() const;
 private:
     GLuint qid;
+};
+
+template<> struct ScopeBinder<Query>
+{
+    ScopeBinder() = delete;
+    ScopeBinder(const ScopeBinder&) = delete;
+    ScopeBinder(ScopeBinder&&) = delete;
+    ScopeBinder& operator=(const ScopeBinder&) = delete;
+    ScopeBinder& operator=(ScopeBinder&&) = delete;
+    
+    ScopeBinder(const Query& aobj, typename Query::Target tgt) : obj(aobj), target(tgt)
+    {
+        obj.begin(target);
+    }
+    
+    ~ScopeBinder()
+    {
+        obj.end(target);
+    }
+    
+    const Query& obj;
+    typename Query::Target target;
 };
 
 }
     
 }
+
+#include <VisionCore/WrapGL/impl/WrapGLTexture_impl.hpp>
 
 #endif // VISIONCORE_WRAPGL_QUERY_HPP

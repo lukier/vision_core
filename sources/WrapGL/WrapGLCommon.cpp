@@ -70,3 +70,18 @@ void vc::wrapgl::Debug::insert(GLenum source, GLenum type, GLuint id, GLenum sev
 {
     glDebugMessageInsert(source, type, id, severity, -1, msg.c_str());
 }
+
+const char* vc::wrapgl::internal::getErrorString(const GLenum err)
+{
+    switch(err) 
+    {
+        case GL_INVALID_ENUM: return "Invalid Enum";
+        case GL_INVALID_VALUE: return "Invalid Value";
+        case GL_INVALID_OPERATION: return "Invalid Operation";
+        case GL_STACK_OVERFLOW: return "Stack Overflow";
+        case GL_STACK_UNDERFLOW: return "Stack Underflow";
+        case GL_OUT_OF_MEMORY: return "Out of Memory";
+        case GL_TABLE_TOO_LARGE: return "Table too Large";
+        default: return "Unknown Error";
+    }
+}

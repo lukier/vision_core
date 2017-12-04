@@ -115,20 +115,20 @@ namespace internal
 template<typename T> struct GetQueryObject {};
 
 template<> struct GetQueryObject<GLint>
-{ static inline void run(GLuint id​, GLenum pname, GLint* params) { glGetQueryObjectiv(id,pname,params); } };
+{ static inline void run(GLuint id, GLenum pname, GLint* params) { glGetQueryObjectiv(id,pname,params); } };
 template<> struct GetQueryObject<GLuint>
-{ static inline void run(GLuint id​, GLenum pname, GLuint* params) { glGetQueryObjectuiv(id,pname,params); } };
+{ static inline void run(GLuint id, GLenum pname, GLuint* params) { glGetQueryObjectuiv(id,pname,params); } };
 template<> struct GetQueryObject<GLint64>
-{ static inline void run(GLuint id​, GLenum pname, GLint64* params) { glGetQueryObjecti64v(id,pname,params); } };
+{ static inline void run(GLuint id, GLenum pname, GLint64* params) { glGetQueryObjecti64v(id,pname,params); } };
 template<> struct GetQueryObject<GLuint64>
-{ static inline void run(GLuint id​, GLenum pname, GLuint64* params) { glGetQueryObjectui64v(id,pname,params); } };
+{ static inline void run(GLuint id, GLenum pname, GLuint64* params) { glGetQueryObjectui64v(id,pname,params); } };
 
 }
 
 template<typename T>
-void vc::wrapgl::Query::getObject(Parameter pname​, T* params)
+void vc::wrapgl::Query::getObject(Parameter pname, T* params)
 {
-    internal::GetQueryObject<T>::run(qid, static_cast<GLenum>(pname), params);
+    ::internal::GetQueryObject<T>::run(qid, static_cast<GLenum>(pname), params);
     WRAPGL_CHECK_ERROR();
 }
 
@@ -143,5 +143,15 @@ GLuint vc::wrapgl::Query::id() const
     return qid; 
 }
 
+vc::wrapgl::ScopeBinder<vc::wrapgl::Query>::ScopeBinder(const vc::wrapgl::Query& aobj, 
+                                                        typename vc::wrapgl::Query::Target tgt) : obj(aobj), target(tgt)
+{
+  obj.begin(target);
+}
+
+vc::wrapgl::ScopeBinder<vc::wrapgl::Query>::~ScopeBinder()
+{
+  obj.end(target);
+}
 
 #endif // VISIONCORE_WRAPGL_QUERY_IMPL_HPP

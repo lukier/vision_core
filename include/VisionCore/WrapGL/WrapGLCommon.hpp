@@ -214,12 +214,12 @@ struct ScopeBinder
     ScopeBinder& operator=(const ScopeBinder&) = delete;
     ScopeBinder& operator=(ScopeBinder&&) = delete;
     
-    ScopeBinder(const WrapGLT& aobj) : obj(aobj)
+    inline ScopeBinder(const WrapGLT& aobj) : obj(aobj)
     {
         obj.bind();
     }
     
-    ~ScopeBinder()
+    inline ~ScopeBinder()
     {
         obj.unbind();
     }

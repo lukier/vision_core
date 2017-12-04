@@ -68,7 +68,7 @@ public:
     };
     
     inline Query();
-    virtual ~Query();
+    inline ~Query();
     
     inline void create();
     inline void destroy();
@@ -101,15 +101,8 @@ template<> struct ScopeBinder<Query>
     ScopeBinder& operator=(const ScopeBinder&) = delete;
     ScopeBinder& operator=(ScopeBinder&&) = delete;
     
-    ScopeBinder(const Query& aobj, typename Query::Target tgt) : obj(aobj), target(tgt)
-    {
-        obj.begin(target);
-    }
-    
-    ~ScopeBinder()
-    {
-        obj.end(target);
-    }
+    inline ScopeBinder(const Query& aobj, typename Query::Target tgt);
+    inline ~ScopeBinder();
     
     const Query& obj;
     typename Query::Target target;
@@ -119,6 +112,6 @@ template<> struct ScopeBinder<Query>
     
 }
 
-#include <VisionCore/WrapGL/impl/WrapGLTexture_impl.hpp>
+#include <VisionCore/WrapGL/impl/WrapGLQuery_impl.hpp>
 
 #endif // VISIONCORE_WRAPGL_QUERY_HPP

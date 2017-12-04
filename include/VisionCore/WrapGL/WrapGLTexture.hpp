@@ -119,6 +119,7 @@ public:
     inline void setBorderColor(const Eigen::Matrix<float,4,1>& color);
     inline void setBorderColor(float r, float g, float b, float a = 1.0f);
     
+    using TextureBase::bind;
     inline void bind() const;
     inline void unbind() const;
     

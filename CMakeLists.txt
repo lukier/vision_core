@@ -266,7 +266,7 @@ include/VisionCore/WrapGL/WrapGLFramebuffer.hpp
 include/VisionCore/WrapGL/WrapGL.hpp
 include/VisionCore/WrapGL/WrapGLQuery.hpp
 include/VisionCore/WrapGL/WrapGLSampler.hpp
-include/VisionCore/WrapGL/WrapGLShader.hpp
+include/VisionCore/WrapGL/WrapGLProgram.hpp
 include/VisionCore/WrapGL/WrapGLTexture.hpp
 include/VisionCore/WrapGL/WrapGLTransformFeedback.hpp
 include/VisionCore/WrapGL/WrapGLVertexArrayObject.hpp

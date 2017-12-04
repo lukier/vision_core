@@ -78,7 +78,8 @@ public:
         eShaderStorage = GL_SHADER_STORAGE_BUFFER, 
         eTexture = GL_TEXTURE_BUFFER, 
         eTransformFeedback = GL_TRANSFORM_FEEDBACK_BUFFER,
-        eUniform = GL_UNIFORM_BUFFER
+        eUniform = GL_UNIFORM_BUFFER,
+        Invalid
     };
   
     inline Buffer();

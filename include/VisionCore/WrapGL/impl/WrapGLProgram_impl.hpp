@@ -36,6 +36,8 @@
 #ifndef VISIONCORE_WRAPGL_PROGRAM_IMPL_HPP
 #define VISIONCORE_WRAPGL_PROGRAM_IMPL_HPP
 
+#include <regex>
+#include <experimental/filesystem>
 
 vc::wrapgl::Program::Program() : progid(0), linked(false)
 {
@@ -47,7 +49,7 @@ vc::wrapgl::Program::~Program()
     destroy();
 }
 
-std::pair<bool,std::string> vc::wrapgl::Program::addShaderFromSourceCode(Type type, const char* source)
+std::pair<bool,std::string> vc::wrapgl::Program::addPreprocessedShader(Type type, const std::string& source)
 {
     bool was_ok = false;
     std::string err_log;
@@ -55,7 +57,9 @@ std::pair<bool,std::string> vc::wrapgl::Program::addShaderFromSourceCode(Type ty
     GLhandleARB shader = glCreateShader((GLenum)type);
     WRAPGL_CHECK_ERROR();
     
-    glShaderSource(shader, 1, &source, NULL);
+    const char* csrc = source.c_str();
+    
+    glShaderSource(shader, 1, &csrc, NULL);
     WRAPGL_CHECK_ERROR();
     
     glCompileShader(shader);
@@ -84,21 +88,99 @@ std::pair<bool,std::string> vc::wrapgl::Program::addShaderFromSourceCode(Type ty
     return std::make_pair(was_ok,err_log);
 }
 
-std::pair<bool,std::string> vc::wrapgl::Program::addShaderFromSourceFile(Type type, const char* fn)
+std::pair<bool,std::string> vc::wrapgl::Program::addShaderFromSourceCode(Type type, const std::string& source, 
+                                                                         const std::vector<std::string>& inc_path)
+{
+    std::stringstream buf_in(source);
+    std::stringstream buf_out;
+    std::string err;
+    
+    const bool ok = parseShader(buf_in, buf_out, inc_path, err);
+    if(!ok)
+    {
+        return std::make_pair(ok,err);
+    }
+    
+    return addPreprocessedShader(type, buf_out.str());
+}
+
+std::pair<bool,std::string> vc::wrapgl::Program::addShaderFromSourceFile(Type type, const std::string& fn, 
+                                                                         const std::vector<std::string>& inc_path)
 {
     std::ifstream ifs(fn);
     if(ifs)
     {
-        std::ostringstream contents;
-        contents << ifs.rdbuf();
-        ifs.close();
+        std::stringstream buf_in;
+        std::stringstream buf_out;
+        std::string err;
+
+        buf_in << ifs.rdbuf();
         
-        return addShaderFromSourceCode(type, contents.str().c_str());
+        const bool ok = parseShader(buf_in, buf_out, inc_path, err);
+        if(!ok)
+        {
+            return std::make_pair(ok,err);
+        }
+        
+        return addPreprocessedShader(type, buf_out.str());
     }
     else
     {
         return std::make_pair(false,"No such file");
     }
+}
+
+bool vc::wrapgl::Program::parseShader(std::istream& buf_in, std::ostream& buf_out,
+                                      const std::vector<std::string>& inc_path, std::string& errout)
+{
+    std::string line;
+    
+    std::regex inc_regex(R"(^\s*#include\s*["<](.*)[">])");
+
+    while(!buf_in.eof()) 
+    {
+        std::getline(buf_in, line);        
+        std::smatch match;
+
+        if (std::regex_match(line, match, inc_regex)) 
+        {
+            if(match.size() == 2) 
+            {
+                const std::string inc_fn = match[1].str();
+                
+                bool found = false;
+                
+                for(const std::string& ip : inc_path)
+                {
+                    std::stringstream fn;
+                    fn << ip << "/" << inc_fn;
+
+                    std::ifstream ifs(fn.str().c_str());
+                    if(ifs.good()) 
+                    {
+                        const bool ok = parseShader(ifs, buf_out, inc_path, errout);
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if(!found)
+                {
+                    std::stringstream ss;
+                    ss << "Include file " << inc_fn << " not found in the search path";
+                    errout = ss.str();
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            // Output directly
+            buf_out << line << std::endl;
+        }
+    }
+    
+    return true;
 }
 
 void vc::wrapgl::Program::removeAllShaders()
@@ -915,15 +997,15 @@ void vc::wrapgl::Program::bindFragmentDataLocation(const std::string& name, GLui
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setTransformFeedbackVaryings(GLsizei count, const char **varyings, GLenum bufmode)
+void vc::wrapgl::Program::setTransformFeedbackVaryings(GLsizei count, const char** varyings, GLenum bufmode)
 {
     glTransformFeedbackVaryings(progid, count, varyings, bufmode);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setTransformFeedbackVaryings(const std::initializer_list<const char*>& varyings, GLenum bufmode)
+void vc::wrapgl::Program::setTransformFeedbackVaryings(const std::vector<const char*>& varyings, GLenum bufmode)
 {
-    glTransformFeedbackVaryings(progid, varyings.size(), varyings.begin(), bufmode);
+    glTransformFeedbackVaryings(progid, varyings.size(), varyings.data(), bufmode);
     WRAPGL_CHECK_ERROR();
 }
 

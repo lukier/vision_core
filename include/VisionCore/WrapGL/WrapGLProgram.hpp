@@ -94,8 +94,10 @@ public:
     inline Program();
     virtual ~Program();
     
-    inline std::pair<bool,std::string> addShaderFromSourceCode(Type type, const char* source);
-    inline std::pair<bool,std::string> addShaderFromSourceFile(Type type, const char* fn);
+    inline std::pair<bool,std::string> addShaderFromSourceCode(Type type, const std::string& source, 
+                                                               const std::vector<std::string>& inc_path = std::vector<std::string>());
+    inline std::pair<bool,std::string> addShaderFromSourceFile(Type type, const std::string& fn,
+                                                               const std::vector<std::string>& inc_path = std::vector<std::string>());
     inline void removeAllShaders();
     
     inline std::pair<bool,std::string> link();
@@ -173,8 +175,7 @@ public:
     
     // Transform Feedback
     inline void setTransformFeedbackVaryings(GLsizei count, const char** varyings, GLenum bufmode = GL_INTERLEAVED_ATTRIBS);
-    inline void setTransformFeedbackVaryings(const std::initializer_list<const char*>& varyings, 
-                                             GLenum bufmode = GL_INTERLEAVED_ATTRIBS);
+    inline void setTransformFeedbackVaryings(const std::vector<const char*>& varyings, GLenum bufmode = GL_INTERLEAVED_ATTRIBS);
     
     // Shader Storage Blocks
     inline void bindShaderStorageBlock(GLuint storageBlockIndex, GLuint storageBlockBinding);
@@ -283,6 +284,11 @@ public:
     inline void bindUniformBuffer(const std::string& name, GLuint uniformBlockBinding);
     
 private:
+    inline std::pair<bool,std::string> addPreprocessedShader(Type type, const std::string& source);
+    inline bool parseShader(std::istream& buf_in, std::ostream& buf_out,
+                            const std::vector<std::string>& inc_path, 
+                            std::string& errout);
+    
     GLuint progid;
     std::vector<GLhandleARB> shaders;
     bool linked;

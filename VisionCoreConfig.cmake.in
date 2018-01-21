@@ -1,6 +1,6 @@
 include(CMakeFindDependencyMacro)
 
-if(@USE_GLBINDING@ AND @glbinding_FOUND@)
+if(@USE_GLBINDING@)
     find_dependency(glbinding)
     find_dependency(globjects)
 endif()

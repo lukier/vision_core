@@ -385,7 +385,9 @@ public:
     template<typename TargetFrom>
     inline void copyFrom(const Buffer1DView<ValueType,TargetFrom>& img)
     {
+#ifdef VISIONCORE_HAVE_OPENCL
         static_assert(std::is_same<TargetFrom,TargetDeviceOpenCL>::value != true, "Not possible to do OpenCL-CUDA copy");
+#endif
         
         TargetTransfer<TargetFrom,TargetType>::template memcpy<ValueType>(BaseT::rawPtr(), 
                                                                   (PointerType)img.ptr(), std::min(img.bytes(),BaseT::bytes()));

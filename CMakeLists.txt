@@ -330,9 +330,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     PRIVATE sources)
     
 target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PUBLIC ${Sophus_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC Sophus::Sophus)
 
 if(CUDA_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${CUDA_LIBRARIES})

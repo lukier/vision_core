@@ -1,5 +1,7 @@
 include(CMakeFindDependencyMacro)
 
+find_dependency(Sophus QUIET)
+
 if(@USE_GLBINDING@)
     find_dependency(glbinding)
     find_dependency(globjects)

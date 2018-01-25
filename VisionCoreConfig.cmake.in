@@ -1,7 +1,9 @@
 include(CMakeFindDependencyMacro)
 
-find_dependency(glbinding)
-find_dependency(globjects)
+if(@USE_GLBINDING@)
+    find_dependency(glbinding)
+    find_dependency(globjects)
+endif()
 
 if(@OpenCL_FOUND@)
     find_dependency(OpenCL)
@@ -17,6 +19,10 @@ endif()
 
 if(@GLEW_FOUND@)
     find_dependency(GLEW)
+endif()
+
+if(@CUDA_FOUND@)
+    set(VISIONCORE_CUDA_FLAGS @CMAKE_CUDA_FLAGS@)
 endif()
 
 if(@EIGEN_GET_ALIGNMENT_OK@)

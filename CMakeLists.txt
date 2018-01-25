@@ -336,9 +336,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     PRIVATE sources)
     
 target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PUBLIC ${Sophus_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC Sophus::Sophus)
 
 if(CUDA_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${CUDA_LIBRARIES})
@@ -347,7 +347,7 @@ if(CUDA_FOUND)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_CUDA)
     
     if(EIGEN_GET_ALIGNMENT_OK)
-      target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_CUDA_MAX_ALIGN_BYTES=${EIGEN_IDEAL_MAX_ALIGN_BYTES})
+        target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_CUDA_MAX_ALIGN_BYTES=${EIGEN_IDEAL_MAX_ALIGN_BYTES})
     endif()
 endif()
 
@@ -403,6 +403,7 @@ endif()
 if(Vulkan_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan::Vulkan)
 endif()
+
 if(FFTW_FOUND)
     target_include_directories(${PROJECT_NAME} PRIVATE ${FFTW_INCLUDES})
     target_link_libraries(${PROJECT_NAME} PRIVATE ${FFTW_LIBRARIES})

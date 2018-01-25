@@ -99,7 +99,7 @@ public:
         return false;
     }
 private:
-    EIGEN_DEVICE_FUNC inline bool is_zero(T v) { return (v > -numeric_limits<T>::min() && v < numeric_limits<T>::min()); }
+    EIGEN_DEVICE_FUNC inline bool is_zero(T v) { return (v > -std::numeric_limits<T>::min() && v < std::numeric_limits<T>::min()); }
     EIGEN_DEVICE_FUNC inline bool point_inside(T x, T y) { return (x >= clipping_x1 && x <= clipping_x2 && y >= clipping_y1 && y <= clipping_y2); }
     EIGEN_DEVICE_FUNC inline int clipT(T num, T denom, T *tE, T *tL)
     {

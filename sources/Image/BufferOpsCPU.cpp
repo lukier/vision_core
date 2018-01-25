@@ -134,7 +134,7 @@ T vc::image::calcBufferMean(const vc::Buffer1DView< T, Target >& buf_in)
 template<typename T, typename Target>
 T vc::image::calcBufferMin(const vc::Buffer2DView< T, Target >& buf_in)
 {
-    T minval = vc::numeric_limits<T>::max();
+    T minval = std::numeric_limits<T>::max();
     
     for(std::size_t y = 0 ; y < buf_in.height() ; ++y)
     {
@@ -150,7 +150,7 @@ T vc::image::calcBufferMin(const vc::Buffer2DView< T, Target >& buf_in)
 template<typename T, typename Target>
 T vc::image::calcBufferMax(const vc::Buffer2DView< T, Target >& buf_in)
 {
-    T maxval = vc::numeric_limits<T>::lowest();
+    T maxval = std::numeric_limits<T>::lowest();
     
     for(std::size_t y = 0 ; y < buf_in.height() ; ++y)
     {

@@ -39,9 +39,9 @@ endif()
 # Default build configuration
 # ------------------------------------------------------------------------------
 if(DEFINED CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Build type.")
+    set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Build type.")
 else()
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type.")
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type.")
 endif()
 
 # ------------------------------------------------------------------------------
@@ -72,15 +72,15 @@ endif()
 option(BUILD_TESTS "Enable to build unit tests" ON)
 find_package(GTest QUIET)
 if(BUILD_TESTS AND GTest_FOUND)
-  enable_testing()
-    
-  # Code Coverage Build Type
-  set(CMAKE_CXX_FLAGS_COVERAGE "-g -O0 --coverage -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by the C++ compiler during coverage builds." FORCE)
-  set(CMAKE_C_FLAGS_COVERAGE "-g -O0 --coverage -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by the C compiler during coverage builds." FORCE )
-  set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "" CACHE STRING "Flags used for linking binaries during coverage builds." FORCE )
-  set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE "" CACHE STRING "Flags used by the shared libraries linker during coverage builds." FORCE)
-  mark_as_advanced(CMAKE_CXX_FLAGS_COVERAGE CMAKE_C_FLAGS_COVERAGE CMAKE_EXE_LINKER_FLAGS_COVERAGE CMAKE_SHARED_LINKER_FLAGS_COVERAGE)
-  message("Testing enabled")
+    enable_testing()
+      
+    # Code Coverage Build Type
+    set(CMAKE_CXX_FLAGS_COVERAGE "-g -O0 --coverage -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by the C++ compiler during coverage builds." FORCE)
+    set(CMAKE_C_FLAGS_COVERAGE "-g -O0 --coverage -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by the C compiler during coverage builds." FORCE )
+    set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "" CACHE STRING "Flags used for linking binaries during coverage builds." FORCE )
+    set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE "" CACHE STRING "Flags used by the shared libraries linker during coverage builds." FORCE)
+    mark_as_advanced(CMAKE_CXX_FLAGS_COVERAGE CMAKE_C_FLAGS_COVERAGE CMAKE_EXE_LINKER_FLAGS_COVERAGE CMAKE_SHARED_LINKER_FLAGS_COVERAGE)
+    message("Testing enabled")
 endif()
 
 include(GenerateExportHeader)
@@ -110,7 +110,7 @@ try_run(EIGEN_IDEAL_MAX_ALIGN_BYTES EIGEN_GET_ALIGNMENT_OK
             COMPILE_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS}
             CMAKE_FLAGS -DINCLUDE_DIRECTORIES:STRING=${CMAKE_REQUIRED_INCLUDES})
 if(EIGEN_GET_ALIGNMENT_OK)
-  message("Eigen Host Alignment: ${EIGEN_IDEAL_MAX_ALIGN_BYTES}")
+    message("Eigen Host Alignment: ${EIGEN_IDEAL_MAX_ALIGN_BYTES}")
 endif()
 
 # TODO FIXME not supported by the mainline Eigen
@@ -161,6 +161,7 @@ if(CUDA_FOUND)
     list(APPEND CMAKE_CUDA_IMPLICIT_INCLUDE_DIRECTORIES "${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES}")
     message("CUDA Flags: ${CMAKE_CUDA_FLAGS}")
 endif()
+
 find_package(OpenCL QUIET)
 if(OpenCL_FOUND)
     message("OpenCL Version: ${OpenCL_VERSION_MAJOR}.${OpenCL_VERSION_MINOR}")
@@ -183,6 +184,20 @@ find_package(FFTW QUIET)
 # List of sources
 # ---------------------------------------------
 set(HEADERS
+include/VisionCore/CUDAException.hpp
+include/VisionCore/CUDAGenerics.hpp
+include/VisionCore/HelpersAutoDiff.hpp
+include/VisionCore/HelpersCUDA.hpp
+include/VisionCore/HelpersEigen.hpp
+include/VisionCore/HelpersMisc.hpp
+include/VisionCore/HelpersSophus.hpp
+include/VisionCore/LaunchUtils.hpp
+include/VisionCore/MemoryPolicyCUDA.hpp
+include/VisionCore/MemoryPolicyHost.hpp
+include/VisionCore/MemoryPolicy.hpp
+include/VisionCore/MemoryPolicyOpenCL.hpp
+include/VisionCore/Platform.hpp
+include/VisionCore/TypeTraits.hpp
 include/VisionCore/Buffers/Buffer1D.hpp
 include/VisionCore/Buffers/Buffer2D.hpp
 include/VisionCore/Buffers/Buffer3D.hpp
@@ -196,10 +211,6 @@ include/VisionCore/Buffers/Reductions.hpp
 include/VisionCore/Buffers/Volume.hpp
 include/VisionCore/Control/PID.hpp
 include/VisionCore/Control/VelocityProfile.hpp
-include/VisionCore/CUDAException.hpp
-include/VisionCore/CUDAGenerics.hpp
-include/VisionCore/CUDATypes.hpp
-include/VisionCore/EigenSerializers.hpp
 include/VisionCore/Image/BufferOps.hpp
 include/VisionCore/Image/ColorMap.hpp
 include/VisionCore/Image/ConnectedComponents.hpp
@@ -209,7 +220,6 @@ include/VisionCore/Image/PixelConvert.hpp
 include/VisionCore/IO/File.hpp
 include/VisionCore/IO/ImageIO.hpp
 include/VisionCore/IO/PLYModel.hpp
-include/VisionCore/LaunchUtils.hpp
 include/VisionCore/Math/Angles.hpp
 include/VisionCore/Math/Convolution.hpp
 include/VisionCore/Math/DenavitHartenberg.hpp
@@ -226,12 +236,6 @@ include/VisionCore/Math/PolarSpherical.hpp
 include/VisionCore/Math/Random.hpp
 include/VisionCore/Math/RANSAC.hpp
 include/VisionCore/Math/Statistics.hpp
-include/VisionCore/MemoryPolicyCUDA.hpp
-include/VisionCore/MemoryPolicyHost.hpp
-include/VisionCore/MemoryPolicy.hpp
-include/VisionCore/MemoryPolicyOpenCL.hpp
-include/VisionCore/Platform.hpp
-include/VisionCore/SophusInterpolations.hpp
 include/VisionCore/Types/AxisAlignedBoundingBox.hpp
 include/VisionCore/Types/CostVolumeElement.hpp
 include/VisionCore/Types/Gaussian.hpp
@@ -314,6 +318,7 @@ check_cxx_compiler_flag(-std=c++17 HAVE_FLAG_STD_CXX17)
 check_cxx_compiler_flag(-std=c++1z HAVE_FLAG_STD_CXX1Z)
 check_cxx_compiler_flag(-std=c++14 HAVE_FLAG_STD_CXX14)
 check_cxx_compiler_flag(-std=c++1y HAVE_FLAG_STD_CXX1Y)
+
 if(HAVE_FLAG_STD_CXX17 OR HAVE_FLAG_STD_CXX1Z)
     target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14) # TODO CUDA not ready
 elseif(HAVE_FLAG_STD_CXX14 OR HAVE_FLAG_STD_CXX1Y)
@@ -321,6 +326,7 @@ elseif(HAVE_FLAG_STD_CXX14 OR HAVE_FLAG_STD_CXX1Y)
 else()
     target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 endif()
+
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
@@ -344,24 +350,29 @@ if(CUDA_FOUND)
       target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_CUDA_MAX_ALIGN_BYTES=${EIGEN_IDEAL_MAX_ALIGN_BYTES})
     endif()
 endif()
+
 if(OpenCL_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenCL::OpenCL)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_OPENCL CL_HPP_MINIMUM_OPENCL_VERSION=120 CL_HPP_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0 CL_HPP_ENABLE_EXCEPTIONS)
 endif()
+
 if(TBB_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${TBB_LIBRARIES})
     target_include_directories(${PROJECT_NAME} PUBLIC ${TBB_INCLUDE_DIRS})
     target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_TBB ${TBB_DEFINITIONS})
 endif()
+
 if(OpenCV_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${OpenCV_LIBRARIES})
     target_include_directories(${PROJECT_NAME} PUBLIC ${OpenCV_INCLUDE_DIRS})
     target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_OPENCV)
 endif()
+
 if(cereal_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC cereal)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_CEREAL)
 endif()
+
 if(CERES_FOUND)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${CERES_LIBRARIES})
     target_include_directories(${PROJECT_NAME} PUBLIC ${CERES_INCLUDE_DIRS})
@@ -414,10 +425,10 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY INTERFACE_${PROJECT_NAME}_MAJOR_VER
 set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY COMPATIBLE_INTERFACE_STRING ${PROJECT_NAME}_MAJOR_VERSION)
 
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include)
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include)
 install(FILES ${HEADERS} "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_export.h" DESTINATION include)
 
 # ------------------------------------------------------------------------------
@@ -425,9 +436,9 @@ install(FILES ${HEADERS} "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_export.h" 
 # ------------------------------------------------------------------------------
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-  VERSION ${${PROJECT_NAME}_VERSION}
-  COMPATIBILITY AnyNewerVersion
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    VERSION ${${PROJECT_NAME}_VERSION}
+    COMPATIBILITY AnyNewerVersion
 )
 
 # ------------------------------------------------------------------------------

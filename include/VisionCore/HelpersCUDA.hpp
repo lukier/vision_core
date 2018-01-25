@@ -1,6 +1,6 @@
 /**
  * ****************************************************************************
- * Copyright (c) 2015, Robert Lukierski.
+ * Copyright (c) 2018, Robert Lukierski.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,42 +33,15 @@
  * ****************************************************************************
  */
 
-#ifndef VISIONCORE_CUDA_TYPES_HPP
-#define VISIONCORE_CUDA_TYPES_HPP
+#ifndef VISIONCORE_HELPERSCUDA_HPP
+#define VISIONCORE_HELPERSCUDA_HPP
 
 #include <cstdint>
 #include <cfenv>
 
-// ---------------------------------------------------------------------------
-// CUDA Macros or CUDA types if CUDA not available
-// ---------------------------------------------------------------------------
-
 // CUDA
 #ifdef VISIONCORE_HAVE_CUDA
-    
-    #include <cuda_runtime.h>
-    #include <VisionCore/CUDAException.hpp>
-    
-    #ifdef __CUDA_ARCH__
-        #define VISIONCORE_CUDA_KERNEL_SPACE
-    #endif // __CUDA_ARCH__
-    
-    #ifdef __CUDACC__
-        #define VISIONCORE_CUDA_COMPILER
-    #endif // __CUDACC__
-    
-    #ifndef EIGEN_DEVICE_FUNC
-        #define EIGEN_DEVICE_FUNC __host__ __device__
-    #endif // EIGEN_DEVICE_FUNC
-    
-    #ifndef EIGEN_PURE_DEVICE_FUNC
-        #define EIGEN_PURE_DEVICE_FUNC __device__
-    #endif // EIGEN_PURE_DEVICE_FUNC
-    
-    #ifndef EIGEN_PURE_HOST_FUNC
-        #define EIGEN_PURE_HOST_FUNC __host__
-    #endif // EIGEN_PURE_HOST_FUNC
-    
+   
     /**
      * This overcomes stupid warnings.
      */
@@ -175,586 +148,509 @@ namespace vc
     SPECIALIZE_EIGEN(emf55,float,5,5)
     SPECIALIZE_EIGEN(emf66,float,6,6)
     #undef SPECIALIZE
-    #undef SPECIALIZE_EIGEN
-    
-  // rounding
-  namespace detail
-  {
-    template<typename T, std::float_round_style rs>
-    struct RoundingDispatcher;
-    
-#ifndef VISIONCORE_CUDA_KERNEL_SPACE  
-    template<typename T>
-    struct RoundingDispatcher<T,std::float_round_style::round_toward_neg_infinity>
-    {
-      static inline T run(const T& v) { std::fesetround(FE_DOWNWARD); return std::round(v); }
-    };
-    
-    template<typename T>
-    struct RoundingDispatcher<T,std::float_round_style::round_to_nearest>
-    {
-      static inline T run(const T& v) { std::fesetround(FE_TONEAREST); return std::round(v); }
-    };
-    
-    template<typename T>
-    struct RoundingDispatcher<T,std::float_round_style::round_toward_zero>
-    {
-      static inline T run(const T& v) { std::fesetround(FE_TOWARDZERO); return std::round(v); }
-    };
-    
-    template<typename T>
-    struct RoundingDispatcher<T,std::float_round_style::round_toward_infinity>
-    {
-      static inline T run(const T& v) { std::fesetround(FE_UPWARD); return std::round(v); }
-    };
-    
-#else // VISIONCORE_CUDA_KERNEL_SPACE
-    template<>
-    struct RoundingDispatcher<float,std::float_round_style::round_toward_neg_infinity>
-    {
-      EIGEN_DEVICE_FUNC static inline float run(const float& v) { return __float2int_rd(v); }
-    };
-    
-    template<>
-    struct RoundingDispatcher<float,std::float_round_style::round_to_nearest>
-    {
-      EIGEN_DEVICE_FUNC static inline float run(const float& v) { return __float2int_rn(v); }
-    };
-    
-    template<>
-    struct RoundingDispatcher<float,std::float_round_style::round_toward_zero>
-    {
-      EIGEN_DEVICE_FUNC static inline float run(const float& v) { return __float2int_ru(v); }
-    };
-    
-    template<>
-    struct RoundingDispatcher<float,std::float_round_style::round_toward_infinity>
-    {
-      EIGEN_DEVICE_FUNC static inline float run(const float& v) { return __float2int_rz(v); }
-    };
-#endif // VISIONCORE_CUDA_KERNEL_SPACE
-  }
-  
-  template<typename T, std::float_round_style rs = std::float_round_style::round_to_nearest>
-  EIGEN_DEVICE_FUNC inline T round(const T& v)
-  {
-    return detail::RoundingDispatcher<T,rs>::run(v);
-  }
-    
+    #undef SPECIALIZE_EIGEN      
 }
 
-#else // VISIONCORE_HAVE_CUDA
-    /**
-     * We don't have CUDA available, but want the types.
-     */
-    
-    #include <cmath>
-    
-#ifndef EIGEN_DEVICE_FUNC
-    #define EIGEN_DEVICE_FUNC
-#endif // EIGEN_DEVICE_FUNC
+#else // !VISIONCORE_HAVE_CUDA
+/**
+  * We don't have CUDA available, but want the types.
+  */
 
-#ifndef EIGEN_PURE_DEVICE_FUNC
-    #define EIGEN_PURE_DEVICE_FUNC
-#endif // EIGEN_PURE_DEVICE_FUNC
+#include <cmath>
 
-#ifndef EIGEN_PURE_HOST_FUNC
-    #define EIGEN_PURE_HOST_FUNC 
-#endif // EIGEN_PURE_HOST_FUNC
-    
-    // redefine types
-    typedef struct 
-    {
-        signed char x;
-    } char1;
-    
-    typedef struct
-    {
-        unsigned char x;
-    } uchar1;
-    
-    
-    typedef struct VISIONCORE_ALIGN_PACK(2)
-    {
-        signed char x, y;
-    } char2;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(2)
-    {
-        unsigned char x, y;
-    } uchar2;
-    
-    typedef struct 
-    {
-        signed char x, y, z;
-    } char3;
-    
-    typedef struct
-    {
-        unsigned char x, y, z;
-    } uchar3;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(4)
-    {
-        signed char x, y, z, w;
-    } char4;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(4)
-    {
-        unsigned char x, y, z, w;
-    } uchar4;
-    
-    typedef struct 
-    {
-        short x;
-    } short1;
-    
-    typedef struct 
-    {
-        unsigned short x;
-    } ushort1;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(4)
-    {
-        short x, y;
-    } short2;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(4) 
-    {
-        unsigned short x, y;
-    } ushort2;
-    
-    typedef struct 
-    {
-        short x, y, z;
-    } short3;
-    
-    typedef struct 
-    {
-        unsigned short x, y, z;
-    } ushort3;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(8)
-    {
-        short x, y, z, w;
-    } short4;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(8)
-    {
-        unsigned short x, y, z, w;
-    } ushort4;
-    
-    typedef struct  
-    {
-        int x;
-    } int1;
-    
-    typedef struct  
-    {
-        unsigned int x;
-    } uint1;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(8)
-    {
-        int x, y;
-    } int2;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(8)
-    {
-        unsigned int x, y;
-    } uint2;
-    
-    typedef struct
-    {
-        int x, y, z;
-    } int3;
-    
-    typedef struct 
-    {
-        unsigned int x, y, z;
-    } uint3;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(16)
-    {
-        int x, y, z, w;
-    } int4;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(16)
-    {
-        unsigned int x, y, z, w;
-    } uint4;
-    
-    typedef struct 
-    {
-        long int x;
-    } long1;
-    
-    typedef struct 
-    {
-        unsigned long x;
-    } ulong1;
-    
-    typedef struct VISIONCORE_ALIGN_PACK((2*sizeof(long int)))
-    {
-        long int x, y;
-    } long2;
-    
-    typedef struct VISIONCORE_ALIGN_PACK((2*sizeof(unsigned long int))) 
-    {
-        unsigned long int x, y;
-    } ulong2;
-    
-    typedef struct 
-    {
-        long int x, y, z;
-    } long3;
-    
-    typedef struct
-    {
-        unsigned long int x, y, z;
-    } ulong3;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(16)
-    {
-        long int x, y, z, w;
-    } long4;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(16)
-    {
-        unsigned long int x, y, z, w;
-    } ulong4;
-    
-    typedef struct
-    {
-        float x;
-    } float1;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(8)
-    {
-        float x; float y; 
-    } float2;
-    
-    typedef struct
-    {
-        float x, y, z;
-    } float3;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(16)
-    {
-        float x, y, z, w;
-    } float4;
-    
-    typedef struct 
-    {
-        long long int x;
-    } longlong1;
-    
-    typedef struct 
-    {
-        unsigned long long int x;
-    } ulonglong1;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(16)
-    {
-        long long int x, y;
-    } longlong2;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(16)
-    {
-        unsigned long long int x, y;
-    } ulonglong2;
-    
-    typedef struct 
-    {
-        long long int x, y, z;
-    } longlong3;
-    
-    typedef struct 
-    {
-        unsigned long long int x, y, z;
-    } ulonglong3;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(16)
-    {
-        long long int x, y, z ,w;
-    } longlong4;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(16) 
-    {
-        unsigned long long int x, y, z, w;
-    } ulonglong4;
-    
-    typedef struct 
-    {
-        double x;
-    } double1;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(16)
-    {
-        double x, y;
-    } double2;
-    
-    typedef struct 
-    {
-        double x, y, z;
-    } double3;
-    
-    typedef struct VISIONCORE_ALIGN_PACK(16)
-    {
-        double x, y, z, w;
-    } double4;
-    
-    struct dim3 
-    {
-        unsigned int x, y, z;
-        dim3(unsigned int vx = 1, unsigned int vy = 1, unsigned int vz = 1) : x(vx), y(vy), z(vz) {}
-        dim3(uint3 v) : x(v.x), y(v.y), z(v.z) {}
-        operator uint3(void) { uint3 t; t.x = x; t.y = y; t.z = z; return t; }
-    };
-    
-    static inline char1 make_char1(signed char x)
-    {
-        char1 t; t.x = x; return t;
-    }
-    
-    static inline uchar1 make_uchar1(unsigned char x)
-    {
-        uchar1 t; t.x = x; return t;
-    }
-    
-    static inline char2 make_char2(signed char x, signed char y)
-    {
-        char2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline uchar2 make_uchar2(unsigned char x, unsigned char y)
-    {
-        uchar2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline char3 make_char3(signed char x, signed char y, signed char z)
-    {
-        char3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline uchar3 make_uchar3(unsigned char x, unsigned char y, unsigned char z)
-    {
-        uchar3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline char4 make_char4(signed char x, signed char y, signed char z, signed char w)
-    {
-        char4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
-    
-    static inline uchar4 make_uchar4(unsigned char x, unsigned char y, unsigned char z, unsigned char w)
-    {
-        uchar4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
-    
-    static inline short1 make_short1(short x)
-    {
-        short1 t; t.x = x; return t;
-    }
-    
-    static inline ushort1 make_ushort1(unsigned short x)
-    {
-        ushort1 t; t.x = x; return t;
-    }
-    
-    static inline short2 make_short2(short x, short y)
-    {
-        short2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline ushort2 make_ushort2(unsigned short x, unsigned short y)
-    {
-        ushort2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline short3 make_short3(short x,short y, short z)
-    { 
-        short3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline ushort3 make_ushort3(unsigned short x, unsigned short y, unsigned short z)
-    {
-        ushort3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline short4 make_short4(short x, short y, short z, short w)
-    {
-        short4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
-    
-    static inline ushort4 make_ushort4(unsigned short x, unsigned short y, unsigned short z, unsigned short w)
-    {
-        ushort4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
-    
-    static inline int1 make_int1(int x)
-    {
-        int1 t; t.x = x; return t;
-    }
-    
-    static inline uint1 make_uint1(unsigned int x)
-    {
-        uint1 t; t.x = x; return t;
-    }
-    
-    static inline int2 make_int2(int x, int y)
-    {
-        int2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline uint2 make_uint2(unsigned int x, unsigned int y)
-    {
-        uint2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline int3 make_int3(int x, int y, int z)
-    {
-        int3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline uint3 make_uint3(unsigned int x, unsigned int y, unsigned int z)
-    {
-        uint3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline int4 make_int4(int x, int y, int z, int w)
-    {
-        int4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
-    
-    static inline uint4 make_uint4(unsigned int x, unsigned int y, unsigned int z, unsigned int w)
-    {
-        uint4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
-    
-    static inline long1 make_long1(long int x)
-    {
-        long1 t; t.x = x; return t;
-    }
-    
-    static inline ulong1 make_ulong1(unsigned long int x)
-    {
-        ulong1 t; t.x = x; return t;
-    }
-    
-    static inline long2 make_long2(long int x, long int y)
-    {
-        long2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline ulong2 make_ulong2(unsigned long int x, unsigned long int y)
-    {
-        ulong2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline long3 make_long3(long int x, long int y, long int z)
-    {
-        long3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline ulong3 make_ulong3(unsigned long int x, unsigned long int y, unsigned long int z)
-    {
-        ulong3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline long4 make_long4(long int x, long int y, long int z, long int w)
-    {
-        long4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
-    
-    static inline ulong4 make_ulong4(unsigned long int x, unsigned long int y, unsigned long int z, unsigned long int w)
-    {
-        ulong4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
-    
-    static inline float1 make_float1(float x)
-    {
-        float1 t; t.x = x; return t;
-    }
-    
-    static inline float2 make_float2(float x, float y)
-    {
-        float2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline float3 make_float3(float x, float y, float z)
-    {
-        float3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline float4 make_float4(float x, float y, float z, float w)
-    {
-        float4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
-    
-    static inline longlong1 make_longlong1(long long int x)
-    {
-        longlong1 t; t.x = x; return t;
-    }
-    
-    static inline ulonglong1 make_ulonglong1(unsigned long long int x)
-    {
-        ulonglong1 t; t.x = x; return t;
-    }
-    
-    static inline longlong2 make_longlong2(long long int x, long long int y)
-    {
-        longlong2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline ulonglong2 make_ulonglong2(unsigned long long int x, unsigned long long int y)
-    {
-        ulonglong2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline longlong3 make_longlong3(long long int x, long long int y, long long int z)
-    {
-        longlong3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline ulonglong3 make_ulonglong3(unsigned long long int x, unsigned long long int y, unsigned long long int z)
-    {
-        ulonglong3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline longlong4 make_longlong4(long long int x, long long int y, long long int z, long long int w)
-    {
-        longlong4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
-    
-    static inline ulonglong4 make_ulonglong4(unsigned long long int x, unsigned long long int y, unsigned long long int z, unsigned long long int w)
-    {
-        ulonglong4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
-    
-    static inline double1 make_double1(double x)
-    {
-        double1 t; t.x = x; return t;
-    }
-    
-    static inline double2 make_double2(double x, double y)
-    {
-        double2 t; t.x = x; t.y = y; return t;
-    }
-    
-    static inline double3 make_double3(double x, double y, double z)
-    {
-        double3 t; t.x = x; t.y = y; t.z = z; return t;
-    }
-    
-    static inline double4 make_double4(double x, double y, double z, double w)
-    {
-        double4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-    }
+// redefine types
+typedef struct 
+{
+    signed char x;
+} char1;
+
+typedef struct
+{
+    unsigned char x;
+} uchar1;
+
+
+typedef struct VISIONCORE_ALIGN_PACK(2)
+{
+    signed char x, y;
+} char2;
+
+typedef struct VISIONCORE_ALIGN_PACK(2)
+{
+    unsigned char x, y;
+} uchar2;
+
+typedef struct 
+{
+    signed char x, y, z;
+} char3;
+
+typedef struct
+{
+    unsigned char x, y, z;
+} uchar3;
+
+typedef struct VISIONCORE_ALIGN_PACK(4)
+{
+    signed char x, y, z, w;
+} char4;
+
+typedef struct VISIONCORE_ALIGN_PACK(4)
+{
+    unsigned char x, y, z, w;
+} uchar4;
+
+typedef struct 
+{
+    short x;
+} short1;
+
+typedef struct 
+{
+    unsigned short x;
+} ushort1;
+
+typedef struct VISIONCORE_ALIGN_PACK(4)
+{
+    short x, y;
+} short2;
+
+typedef struct VISIONCORE_ALIGN_PACK(4) 
+{
+    unsigned short x, y;
+} ushort2;
+
+typedef struct 
+{
+    short x, y, z;
+} short3;
+
+typedef struct 
+{
+    unsigned short x, y, z;
+} ushort3;
+
+typedef struct VISIONCORE_ALIGN_PACK(8)
+{
+    short x, y, z, w;
+} short4;
+
+typedef struct VISIONCORE_ALIGN_PACK(8)
+{
+    unsigned short x, y, z, w;
+} ushort4;
+
+typedef struct  
+{
+    int x;
+} int1;
+
+typedef struct  
+{
+    unsigned int x;
+} uint1;
+
+typedef struct VISIONCORE_ALIGN_PACK(8)
+{
+    int x, y;
+} int2;
+
+typedef struct VISIONCORE_ALIGN_PACK(8)
+{
+    unsigned int x, y;
+} uint2;
+
+typedef struct
+{
+    int x, y, z;
+} int3;
+
+typedef struct 
+{
+    unsigned int x, y, z;
+} uint3;
+
+typedef struct VISIONCORE_ALIGN_PACK(16)
+{
+    int x, y, z, w;
+} int4;
+
+typedef struct VISIONCORE_ALIGN_PACK(16)
+{
+    unsigned int x, y, z, w;
+} uint4;
+
+typedef struct 
+{
+    long int x;
+} long1;
+
+typedef struct 
+{
+    unsigned long x;
+} ulong1;
+
+typedef struct VISIONCORE_ALIGN_PACK((2*sizeof(long int)))
+{
+    long int x, y;
+} long2;
+
+typedef struct VISIONCORE_ALIGN_PACK((2*sizeof(unsigned long int))) 
+{
+    unsigned long int x, y;
+} ulong2;
+
+typedef struct 
+{
+    long int x, y, z;
+} long3;
+
+typedef struct
+{
+    unsigned long int x, y, z;
+} ulong3;
+
+typedef struct VISIONCORE_ALIGN_PACK(16)
+{
+    long int x, y, z, w;
+} long4;
+
+typedef struct VISIONCORE_ALIGN_PACK(16)
+{
+    unsigned long int x, y, z, w;
+} ulong4;
+
+typedef struct
+{
+    float x;
+} float1;
+
+typedef struct VISIONCORE_ALIGN_PACK(8)
+{
+    float x; float y; 
+} float2;
+
+typedef struct
+{
+    float x, y, z;
+} float3;
+
+typedef struct VISIONCORE_ALIGN_PACK(16)
+{
+    float x, y, z, w;
+} float4;
+
+typedef struct 
+{
+    long long int x;
+} longlong1;
+
+typedef struct 
+{
+    unsigned long long int x;
+} ulonglong1;
+
+typedef struct VISIONCORE_ALIGN_PACK(16)
+{
+    long long int x, y;
+} longlong2;
+
+typedef struct VISIONCORE_ALIGN_PACK(16)
+{
+    unsigned long long int x, y;
+} ulonglong2;
+
+typedef struct 
+{
+    long long int x, y, z;
+} longlong3;
+
+typedef struct 
+{
+    unsigned long long int x, y, z;
+} ulonglong3;
+
+typedef struct VISIONCORE_ALIGN_PACK(16)
+{
+    long long int x, y, z ,w;
+} longlong4;
+
+typedef struct VISIONCORE_ALIGN_PACK(16) 
+{
+    unsigned long long int x, y, z, w;
+} ulonglong4;
+
+typedef struct 
+{
+    double x;
+} double1;
+
+typedef struct VISIONCORE_ALIGN_PACK(16)
+{
+    double x, y;
+} double2;
+
+typedef struct 
+{
+    double x, y, z;
+} double3;
+
+typedef struct VISIONCORE_ALIGN_PACK(16)
+{
+    double x, y, z, w;
+} double4;
+
+struct dim3 
+{
+    unsigned int x, y, z;
+    dim3(unsigned int vx = 1, unsigned int vy = 1, unsigned int vz = 1) : x(vx), y(vy), z(vz) {}
+    dim3(uint3 v) : x(v.x), y(v.y), z(v.z) {}
+    operator uint3(void) { uint3 t; t.x = x; t.y = y; t.z = z; return t; }
+};
+
+static inline char1 make_char1(signed char x)
+{
+    char1 t; t.x = x; return t;
+}
+
+static inline uchar1 make_uchar1(unsigned char x)
+{
+    uchar1 t; t.x = x; return t;
+}
+
+static inline char2 make_char2(signed char x, signed char y)
+{
+    char2 t; t.x = x; t.y = y; return t;
+}
+
+static inline uchar2 make_uchar2(unsigned char x, unsigned char y)
+{
+    uchar2 t; t.x = x; t.y = y; return t;
+}
+
+static inline char3 make_char3(signed char x, signed char y, signed char z)
+{
+    char3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline uchar3 make_uchar3(unsigned char x, unsigned char y, unsigned char z)
+{
+    uchar3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline char4 make_char4(signed char x, signed char y, signed char z, signed char w)
+{
+    char4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+static inline uchar4 make_uchar4(unsigned char x, unsigned char y, unsigned char z, unsigned char w)
+{
+    uchar4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+static inline short1 make_short1(short x)
+{
+    short1 t; t.x = x; return t;
+}
+
+static inline ushort1 make_ushort1(unsigned short x)
+{
+    ushort1 t; t.x = x; return t;
+}
+
+static inline short2 make_short2(short x, short y)
+{
+    short2 t; t.x = x; t.y = y; return t;
+}
+
+static inline ushort2 make_ushort2(unsigned short x, unsigned short y)
+{
+    ushort2 t; t.x = x; t.y = y; return t;
+}
+
+static inline short3 make_short3(short x,short y, short z)
+{ 
+    short3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline ushort3 make_ushort3(unsigned short x, unsigned short y, unsigned short z)
+{
+    ushort3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline short4 make_short4(short x, short y, short z, short w)
+{
+    short4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+static inline ushort4 make_ushort4(unsigned short x, unsigned short y, unsigned short z, unsigned short w)
+{
+    ushort4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+static inline int1 make_int1(int x)
+{
+    int1 t; t.x = x; return t;
+}
+
+static inline uint1 make_uint1(unsigned int x)
+{
+    uint1 t; t.x = x; return t;
+}
+
+static inline int2 make_int2(int x, int y)
+{
+    int2 t; t.x = x; t.y = y; return t;
+}
+
+static inline uint2 make_uint2(unsigned int x, unsigned int y)
+{
+    uint2 t; t.x = x; t.y = y; return t;
+}
+
+static inline int3 make_int3(int x, int y, int z)
+{
+    int3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline uint3 make_uint3(unsigned int x, unsigned int y, unsigned int z)
+{
+    uint3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline int4 make_int4(int x, int y, int z, int w)
+{
+    int4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+static inline uint4 make_uint4(unsigned int x, unsigned int y, unsigned int z, unsigned int w)
+{
+    uint4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+static inline long1 make_long1(long int x)
+{
+    long1 t; t.x = x; return t;
+}
+
+static inline ulong1 make_ulong1(unsigned long int x)
+{
+    ulong1 t; t.x = x; return t;
+}
+
+static inline long2 make_long2(long int x, long int y)
+{
+    long2 t; t.x = x; t.y = y; return t;
+}
+
+static inline ulong2 make_ulong2(unsigned long int x, unsigned long int y)
+{
+    ulong2 t; t.x = x; t.y = y; return t;
+}
+
+static inline long3 make_long3(long int x, long int y, long int z)
+{
+    long3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline ulong3 make_ulong3(unsigned long int x, unsigned long int y, unsigned long int z)
+{
+    ulong3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline long4 make_long4(long int x, long int y, long int z, long int w)
+{
+    long4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+static inline ulong4 make_ulong4(unsigned long int x, unsigned long int y, unsigned long int z, unsigned long int w)
+{
+    ulong4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+static inline float1 make_float1(float x)
+{
+    float1 t; t.x = x; return t;
+}
+
+static inline float2 make_float2(float x, float y)
+{
+    float2 t; t.x = x; t.y = y; return t;
+}
+
+static inline float3 make_float3(float x, float y, float z)
+{
+    float3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline float4 make_float4(float x, float y, float z, float w)
+{
+    float4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+static inline longlong1 make_longlong1(long long int x)
+{
+    longlong1 t; t.x = x; return t;
+}
+
+static inline ulonglong1 make_ulonglong1(unsigned long long int x)
+{
+    ulonglong1 t; t.x = x; return t;
+}
+
+static inline longlong2 make_longlong2(long long int x, long long int y)
+{
+    longlong2 t; t.x = x; t.y = y; return t;
+}
+
+static inline ulonglong2 make_ulonglong2(unsigned long long int x, unsigned long long int y)
+{
+    ulonglong2 t; t.x = x; t.y = y; return t;
+}
+
+static inline longlong3 make_longlong3(long long int x, long long int y, long long int z)
+{
+    longlong3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline ulonglong3 make_ulonglong3(unsigned long long int x, unsigned long long int y, unsigned long long int z)
+{
+    ulonglong3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline longlong4 make_longlong4(long long int x, long long int y, long long int z, long long int w)
+{
+    longlong4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+static inline ulonglong4 make_ulonglong4(unsigned long long int x, unsigned long long int y, unsigned long long int z, unsigned long long int w)
+{
+    ulonglong4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+static inline double1 make_double1(double x)
+{
+    double1 t; t.x = x; return t;
+}
+
+static inline double2 make_double2(double x, double y)
+{
+    double2 t; t.x = x; t.y = y; return t;
+}
+
+static inline double3 make_double3(double x, double y, double z)
+{
+    double3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+
+static inline double4 make_double4(double x, double y, double z, double w)
+{
+    double4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
 #endif // VISIONCORE_HAVE_CUDA
 
-#ifndef __CUDACC__
-
+#ifndef VISIONCORE_CUDA_COMPILER
 inline int max(int a, int b)
 {
     return a > b ? a : b;
@@ -769,7 +665,7 @@ inline float rsqrtf(float x)
 {
     return 1.0f / sqrtf(x);
 }
-#endif // __CUDACC__
+#endif // VISIONCORE_CUDA_COMPILER
 
 // lerp
 EIGEN_DEVICE_FUNC inline float lerp(float a, float b, float t)
@@ -1556,4 +1452,4 @@ EIGEN_DEVICE_FUNC inline uint3 clamp(uint3 v, uint3 a, uint3 b)
     return make_uint3(clamp(v.x, a.x, b.x), clamp(v.y, a.y, b.y), clamp(v.z, a.z, b.z));
 }
 
-#endif // VISIONCORE_CUDA_TYPES_HPP
+#endif // VISIONCORE_HELPERSCUDA_HPP

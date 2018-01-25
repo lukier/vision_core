@@ -34,11 +34,8 @@
  */
 
 #include <VisionCore/Platform.hpp>
-#include <VisionCore/CUDATypes.hpp>
 #include <VisionCore/CUDAException.hpp>
 #include <VisionCore/MemoryPolicy.hpp>
-#include <VisionCore/SophusInterpolations.hpp>
-#include <VisionCore/EigenSerializers.hpp>
 #include <VisionCore/LaunchUtils.hpp>
 
 #include <VisionCore/Buffers/Buffer1D.hpp>

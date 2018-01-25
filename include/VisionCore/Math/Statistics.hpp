@@ -80,8 +80,8 @@ public:
     EIGEN_DEVICE_FUNC inline void reset()
     {
         cnt = 0;
-        minV = numeric_limits<T>::max();
-        maxV = -numeric_limits<T>::max();
+        minV = std::numeric_limits<T>::max();
+        maxV = -std::numeric_limits<T>::max();
         sumX = sumXX = T(0.0);
     }
     
@@ -177,8 +177,8 @@ public:
     EIGEN_DEVICE_FUNC inline void reset()
     {
         cnt = 0;
-        minV = VectorType::Constant(numeric_limits<Scalar>::max());
-        maxV = VectorType::Constant(-numeric_limits<Scalar>::max());
+        minV = VectorType::Constant(std::numeric_limits<Scalar>::max());
+        maxV = VectorType::Constant(-std::numeric_limits<Scalar>::max());
         sumX = VectorType::Zero();
         sumXX = VectorType::Zero();
     }
@@ -274,8 +274,8 @@ public:
     EIGEN_DEVICE_FUNC inline void reset()
     {
         cnt = 0;
-        minV = VectorType::Constant(numeric_limits<Scalar>::max());
-        maxV = VectorType::Constant(-numeric_limits<Scalar>::max());
+        minV = VectorType::Constant(std::numeric_limits<Scalar>::max());
+        maxV = VectorType::Constant(-std::numeric_limits<Scalar>::max());
         sumX = VectorType::Zero();
         sumXX = CovarianceType::Zero();
     }

@@ -37,7 +37,6 @@
 #define VISIONCORE_MATH_ANGLES_HPP
 
 #include <VisionCore/Platform.hpp>
-#include <VisionCore/EigenMissingBits.hpp>
 #include <VisionCore/Math/Statistics.hpp>
 #include <sophus/so3.hpp>
 

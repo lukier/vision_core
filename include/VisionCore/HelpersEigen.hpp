@@ -1,6 +1,6 @@
 /**
  * ****************************************************************************
- * Copyright (c) 2015, Robert Lukierski.
+ * Copyright (c) 2017, Robert Lukierski.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,30 +29,63 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * ****************************************************************************
- * Serialization of Eigen into Cereal.
+ * Bits and bobs missing from Eigen.
  * ****************************************************************************
  */
 
-#ifndef VISIONCORE_EIGEN_SERIALIZERS_HPP
-#define VISIONCORE_EIGEN_SERIALIZERS_HPP
-
-#include <VisionCore/Platform.hpp>
+#ifndef VISIONCORE_EIGEN_MISSING_BITS_HPP
+#define VISIONCORE_EIGEN_MISSING_BITS_HPP
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <unsupported/Eigen/AutoDiff>
 
-#include <sophus/so2.hpp>
-#include <sophus/so3.hpp>
-#include <sophus/se2.hpp>
-#include <sophus/se3.hpp>
-#include <sophus/rxso3.hpp>
-#include <sophus/sim3.hpp>
 
-#ifdef VISIONCORE_HAVE_CEREAL
-namespace Eigen
+namespace Eigen 
 {
- 
+  
+namespace numext
+{
+  
+template<typename T>
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+T atan2(const T& y, const T &x) 
+{
+    EIGEN_USING_STD_MATH(atan2);
+    return atan2(y,x);
+}
+
+#ifdef VISIONCORE_CUDA_COMPILER
+template<> EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+float atan2(const float& y, const float &x) { return ::atan2f(y,x); }
+
+template<> EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+double atan2(const double& y, const double &x) { return ::atan2(y,x); }
+#endif // VISIONCORE_CUDA_COMPILER
+  
+}
+
+template<typename DerType> 
+inline const Eigen::AutoDiffScalar<EIGEN_EXPR_BINARYOP_SCALAR_RETURN_TYPE(typename Eigen::internal::remove_all<DerType>::type, 
+                                                                          typename Eigen::internal::traits<typename Eigen::internal::remove_all<DerType>::type>::Scalar, product)> 
+atan(const Eigen::AutoDiffScalar<DerType>& x) 
+{ 
+    using namespace Eigen; 
+    EIGEN_UNUSED typedef typename Eigen::internal::traits<typename Eigen::internal::remove_all<DerType>::type>::Scalar Scalar; 
+    using numext::atan;
+    return Eigen::MakeAutoDiffScalar(atan(x.value()),x.derivatives() * ( Scalar(1) / (Scalar(1) + x.value() * x.value()) ));
+}
+
+// let's put ostreams here
+template <typename _Scalar, int _AmbientDim, int _Options>
+inline std::ostream& operator<<(std::ostream& os, const Hyperplane<_Scalar,_AmbientDim,_Options>& p)
+{
+    os << "Hyperplane(" << p.normal() << " , " << p.offset() << ")";
+    return os;
+}
+
+#ifdef VISIONCORE_ENABLE_CEREAL
 /**
  * Matrix
  */ 
@@ -149,160 +182,9 @@ void save(Archive & archive, Eigen::AutoDiffScalar<ADT> const & m, std::uint32_t
     archive(cereal::make_nvp("Value", m.value()));
     archive(cereal::make_nvp("Deriviatives", m.derivatives()));
 }
-    
-}
 
-namespace Sophus
-{
-
-/**
- * SO2
- */    
-template<typename Archive, typename Derived>
-void load(Archive & archive, SO2Base<Derived>& m, std::uint32_t const version)
-{
-    typename SO2Base<Derived>::Point cplx;
-    archive(cplx);
-    m.setComplex(cplx);
-}
-  
-template<typename Archive, typename Derived>
-void save(Archive & archive, SO2Base<Derived> const & m, std::uint32_t const version)
-{
-    archive(m.unit_complex());
-}
-
-/**
- * SO3
- */    
-template<typename Archive, typename Derived>
-void load(Archive & archive, SO3Base<Derived>& m, std::uint32_t const version)
-{
-    Eigen::Quaternion<typename SO3Base<Derived>::Scalar> quaternion;
-    archive(cereal::make_nvp("Quaternion", quaternion));
-    m.setQuaternion(quaternion);
-}
-  
-template<typename Archive, typename Derived>
-void save(Archive & archive, SO3Base<Derived> const & m, std::uint32_t const version)
-{
-    archive(cereal::make_nvp("Quaternion", m.unit_quaternion()));
-}
-
-/**
- * SE2
- */    
-template<typename Archive, typename Derived>
-void load(Archive & archive, SE2Base<Derived>& m, std::uint32_t const version)
-{
-    archive(cereal::make_nvp("Translation", m.translation()));
-    archive(cereal::make_nvp("Rotation", m.so2()));
-}
-  
-template<typename Archive, typename Derived>
-void save(Archive & archive, SE2Base<Derived> const & m, std::uint32_t const version)
-{
-    archive(cereal::make_nvp("Translation", m.translation()));
-    archive(cereal::make_nvp("Rotation", m.so2()));
-}
-
-/**
- * SE3
- */    
-template<typename Archive, typename Derived>
-void load(Archive & archive, SE3Base<Derived>& m, std::uint32_t const version)
-{
-    archive(cereal::make_nvp("Translation", m.translation()));
-    archive(cereal::make_nvp("Rotation", m.so3()));
-}
-  
-template<typename Archive, typename Derived>
-void save(Archive & archive, SE3Base<Derived> const & m, std::uint32_t const version)
-{
-    archive(cereal::make_nvp("Translation", m.translation()));
-    archive(cereal::make_nvp("Rotation", m.so3()));
-}
-
-/**
- * RxSO3
- */    
-template<typename Archive, typename Derived>
-void load(Archive & archive, RxSO3Base<Derived>& m, std::uint32_t const version)
-{
-    archive(cereal::make_nvp("Quaternion", m.quaternion()));
-}
-  
-template<typename Archive, typename Derived>
-void save(Archive & archive, RxSO3Base<Derived> const & m, std::uint32_t const version)
-{
-    archive(cereal::make_nvp("Quaternion", m.quaternion()));
-}
-
-/**
- * Sim3
- */    
-template<typename Archive, typename Derived>
-void load(Archive & archive, Sim3Base<Derived>& m, std::uint32_t const version)
-{
-    archive(cereal::make_nvp("Translation", m.translation()));
-    archive(cereal::make_nvp("Rotation", m.rxso3()));
-}
-  
-template<typename Archive, typename Derived>
-void save(Archive & archive, Sim3Base<Derived> const & m, std::uint32_t const version)
-{
-    archive(cereal::make_nvp("Translation", m.translation()));
-    archive(cereal::make_nvp("Rotation", m.rxso3()));
-}
+#endif // VISIONCORE_ENABLE_CEREAL
 
 }
 
-#endif // VISIONCORE_HAVE_CEREAL
-
-// let's put ostreams here
-namespace Sophus
-{
-
-template<typename Derived>
-inline std::ostream& operator<<(std::ostream& os, const SO2Base<Derived>& p)
-{
-    os << "(" << p.log() << ")"; 
-    return os;
-}
-
-template<typename Derived>
-inline std::ostream& operator<<(std::ostream& os, const SO3Base<Derived>& p)
-{
-    os << "(" << p.unit_quaternion().x() << "," << p.unit_quaternion().y() << "," << p.unit_quaternion().z() << "|" << p.unit_quaternion().w() << ")"; 
-    return os;
-}
-
-template<typename Derived>
-inline std::ostream& operator<<(std::ostream& os, const SE2Base<Derived>& p)
-{
-    os << "[t = " << p.translation()(0) << "," << p.translation()(1) << " | r = " << p.so2() << ")";
-    return os;
-}
-
-template<typename Derived>
-inline std::ostream& operator<<(std::ostream& os, const SE3Base<Derived>& p)
-{
-    os << "[t = " << p.translation()(0) << "," << p.translation()(1) << "," << p.translation()(2) << " | r = " << p.so3() << ")";
-    return os;
-}
-
-}
-
-namespace Eigen
-{
-
-template <typename _Scalar, int _AmbientDim, int _Options>
-inline std::ostream& operator<<(std::ostream& os, const Hyperplane<_Scalar,_AmbientDim,_Options>& p)
-{
-    os << "Hyperplane(" << p.normal() << " , " << p.offset() << ")";
-    return os;
-}
-
-}
-
-#endif // VISIONCORE_EIGEN_SERIALIZERS_HPP
+#endif // VISIONCORE_EIGEN_MISSING_BITS_HPP

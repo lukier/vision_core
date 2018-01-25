@@ -1,7 +1,7 @@
 /**
  * 
  * Core Libraries.
- * Sophus Interpolations.
+ * Sophus Interpolations & other missing bits.
  * 
  * Copyright (c) Robert Lukierski 2016. All rights reserved.
  * Author: Robert Lukierski.
@@ -9,8 +9,8 @@
  */
 
 
-#ifndef VISIONCORE_SOPHUS_INTERPOLATIONS_HPP
-#define VISIONCORE_SOPHUS_INTERPOLATIONS_HPP
+#ifndef VISIONCORE_SOPHUS_MISSINGBITS_HPP
+#define VISIONCORE_SOPHUS_MISSINGBITS_HPP
 
 #include <VisionCore/Platform.hpp>
 
@@ -19,10 +19,9 @@
 
 #include <sophus/so2.hpp>
 #include <sophus/so3.hpp>
-#include <sophus/rxso3.hpp>
-
 #include <sophus/se2.hpp>
 #include <sophus/se3.hpp>
+#include <sophus/rxso3.hpp>
 #include <sophus/sim3.hpp>
 
 /**
@@ -174,7 +173,141 @@ EIGEN_DEVICE_FUNC static inline Sophus::SE3<T> interpolateB4Spline(const Sophus:
     
     return Sophus::SE3<T>(rot_final, tr_final);
 }
-    
+
+// let's put ostreams here
+template<typename Derived>
+inline std::ostream& operator<<(std::ostream& os, const SO2Base<Derived>& p)
+{
+    os << "(" << p.log() << ")"; 
+    return os;
 }
 
-#endif // SOPHUS_INTERPOLATIONS_HPP
+template<typename Derived>
+inline std::ostream& operator<<(std::ostream& os, const SO3Base<Derived>& p)
+{
+    os << "(" << p.unit_quaternion().x() << "," << p.unit_quaternion().y() << "," 
+       << p.unit_quaternion().z() << "|" << p.unit_quaternion().w() << ")"; 
+    return os;
+}
+
+template<typename Derived>
+inline std::ostream& operator<<(std::ostream& os, const SE2Base<Derived>& p)
+{
+    os << "[t = " << p.translation()(0) << "," << p.translation()(1) << " | r = " << p.so2() << ")";
+    return os;
+}
+
+template<typename Derived>
+inline std::ostream& operator<<(std::ostream& os, const SE3Base<Derived>& p)
+{
+    os << "[t = " << p.translation()(0) << "," << p.translation()(1) << "," << p.translation()(2) << " | r = " << p.so3() << ")";
+    return os;
+}
+
+#ifdef VISIONCORE_ENABLE_CEREAL
+
+/**
+ * SO2
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, SO2Base<Derived>& m, std::uint32_t const version)
+{
+    typename SO2Base<Derived>::Point cplx;
+    archive(cplx);
+    m.setComplex(cplx);
+}
+
+template<typename Archive, typename Derived>
+void save(Archive & archive, SO2Base<Derived> const & m, std::uint32_t const version)
+{
+    archive(m.unit_complex());
+}
+
+/**
+ * SO3
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, SO3Base<Derived>& m, std::uint32_t const version)
+{
+    Eigen::Quaternion<typename SO3Base<Derived>::Scalar> quaternion;
+    archive(cereal::make_nvp("Quaternion", quaternion));
+    m.setQuaternion(quaternion);
+}
+
+template<typename Archive, typename Derived>
+void save(Archive & archive, SO3Base<Derived> const & m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Quaternion", m.unit_quaternion()));
+}
+
+/**
+ * SE2
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, SE2Base<Derived>& m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.so2()));
+}
+
+template<typename Archive, typename Derived>
+void save(Archive & archive, SE2Base<Derived> const & m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.so2()));
+}
+
+/**
+ * SE3
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, SE3Base<Derived>& m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.so3()));
+}
+
+template<typename Archive, typename Derived>
+void save(Archive & archive, SE3Base<Derived> const & m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.so3()));
+}
+
+/**
+ * RxSO3
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, RxSO3Base<Derived>& m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Quaternion", m.quaternion()));
+}
+
+template<typename Archive, typename Derived>
+void save(Archive & archive, RxSO3Base<Derived> const & m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Quaternion", m.quaternion()));
+}
+
+/**
+ * Sim3
+ */    
+template<typename Archive, typename Derived>
+void load(Archive & archive, Sim3Base<Derived>& m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.rxso3()));
+}
+
+template<typename Archive, typename Derived>
+void save(Archive & archive, Sim3Base<Derived> const & m, std::uint32_t const version)
+{
+    archive(cereal::make_nvp("Translation", m.translation()));
+    archive(cereal::make_nvp("Rotation", m.rxso3()));
+}
+
+#endif // VISIONCORE_ENABLE_CEREAL
+
+}
+
+#endif // VISIONCORE_SOPHUS_MISSINGBITS_HPP

@@ -242,10 +242,10 @@ public:
     
     EIGEN_DEVICE_FUNC inline Rectangle() 
     {
-        coeff_nonconst() << vc::numeric_limits<Scalar>::max(),
-                            vc::numeric_limits<Scalar>::max(),
-                            vc::numeric_limits<Scalar>::min(),
-                            vc::numeric_limits<Scalar>::min();
+        coeff_nonconst() << std::numeric_limits<Scalar>::max(),
+                            std::numeric_limits<Scalar>::max(),
+                            std::numeric_limits<Scalar>::min(),
+                            std::numeric_limits<Scalar>::min();
     }
     
     EIGEN_DEVICE_FUNC inline Rectangle(const CoeffType& ct) 

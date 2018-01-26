@@ -430,7 +430,9 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
     INCLUDES DESTINATION include)
-install(FILES ${HEADERS} "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_export.h" DESTINATION include)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_export.h" DESTINATION include/VisionCore)
+install(DIRECTORY include/VisionCore DESTINATION include)
+
 
 # ------------------------------------------------------------------------------
 # Installation - generate version file

@@ -139,7 +139,8 @@ public:
     EIGEN_DEVICE_FUNC inline const BaseType& buffer() const { return (const BaseType&)*this; }
     EIGEN_DEVICE_FUNC inline BaseType& buffer() { return (BaseType&)*this; }
 
-    EIGEN_DEVICE_FUNC inline T getBilinear(float u, float v) const
+    template<typename TR>
+    EIGEN_DEVICE_FUNC inline TR getBilinear(float u, float v) const
     {
         const float ix = floorf(u);
         const float iy = floorf(v);

@@ -97,12 +97,12 @@ public:
     inline Texture2DBase();
     
     template<typename T>
-    inline void upload(const Buffer2DView<T,TargetHost>& buf, GLenum data_format = GL_LUMINANCE);
-    inline void upload(const GLvoid* data, GLenum data_format = GL_LUMINANCE, GLenum data_type = GL_FLOAT);
+    inline void upload(const Buffer2DView<T,TargetHost>& buf, GLenum data_format = vc::wrapgl::internal::GLTextureFormats<T>::Format);
+    inline void upload(const GLvoid* data, GLenum data_format = GL_RED, GLenum data_type = GL_FLOAT);
     
     template<typename T>
-    inline void download(Buffer2DView<T,TargetHost>& buf, GLenum data_format = GL_LUMINANCE);
-    inline void download(GLvoid* data, GLenum data_format = GL_LUMINANCE, GLenum data_type = GL_FLOAT);
+    inline void download(Buffer2DView<T,TargetHost>& buf, GLenum data_format = vc::wrapgl::internal::GLTextureFormats<T>::Format);
+    inline void download(GLvoid* data, GLenum data_format = GL_RED, GLenum data_type = GL_FLOAT);
     
     inline void setSamplingLinear();
     inline void setSamplingNearestNeighbour();

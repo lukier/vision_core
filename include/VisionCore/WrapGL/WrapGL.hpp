@@ -45,5 +45,6 @@
 #include <VisionCore/WrapGL/WrapGLSampler.hpp>
 #include <VisionCore/WrapGL/WrapGLQuery.hpp>
 #include <VisionCore/WrapGL/WrapGLTransformFeedback.hpp>
+#include <VisionCore/WrapGL/WrapGLPixelProcessor.hpp>
 
 #endif // VISIONCORE_WRAPGL_HPP

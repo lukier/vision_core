@@ -79,6 +79,8 @@ namespace wrapgl
 class Program
 {
 public:    
+    typedef std::vector<std::string> IncPathVecT;
+    typedef std::pair<bool,std::string> CompileRetT;
     typedef ScopeBinder<Program> Binder;
     
     enum class Type : GLuint
@@ -94,17 +96,15 @@ public:
     inline Program();
     virtual ~Program();
     
-    inline std::pair<bool,std::string> addShaderFromSourceCode(Type type, const std::string& source, 
-                                                               const std::vector<std::string>& inc_path = std::vector<std::string>());
-    inline std::pair<bool,std::string> addShaderFromSourceFile(Type type, const std::string& fn,
-                                                               const std::vector<std::string>& inc_path = std::vector<std::string>());
+    inline CompileRetT addShaderFromSourceCode(Type type, const std::string& source, const IncPathVecT& inc_path = IncPathVecT());
+    inline CompileRetT addShaderFromSourceFile(Type type, const std::string& fn, const IncPathVecT& inc_path = IncPathVecT());
     inline void removeAllShaders();
     
-    inline std::pair<bool,std::string> link();
+    inline CompileRetT link();
     inline bool isLinked() const;
     inline bool isValid() const;
     
-    inline std::pair<bool,std::string> validate();
+    inline CompileRetT validate();
         
     inline void bind() const;
     inline void unbind() const;
@@ -284,9 +284,9 @@ public:
     inline void bindUniformBuffer(const std::string& name, GLuint uniformBlockBinding);
     
 private:
-    inline std::pair<bool,std::string> addPreprocessedShader(Type type, const std::string& source);
+    inline CompileRetT addPreprocessedShader(Type type, const std::string& source);
     inline bool parseShader(std::istream& buf_in, std::ostream& buf_out,
-                            const std::vector<std::string>& inc_path, 
+                            const IncPathVecT& inc_path, 
                             std::string& errout);
     
     GLuint progid;

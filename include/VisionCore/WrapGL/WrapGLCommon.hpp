@@ -100,8 +100,11 @@ namespace internal
         return GLTypeToSize[(int)dtype - (int)GL_BYTE];
     }
     
-    template<typename ScalarT> struct GLTypeTraits;
+    template<typename ScalarT> struct GLIntegerTypeTraits { static constexpr bool IsInteger = true; };
+    template<> struct GLIntegerTypeTraits<float> { static constexpr bool IsInteger = false; };
+    template<> struct GLIntegerTypeTraits<double> { static constexpr bool IsInteger = false; };
     
+    template<typename ScalarT> struct GLTypeTraits;
     template<> struct GLTypeTraits<int8_t> { static constexpr GLenum opengl_data_type = GL_BYTE; };
     template<> struct GLTypeTraits<uint8_t> { static constexpr GLenum opengl_data_type = GL_UNSIGNED_BYTE; };
     template<> struct GLTypeTraits<int16_t> { static constexpr GLenum opengl_data_type = GL_SHORT; };
@@ -111,12 +114,73 @@ namespace internal
     template<> struct GLTypeTraits<float> { static constexpr GLenum opengl_data_type = GL_FLOAT; };
     template<> struct GLTypeTraits<double> { static constexpr GLenum opengl_data_type = GL_DOUBLE; };
     
-    template<int chan> struct GLChannelTraits;
+    template<int chan, bool isint = false> struct GLChannelTraits;
+    template<> struct GLChannelTraits<1,false> { static constexpr GLenum opengl_data_format = GL_RED; };
+    template<> struct GLChannelTraits<2,false> { static constexpr GLenum opengl_data_format = GL_RG; };
+    template<> struct GLChannelTraits<3,false> { static constexpr GLenum opengl_data_format = GL_RGB; };
+    template<> struct GLChannelTraits<4,false> { static constexpr GLenum opengl_data_format = GL_RGBA; };
+    template<> struct GLChannelTraits<1,true> { static constexpr GLenum opengl_data_format = GL_RED_INTEGER; };
+    template<> struct GLChannelTraits<2,true> { static constexpr GLenum opengl_data_format = GL_RG_INTEGER; };
+    template<> struct GLChannelTraits<3,true> { static constexpr GLenum opengl_data_format = GL_RGB_INTEGER; };
+    template<> struct GLChannelTraits<4,true> { static constexpr GLenum opengl_data_format = GL_RGBA_INTEGER; };
     
-    template<> struct GLChannelTraits<1> { static constexpr GLenum opengl_data_format = GL_LUMINANCE; };
-    template<> struct GLChannelTraits<2> { static constexpr GLenum opengl_data_format = GL_RG; };
-    template<> struct GLChannelTraits<3> { static constexpr GLenum opengl_data_format = GL_RGB; };
-    template<> struct GLChannelTraits<4> { static constexpr GLenum opengl_data_format = GL_RGBA; };
+    template<typename ScalarT, bool isint = false> struct GLInternalFormatTraits;
+    template<> struct GLInternalFormatTraits<char,false>            { static constexpr GLint int_fmt = GL_R8; };
+    template<> struct GLInternalFormatTraits<unsigned char,false>   { static constexpr GLint int_fmt = GL_R8; };
+    template<> struct GLInternalFormatTraits<short,false>           { static constexpr GLint int_fmt = GL_R16; };
+    template<> struct GLInternalFormatTraits<unsigned short,false>  { static constexpr GLint int_fmt = GL_R16; };
+    template<> struct GLInternalFormatTraits<char1,false>           { static constexpr GLint int_fmt = GL_R8; };
+    template<> struct GLInternalFormatTraits<uchar1,false>          { static constexpr GLint int_fmt = GL_R8; };
+    template<> struct GLInternalFormatTraits<char2,false>           { static constexpr GLint int_fmt = GL_RG8; };
+    template<> struct GLInternalFormatTraits<uchar2,false>          { static constexpr GLint int_fmt = GL_RG8; };
+    template<> struct GLInternalFormatTraits<char3,false>           { static constexpr GLint int_fmt = GL_RGB8; };
+    template<> struct GLInternalFormatTraits<uchar3,false>          { static constexpr GLint int_fmt = GL_RGB8; };
+    template<> struct GLInternalFormatTraits<char4,false>           { static constexpr GLint int_fmt = GL_RGBA8; };
+    template<> struct GLInternalFormatTraits<uchar4,false>          { static constexpr GLint int_fmt = GL_RGBA8; };
+    template<> struct GLInternalFormatTraits<short1,false>          { static constexpr GLint int_fmt = GL_R16; };
+    template<> struct GLInternalFormatTraits<ushort1,false>         { static constexpr GLint int_fmt = GL_R16; };
+    template<> struct GLInternalFormatTraits<short2,false>          { static constexpr GLint int_fmt = GL_RG16; };
+    template<> struct GLInternalFormatTraits<ushort2,false>         { static constexpr GLint int_fmt = GL_RG16; };
+    template<> struct GLInternalFormatTraits<short3,false>          { static constexpr GLint int_fmt = GL_RGB16; };
+    template<> struct GLInternalFormatTraits<ushort3,false>         { static constexpr GLint int_fmt = GL_RGB16; };
+    template<> struct GLInternalFormatTraits<short4,false>          { static constexpr GLint int_fmt = GL_RGBA16; };
+    template<> struct GLInternalFormatTraits<ushort4,false>         { static constexpr GLint int_fmt = GL_RGBA16; };
+    template<> struct GLInternalFormatTraits<float,false>           { static constexpr GLint int_fmt = GL_R32F; };
+    template<> struct GLInternalFormatTraits<float1,false>          { static constexpr GLint int_fmt = GL_R32F; };
+    template<> struct GLInternalFormatTraits<float2,false>          { static constexpr GLint int_fmt = GL_RG32F; };
+    template<> struct GLInternalFormatTraits<float3,false>          { static constexpr GLint int_fmt = GL_RGB32F; };
+    template<> struct GLInternalFormatTraits<float4,false>          { static constexpr GLint int_fmt = GL_RGBA32F; };
+    
+    template<> struct GLInternalFormatTraits<char,true>             { static constexpr GLint int_fmt = GL_R8I; };
+    template<> struct GLInternalFormatTraits<unsigned char,true>    { static constexpr GLint int_fmt = GL_R8UI; };
+    template<> struct GLInternalFormatTraits<short,true>            { static constexpr GLint int_fmt = GL_R16I; };
+    template<> struct GLInternalFormatTraits<unsigned short,true>   { static constexpr GLint int_fmt = GL_R16UI; };
+    template<> struct GLInternalFormatTraits<char1,true>            { static constexpr GLint int_fmt = GL_R8I; };
+    template<> struct GLInternalFormatTraits<uchar1,true>           { static constexpr GLint int_fmt = GL_R8UI; };
+    template<> struct GLInternalFormatTraits<char2,true>            { static constexpr GLint int_fmt = GL_RG8I; };
+    template<> struct GLInternalFormatTraits<uchar2,true>           { static constexpr GLint int_fmt = GL_RG8UI; };
+    template<> struct GLInternalFormatTraits<char3,true>            { static constexpr GLint int_fmt = GL_RGB8I; };
+    template<> struct GLInternalFormatTraits<uchar3,true>           { static constexpr GLint int_fmt = GL_RGB8UI; };
+    template<> struct GLInternalFormatTraits<char4,true>            { static constexpr GLint int_fmt = GL_RGBA8I; };
+    template<> struct GLInternalFormatTraits<uchar4,true>           { static constexpr GLint int_fmt = GL_RGBA8UI; };
+    template<> struct GLInternalFormatTraits<short1,true>           { static constexpr GLint int_fmt = GL_R16I; };
+    template<> struct GLInternalFormatTraits<ushort1,true>          { static constexpr GLint int_fmt = GL_R16UI; };
+    template<> struct GLInternalFormatTraits<short2,true>           { static constexpr GLint int_fmt = GL_RG16I; };
+    template<> struct GLInternalFormatTraits<ushort2,true>          { static constexpr GLint int_fmt = GL_RG16UI; };
+    template<> struct GLInternalFormatTraits<short3,true>           { static constexpr GLint int_fmt = GL_RGB16I; };
+    template<> struct GLInternalFormatTraits<ushort3,true>          { static constexpr GLint int_fmt = GL_RGB16UI; };
+    template<> struct GLInternalFormatTraits<short4,true>           { static constexpr GLint int_fmt = GL_RGBA16I; };
+    template<> struct GLInternalFormatTraits<ushort4,true>          { static constexpr GLint int_fmt = GL_RGBA16UI; };
+    
+    template<typename T>
+    struct GLTextureFormats
+    {
+        typedef vc::type_traits<T> TT;
+        static constexpr bool   IsInteger = GLIntegerTypeTraits<typename TT::ChannelType>::IsInteger;
+        static constexpr GLint  InternalFormat = GLInternalFormatTraits<T,IsInteger>::int_fmt;
+        static constexpr GLenum Format = GLChannelTraits<TT::ChannelCount, IsInteger>::opengl_data_format;
+        static constexpr GLenum Type = GLTypeTraits<typename TT::ChannelType>::opengl_data_type;
+    };
     
     template<typename T>
     struct OpenGLGetter;
@@ -239,25 +303,25 @@ struct Debug
 class OpenGLException : public std::exception
 {
 public:
-    inline OpenGLException(GLenum err = GL_NO_ERROR, const char* fn = nullptr, int line = 0)
-        : errcode(err), src_fn(fn), src_line(line)
+    inline OpenGLException(GLenum err = GL_NO_ERROR, const char* fn = nullptr, int line = 0) : errcode(err)
     { 
-        
+        std::stringstream ss;
+        ss << "OpenGLException: " << (int)err << " / " << internal::getErrorString(err) 
+        << " at " << fn << ":" << line;  
+        msg = ss.str();
     }
     
     virtual ~OpenGLException() throw() { }
+    
     virtual const char* what() const throw()  
     { 
-        std::stringstream ss;
-        ss << "OpenGLException: " << (int)errcode << " / " << internal::getErrorString(errcode) 
-           << " at " << src_fn << ":" << src_line;
-        return ss.str().c_str(); 
+        return msg.c_str(); 
     }
+    
     GLenum getError() const { return errcode; }
 private:
     GLenum errcode;
-    const char* src_fn;
-    int src_line;
+    std::string msg;
 };
 
 namespace internal

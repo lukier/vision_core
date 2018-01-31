@@ -49,7 +49,7 @@ vc::wrapgl::Program::~Program()
     destroy();
 }
 
-std::pair<bool,std::string> vc::wrapgl::Program::addPreprocessedShader(Type type, const std::string& source)
+vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addPreprocessedShader(Type type, const std::string& source)
 {
     bool was_ok = false;
     std::string err_log;
@@ -88,8 +88,8 @@ std::pair<bool,std::string> vc::wrapgl::Program::addPreprocessedShader(Type type
     return std::make_pair(was_ok,err_log);
 }
 
-std::pair<bool,std::string> vc::wrapgl::Program::addShaderFromSourceCode(Type type, const std::string& source, 
-                                                                         const std::vector<std::string>& inc_path)
+vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addShaderFromSourceCode(Type type, const std::string& source, 
+                                                                              const IncPathVecT& inc_path)
 {
     std::stringstream buf_in(source);
     std::stringstream buf_out;
@@ -104,8 +104,8 @@ std::pair<bool,std::string> vc::wrapgl::Program::addShaderFromSourceCode(Type ty
     return addPreprocessedShader(type, buf_out.str());
 }
 
-std::pair<bool,std::string> vc::wrapgl::Program::addShaderFromSourceFile(Type type, const std::string& fn, 
-                                                                         const std::vector<std::string>& inc_path)
+vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addShaderFromSourceFile(Type type, const std::string& fn, 
+                                                                              const IncPathVecT& inc_path)
 {
     std::ifstream ifs(fn);
     if(ifs)
@@ -131,7 +131,7 @@ std::pair<bool,std::string> vc::wrapgl::Program::addShaderFromSourceFile(Type ty
 }
 
 bool vc::wrapgl::Program::parseShader(std::istream& buf_in, std::ostream& buf_out,
-                                      const std::vector<std::string>& inc_path, std::string& errout)
+                                      const IncPathVecT& inc_path, std::string& errout)
 {
     std::string line;
     
@@ -199,7 +199,7 @@ void vc::wrapgl::Program::removeAllShaders()
     }
 }
 
-std::pair<bool,std::string> vc::wrapgl::Program::link()
+vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::link()
 {
     bool was_ok = false;
     std::string err_log;
@@ -238,7 +238,7 @@ bool vc::wrapgl::Program::isValid() const
     return progid != 0; 
 }
 
-std::pair<bool,std::string> vc::wrapgl::Program::validate()
+vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::validate()
 {
     bool was_ok = false;
     std::string err_log;

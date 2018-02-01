@@ -33,7 +33,7 @@
 
 #include <GetEigenConfig.hpp>
 
-void GetEigenConfigCPU(float* data)
+void GetEigenConfigCPU(float* data, const Sophus::SE3f& v)
 {
-    getEigenConfiguration(data);
+    getEigenConfiguration(data,v);
 }

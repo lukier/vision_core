@@ -60,7 +60,7 @@ class Test_EigenConfig: public ::testing::Test
 public:   
     Test_EigenConfig()
     {
-        
+        sop = Sophus::SE3f(Sophus::SO3f(Eigen::Quaternionf(1.0f,2.0f,3.0f,4.0f)), Eigen::Vector3f(5.0f,6.0f,7.0f));
     }
     
     virtual ~Test_EigenConfig()
@@ -95,34 +95,43 @@ public:
         LOG(INFO) << "EIGEN_VECTORIZE_CUDA = " << data[22];
         LOG(INFO) << "CUDACC_VS_CUDA_ARCH = " << data[23];
         LOG(INFO) << "EIGEN_CUDA_MAX_ALIGN_BYTES = " << data[24];
+        LOG(INFO) << "Sophus::SE3f::q::x = " << data[25];
+        LOG(INFO) << "Sophus::SE3f::q::y = " << data[26];
+        LOG(INFO) << "Sophus::SE3f::q::z = " << data[27];
+        LOG(INFO) << "Sophus::SE3f::q::w = " << data[28];
+        LOG(INFO) << "Sophus::SE3f::t::X = " << data[29];
+        LOG(INFO) << "Sophus::SE3f::t::Y = " << data[30];
+        LOG(INFO) << "Sophus::SE3f::t::Z = " << data[31];
     }
+    
+    Sophus::SE3f sop;
 };
 
-extern void GetEigenConfigCPU(float* data);
+extern void GetEigenConfigCPU(float* data, const Sophus::SE3f& v);
 
 TEST_F(Test_EigenConfig, CPU)
 {    
     float buf[MaxEigenConfigurationCount];
-    GetEigenConfigCPU(buf);
+    GetEigenConfigCPU(buf,sop);
     reportEigen(buf);
     
 }
 
 #ifdef VISIONCORE_HAVE_CUDA
-extern void GetEigenConfigCUDAHost(float* data);
-extern void GetEigenConfigCUDADevice(float* data);
+extern void GetEigenConfigCUDAHost(float* data, const Sophus::SE3f& v);
+extern void GetEigenConfigCUDADevice(float* data, const Sophus::SE3f& v);
 
 TEST_F(Test_EigenConfig, CUDAHost)
 {   
     float buf[MaxEigenConfigurationCount];
-    GetEigenConfigCUDAHost(buf);
+    GetEigenConfigCUDAHost(buf,sop);
     reportEigen(buf);
 }
 
 TEST_F(Test_EigenConfig, CUDADevice)
 {    
     float buf[MaxEigenConfigurationCount];
-    GetEigenConfigCUDADevice(buf);
+    GetEigenConfigCUDADevice(buf,sop);
     reportEigen(buf);
 }
 

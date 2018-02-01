@@ -41,9 +41,9 @@
 #include <sophus/se3.hpp>
 #endif // CORE_TESTS_HAVE_SOPHUS
 
-static constexpr std::size_t MaxEigenConfigurationCount = 25;
+static constexpr std::size_t MaxEigenConfigurationCount = 32;
 
-inline EIGEN_DEVICE_FUNC void getEigenConfiguration(float* ptr)
+inline EIGEN_DEVICE_FUNC void getEigenConfiguration(float* ptr, const Sophus::SE3f& v)
 {
     ptr[0]  = EIGEN_WORLD_VERSION;
     ptr[1]  = EIGEN_MAJOR_VERSION;
@@ -134,6 +134,15 @@ inline EIGEN_DEVICE_FUNC void getEigenConfiguration(float* ptr)
 #else // EIGEN_CUDA_MAX_ALIGN_BYTES
     ptr[24] = -1.0f;
 #endif // EIGEN_CUDA_MAX_ALIGN_BYTES
+    
+    ptr[25] = v.so3().unit_quaternion().x();
+    ptr[26] = v.so3().unit_quaternion().y();
+    ptr[27] = v.so3().unit_quaternion().z();
+    ptr[28] = v.so3().unit_quaternion().w();
+    
+    ptr[29] = v.translation()(0);
+    ptr[30] = v.translation()(1);
+    ptr[31] = v.translation()(2);
 }
 
 #endif // GET_EIGEN_CONFIG_HPP

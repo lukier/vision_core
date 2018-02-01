@@ -34,22 +34,22 @@
 #include <GetEigenConfig.hpp>
 #include <VisionCore/Buffers/Buffer1D.hpp>
 
-void GetEigenConfigCUDAHost(float* data)
+void GetEigenConfigCUDAHost(float* data, const Sophus::SE3f& v)
 {
-    getEigenConfiguration(data);
+    getEigenConfiguration(data,v);
 }
 
-__global__ void Kernel_GetEigenConfig(vc::Buffer1DView<float, vc::TargetDeviceCUDA> buf)
+__global__ void Kernel_GetEigenConfig(vc::Buffer1DView<float, vc::TargetDeviceCUDA> buf, const Sophus::SE3f v)
 {
-    getEigenConfiguration(buf.ptr());
+    getEigenConfiguration(buf.ptr(),v);
 }
 
-void GetEigenConfigCUDADevice(float* data)
+void GetEigenConfigCUDADevice(float* data, const Sophus::SE3f& v)
 {
     vc::Buffer1DManaged<float,vc::TargetHost> cpu_buf(MaxEigenConfigurationCount);
     vc::Buffer1DManaged<float,vc::TargetDeviceCUDA> gpu_buf(MaxEigenConfigurationCount);
     
-    Kernel_GetEigenConfig<<<1,1>>>(gpu_buf);
+    Kernel_GetEigenConfig<<<1,1>>>(gpu_buf, v);
     
     // wait for it
     const cudaError err = cudaDeviceSynchronize();

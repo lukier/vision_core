@@ -308,6 +308,32 @@ void save(Archive & archive, Sim3Base<Derived> const & m, std::uint32_t const ve
 
 #endif // VISIONCORE_ENABLE_CEREAL
 
+/**
+ * Stuff that Hauke removed.
+ * 
+ * \param alpha1 rotation around x-axis
+ * \param alpha2 rotation around y-axis
+ * \param alpha3 rotation around z-axis
+ *
+ * Since rotations in 3D do not commute, the order of the individual rotations
+ * matter. Here, the following convention is used. We calculate a SO3 member
+ * corresponding to the rotation matrix \f$ R \f$ such
+ * that \f$ R=\exp\left(\begin{array}{c}\alpha_1\\ 0\\ 0\end{array}\right)
+ *    \cdot   \exp\left(\begin{array}{c}0\\ \alpha_2\\ 0\end{array}\right)
+ *    \cdot   \exp\left(\begin{array}{c}0\\ 0\\ \alpha_3\end{array}\right)\f$.
+ */
+template<typename T>
+EIGEN_DEVICE_FUNC static inline SO3<T> fromEulerAngles(const T alpha1, const T alpha2, const T alpha3)
+{
+    typedef typename SO3<T>::Tangent Tangent;
+    const static T zero = static_cast<T>(0);
+    
+    return SO3<T>((SO3<T>::exp(Tangent(alpha1, zero, zero)) *
+                   SO3<T>::exp(Tangent(zero, alpha2, zero)) *
+                   SO3<T>::exp(Tangent(zero, zero, alpha3)))
+                 );
+}
+
 }
 
 #endif // VISIONCORE_SOPHUS_MISSINGBITS_HPP

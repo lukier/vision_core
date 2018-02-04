@@ -130,10 +130,10 @@ struct AutoDiffLocalParameterizationSE3
     template<typename T>
     EIGEN_DEVICE_FUNC bool operator()(const T* x, const T* delta, T* x_plus_delta) const 
     {
-        const Eigen::Map<const Sophus::SE3Group<T>> pose(x);
+        const Eigen::Map<const Sophus::SE3<T>> pose(x);
         const Eigen::Map<const Eigen::Matrix<T,LocalSize,1> > dx(delta);
-        Eigen::Map<Sophus::SE3Group<T>> Tdx(x_plus_delta);
-        Tdx = pose * Sophus::SE3Group<T>::exp(dx);
+        Eigen::Map<Sophus::SE3<T>> Tdx(x_plus_delta);
+        Tdx = pose * Sophus::SE3<T>::exp(dx);
         return true;
     }
 };

@@ -52,12 +52,8 @@ namespace vc
 class CUDAException : public std::exception
 {
 public:
-    CUDAException(cudaError err = cudaSuccess, const std::string& what = "") : mWhat(what), mErr(err) { }
-    
-    virtual ~CUDAException() throw() {}
-    
-    virtual const char* what() const throw() 
-    {
+    CUDAException(cudaError err = cudaSuccess, const std::string& what = "") : mWhat(what), mErr(err) 
+    { 
         std::stringstream ss;
         
         ss << "CUDAException: " << mWhat << std::endl;
@@ -68,7 +64,14 @@ public:
             ss << " (" << mErr << ")" << std::endl;
         }
         
-        return ss.str().c_str();
+        mWhat = ss.str();
+    }
+    
+    virtual ~CUDAException() throw() {}
+    
+    virtual const char* what() const throw() 
+    {
+        return mWhat.c_str();
     }
     
     cudaError getError() const { return mErr; }

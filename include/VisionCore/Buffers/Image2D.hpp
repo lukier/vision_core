@@ -142,8 +142,9 @@ public:
     template <typename TR, typename Scalar>
     EIGEN_DEVICE_FUNC inline TR getBilinear(Scalar u, Scalar v) const
     {
-        const Scalar ix = floorf(u);
-        const Scalar iy = floorf(v);
+        using Eigen::numext::floor;
+        const Scalar ix = floor(u);
+        const Scalar iy = floor(v);
         const Scalar fx = u - ix;
         const Scalar fy = v - iy;
 

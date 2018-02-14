@@ -139,32 +139,31 @@ public:
     EIGEN_DEVICE_FUNC inline const BaseType& buffer() const { return (const BaseType&)*this; }
     EIGEN_DEVICE_FUNC inline BaseType& buffer() { return (BaseType&)*this; }
 
-    template<typename TR>
-    EIGEN_DEVICE_FUNC inline TR getBilinear(float u, float v) const
+    template <typename TR, typename Scalar>
+    EIGEN_DEVICE_FUNC inline TR getBilinear(Scalar u, Scalar v) const
     {
-        const float ix = floorf(u);
-        const float iy = floorf(v);
-        const float fx = u - ix;
-        const float fy = v - iy;
-        
+        using Eigen::numext::floor;
+        const Scalar ix = floor(u);
+        const Scalar iy = floor(v);
+        const Scalar fx = u - ix;
+        const Scalar fy = v - iy;
+
         const T* bl = rowPtr(iy)  + (std::size_t)ix;
         const T* tl = rowPtr(iy+1)+ (std::size_t)ix;
-        
-        return lerp(
-            lerp( bl[0], bl[1], fx ),
-                    lerp( tl[0], tl[1], fx ),
-                    fy
-        );
+
+        return lerp(lerp(bl[0], bl[1], fx),
+                    lerp(tl[0], tl[1], fx),
+                    fy);
     }
-    
-    template<typename TR>
+
+    template <typename TR>
     EIGEN_DEVICE_FUNC inline TR getBilinear(const float2 p) const
     {
         return getBilinear<TR>(p.x, p.y);
     }
-    
-    template<typename TR>
-    EIGEN_DEVICE_FUNC inline TR getBilinear(const Eigen::Matrix<float,2,1>& p) const
+
+    template<typename TR, typename IT>
+    EIGEN_DEVICE_FUNC inline TR getBilinear(const Eigen::Matrix<IT,2,1>& p) const
     {
         return getBilinear<TR>(p(0), p(1));
     }

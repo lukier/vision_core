@@ -313,19 +313,10 @@ inline EIGEN_DEVICE_FUNC float4 lerp(uchar4 a, uchar4 b, float t)
     );
 }
 
-inline EIGEN_DEVICE_FUNC Eigen::Vector2f lerp(Eigen::Vector2f a, Eigen::Vector2f b, float t)
+template <typename T>
+inline EIGEN_DEVICE_FUNC Eigen::Matrix<T,2,1> lerp(Eigen::Matrix<T,2,1> a, Eigen::Matrix<T,2,1> b, T t)
 {
-    return Eigen::Vector2f(a(0) + t*(b(0) - a(0)), a(1) + t*(b(1) - a(1)));
-}
-
-inline EIGEN_DEVICE_FUNC Eigen::Vector3f lerp(Eigen::Vector3f a, Eigen::Vector3f b, float t)
-{
-    return Eigen::Vector3f(a(0) + t*(b(0) - a(0)), a(1) + t*(b(1) - a(1)), a(2) + t*(b(2) - a(2)));
-}
-
-inline EIGEN_DEVICE_FUNC Eigen::Vector4f lerp(Eigen::Vector4f a, Eigen::Vector4f b, float t)
-{
-    return Eigen::Vector4f(a(0) + t*(b(0) - a(0)), a(1) + t*(b(1) - a(1)), a(2) + t*(b(2) - a(2)), a(4) + t*(b(4) - a(4)));
+    return a + t * (b - a);
 }
 
 #define GENERATE_CUDATYPE_OPERATOR(XXXXX)  \

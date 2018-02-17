@@ -313,8 +313,8 @@ inline EIGEN_DEVICE_FUNC float4 lerp(uchar4 a, uchar4 b, float t)
     );
 }
 
-template <typename T>
-inline EIGEN_DEVICE_FUNC Eigen::Matrix<T,2,1> lerp(Eigen::Matrix<T,2,1> a, Eigen::Matrix<T,2,1> b, T t)
+template <typename T, int Dim>
+inline EIGEN_DEVICE_FUNC Eigen::Matrix<T,Dim,1> lerp(Eigen::Matrix<T,Dim,1> a, Eigen::Matrix<T,Dim,1> b, T t)
 {
     return a + t * (b - a);
 }

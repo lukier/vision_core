@@ -176,6 +176,7 @@ public:
     // Transform Feedback
     inline void setTransformFeedbackVaryings(GLsizei count, const char** varyings, GLenum bufmode = GL_INTERLEAVED_ATTRIBS);
     inline void setTransformFeedbackVaryings(const std::vector<const char*>& varyings, GLenum bufmode = GL_INTERLEAVED_ATTRIBS);
+    inline void setTransformFeedbackVaryings(const std::vector<std::string>& varyings, GLenum bufmode = GL_INTERLEAVED_ATTRIBS);
     
     // Shader Storage Blocks
     inline void bindShaderStorageBlock(GLuint storageBlockIndex, GLuint storageBlockBinding);

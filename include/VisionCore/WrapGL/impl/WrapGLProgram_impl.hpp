@@ -1009,6 +1009,16 @@ void vc::wrapgl::Program::setTransformFeedbackVaryings(const std::vector<const c
     WRAPGL_CHECK_ERROR();
 }
 
+void vc::wrapgl::Program::setTransformFeedbackVaryings(const std::vector<std::string>& varyings, GLenum bufmode)
+{
+    std::vector<const char*> varyings_c;
+    for(const std::string& s : varyings)
+    {
+        varyings_c.push_back(s.c_str());
+    }
+    setTransformFeedbackVaryings(varyings_c, bufmode);
+}
+
 void vc::wrapgl::Program::bindShaderStorageBlock(GLuint storageBlockIndex, GLuint storageBlockBinding)
 {
     glShaderStorageBlockBinding(progid, storageBlockIndex, storageBlockBinding);

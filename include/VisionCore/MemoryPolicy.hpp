@@ -56,6 +56,8 @@ struct TargetTransfer { };
 #include <VisionCore/MemoryPolicyOpenCL.hpp>
 #endif // VISIONCORE_HAVE_OPENCL
 
+#include <VisionCore/MemoryPolicyOpenGL.hpp>
+
 namespace vc
 {
 
@@ -115,6 +117,7 @@ template<> struct TargetTraits<TargetHost>
 {
     static const bool IsDeviceCUDA = false;
     static const bool IsDeviceOpenCL = false;
+    static const bool IsDeviceOpenGL = false;
     static const bool IsHost = true;
 };    
 
@@ -123,6 +126,7 @@ template<> struct TargetTraits<TargetDeviceCUDA>
 {
     static const bool IsDeviceCUDA = true;
     static const bool IsDeviceOpenCL = false;
+    static const bool IsDeviceOpenGL = false;
     static const bool IsHost = false;
 };
 
@@ -132,8 +136,8 @@ template<> struct TargetTraits<TargetDeviceCUDA>
     // If not then OpenCL
     #ifdef VISIONCORE_HAVE_OPENCL
         typedef TargetDeviceOpenCL TargetDeviceGPU;
-    #else // VISIONCORE_HAVE_OPENCL - sorry, no OpenCL, no CUDA
-
+    #else // VISIONCORE_HAVE_OPENCL - sorry, no OpenCL, no CUDA, let's use OpenGL
+        typedef TargetDeviceOpenGL TargetDeviceGPU;
     #endif // VISIONCORE_HAVE_OPENCL
 #endif // VISIONCORE_HAVE_CUDA
         
@@ -142,9 +146,18 @@ template<> struct TargetTraits<TargetDeviceOpenCL>
 {
     static const bool IsDeviceCUDA = false;
     static const bool IsDeviceOpenCL = true;
+    static const bool IsDeviceOpenGL = false;
     static const bool IsHost = false;
 };   
 #endif // VISIONCORE_HAVE_OPENCL
+
+template<> struct TargetTraits<TargetDeviceOpenGL>
+{
+    static const bool IsDeviceCUDA = false;
+    static const bool IsDeviceOpenCL = false;
+    static const bool IsDeviceOpenGL = true;
+    static const bool IsHost = false;
+};   
     
 }
 

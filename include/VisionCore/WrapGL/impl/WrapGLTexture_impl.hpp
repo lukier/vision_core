@@ -36,17 +36,17 @@
 #ifndef VISIONCORE_WRAPGL_TEXTURE_IMPL_HPP
 #define VISIONCORE_WRAPGL_TEXTURE_IMPL_HPP
 
-vc::wrapgl::TextureBase::TextureBase() : texid(0), internal_format((GLenum)0)
+inline vc::wrapgl::TextureBase::TextureBase() : texid(0), internal_format((GLenum)0)
 {
     
 }
 
-vc::wrapgl::TextureBase::~TextureBase()
+inline vc::wrapgl::TextureBase::~TextureBase()
 {
     destroy();
 }
 
-void vc::wrapgl::TextureBase::create(GLenum int_format)
+inline void vc::wrapgl::TextureBase::create(GLenum int_format)
 {
     if(isValid()) { destroy(); }
     
@@ -55,7 +55,7 @@ void vc::wrapgl::TextureBase::create(GLenum int_format)
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::TextureBase::destroy()
+inline void vc::wrapgl::TextureBase::destroy()
 {
     if(isValid()) 
     {
@@ -66,51 +66,51 @@ void vc::wrapgl::TextureBase::destroy()
     }
 }
 
-GLuint vc::wrapgl::TextureBase::id() const 
+inline GLuint vc::wrapgl::TextureBase::id() const 
 { 
     return texid; 
 }
 
-GLenum vc::wrapgl::TextureBase::intFormat() const 
+inline GLenum vc::wrapgl::TextureBase::intFormat() const 
 { 
     return internal_format; 
 }
 
-bool vc::wrapgl::TextureBase::isValid() const 
+inline bool vc::wrapgl::TextureBase::isValid() const 
 { 
     return texid != 0; 
 }
 
-void vc::wrapgl::TextureBase::bind(const GLenum unit)
+inline void vc::wrapgl::TextureBase::bind(const GLenum unit)
 {
     glActiveTexture(unit);
     WRAPGL_CHECK_ERROR();
 }
 
-vc::wrapgl::Texture2DBase::Texture2DBase() : TextureBase(), texw(0), texh(0)
+inline vc::wrapgl::Texture2DBase::Texture2DBase() : TextureBase(), texw(0), texh(0)
 {
     
 }
 
 template<typename T>
-void vc::wrapgl::Texture2DBase::upload(const Buffer2DView<T,TargetHost>& buf, GLenum data_format)
+inline void vc::wrapgl::Texture2DBase::upload(const Buffer2DView<T,TargetHost>& buf, GLenum data_format)
 {
     upload(buf.ptr(), data_format, internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type);
 }
 
-void vc::wrapgl::Texture2DBase::upload(const GLvoid* data, GLenum data_format, GLenum data_type)
+inline void vc::wrapgl::Texture2DBase::upload(const GLvoid* data, GLenum data_format, GLenum data_type)
 {
     glTexSubImage2D(GL_TEXTURE_2D,0,0,0,texw,texh,data_format,data_type,data);
     WRAPGL_CHECK_ERROR();
 }
 
 template<typename T>
-void vc::wrapgl::Texture2DBase::download(Buffer2DView<T,TargetHost>& buf, GLenum data_format)
+inline void vc::wrapgl::Texture2DBase::download(Buffer2DView<T,TargetHost>& buf, GLenum data_format)
 {
     download(buf.ptr(), data_format, internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type);
 }
 
-void vc::wrapgl::Texture2DBase::download(GLvoid* data, GLenum data_format, GLenum data_type)
+inline void vc::wrapgl::Texture2DBase::download(GLvoid* data, GLenum data_format, GLenum data_type)
 {
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     WRAPGL_CHECK_ERROR();
@@ -118,56 +118,56 @@ void vc::wrapgl::Texture2DBase::download(GLvoid* data, GLenum data_format, GLenu
     WRAPGL_CHECK_ERROR();
 }
 
- void vc::wrapgl::Texture2DBase::setSamplingLinear()
+inline void vc::wrapgl::Texture2DBase::setSamplingLinear()
 {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);
     WRAPGL_CHECK_ERROR();
 }
 
- void vc::wrapgl::Texture2DBase::setSamplingNearestNeighbour()
+inline void vc::wrapgl::Texture2DBase::setSamplingNearestNeighbour()
 {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_NEAREST);
     WRAPGL_CHECK_ERROR();
 }
 
- void vc::wrapgl::Texture2DBase::setWrapClamp()
+inline void vc::wrapgl::Texture2DBase::setWrapClamp()
 {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_CLAMP);
     WRAPGL_CHECK_ERROR();
 }
 
- void vc::wrapgl::Texture2DBase::setWrapClampToEdge()
+inline void vc::wrapgl::Texture2DBase::setWrapClampToEdge()
 {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_CLAMP_TO_EDGE);
     WRAPGL_CHECK_ERROR();
 }
 
- void vc::wrapgl::Texture2DBase::setWrapClampToBorder()
+inline void vc::wrapgl::Texture2DBase::setWrapClampToBorder()
 {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_CLAMP_TO_BORDER);
     WRAPGL_CHECK_ERROR();
 }
 
- void vc::wrapgl::Texture2DBase::setWrapRepeat()
+inline void vc::wrapgl::Texture2DBase::setWrapRepeat()
 {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_REPEAT);
     WRAPGL_CHECK_ERROR();
 }
 
- void vc::wrapgl::Texture2DBase::setWrapMirroredRepeat()
+inline void vc::wrapgl::Texture2DBase::setWrapMirroredRepeat()
 {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_MIRRORED_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_MIRRORED_REPEAT);
     WRAPGL_CHECK_ERROR();
 }
 
- void vc::wrapgl::Texture2DBase::setDepthParameters()
+inline void vc::wrapgl::Texture2DBase::setDepthParameters()
 {
     glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, (GLint)GL_INTENSITY);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, (GLint)GL_COMPARE_R_TO_TEXTURE);
@@ -175,85 +175,78 @@ void vc::wrapgl::Texture2DBase::download(GLvoid* data, GLenum data_format, GLenu
     WRAPGL_CHECK_ERROR();
 }
 
- void vc::wrapgl::Texture2DBase::setBorderColor(float3 color)
+inline void vc::wrapgl::Texture2DBase::setBorderColor(float3 color)
 {
     setBorderColor(color.x, color.y, color.z, 1.0f);
 }
 
- void vc::wrapgl::Texture2DBase::setBorderColor(float4 color)
+inline void vc::wrapgl::Texture2DBase::setBorderColor(float4 color)
 {
     setBorderColor(color.x, color.y, color.z, color.w);
 }
 
- void vc::wrapgl::Texture2DBase::setBorderColor(const Eigen::Matrix<float,3,1>& color)
+inline void vc::wrapgl::Texture2DBase::setBorderColor(const Eigen::Matrix<float,3,1>& color)
 {
     setBorderColor(color(0), color(1), color(2), 1.0f);
 }
 
- void vc::wrapgl::Texture2DBase::setBorderColor(const Eigen::Matrix<float,4,1>& color)
+inline void vc::wrapgl::Texture2DBase::setBorderColor(const Eigen::Matrix<float,4,1>& color)
 {
     setBorderColor(color(0), color(1), color(2), color(3));
 }
 
- void vc::wrapgl::Texture2DBase::setBorderColor(float r, float g, float b, float a)
+inline void vc::wrapgl::Texture2DBase::setBorderColor(float r, float g, float b, float a)
 {
     GLfloat params[4] = {r,g,b,a};
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, params);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Texture2DBase::bind() const
+inline void vc::wrapgl::Texture2DBase::bind() const
 {
     glBindTexture(GL_TEXTURE_2D, texid);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Texture2DBase::unbind() const
+inline void vc::wrapgl::Texture2DBase::unbind() const
 {
     glBindTexture(GL_TEXTURE_2D, 0);
     WRAPGL_CHECK_ERROR();
 }
 
-GLint vc::wrapgl::Texture2DBase::width() const 
+inline GLint vc::wrapgl::Texture2DBase::width() const 
 { 
     return texw; 
 }
 
-GLint vc::wrapgl::Texture2DBase::height() const 
+inline GLint vc::wrapgl::Texture2DBase::height() const 
 { 
     return texh; 
 }
 
-vc::wrapgl::Texture2D::Texture2D() : Texture2DBase()
+inline vc::wrapgl::Texture2D::Texture2D() : Texture2DBase()
 {
     
 }
 
-vc::wrapgl::Texture2D::Texture2D(GLint w, GLint h, GLenum int_format, GLvoid* data, int border)
+inline vc::wrapgl::Texture2D::Texture2D(GLint w, GLint h, GLenum int_format, GLvoid* data, int border)
     : Texture2DBase()
 {
     create(w, h, int_format, data, border);
 }
 
-template<typename T>
-vc::wrapgl::Texture2D::Texture2D(const Buffer2DView<T,TargetHost>& buf, GLenum int_format, int border)
-    : Texture2DBase()
-{
-    create(buf, int_format, border);
-}
-
-vc::wrapgl::Texture2D::~Texture2D() 
+inline vc::wrapgl::Texture2D::~Texture2D() 
 {
     destroy();
 }
 
 template<typename T>
-void vc::wrapgl::Texture2D::create(const Buffer2DView<T,TargetHost>& buf, GLenum int_format, int border) 
+inline void vc::wrapgl::Texture2D::create(const Buffer2DView<T,TargetHost>& buf, GLenum int_format, int border) 
 {
     create(buf.width(), buf.height(), int_format, (GLvoid*)buf.ptr(), border);
 }
 
-void vc::wrapgl::Texture2D::create(GLint w, GLint h, GLenum int_format,  GLvoid* data, int border)
+inline void vc::wrapgl::Texture2D::create(GLint w, GLint h, GLenum int_format,  GLvoid* data, int border)
 {
     if(isValid()) { destroy(); }
     
@@ -275,14 +268,14 @@ void vc::wrapgl::Texture2D::create(GLint w, GLint h, GLenum int_format,  GLvoid*
     unbind();
 }
 
-void vc::wrapgl::Texture2D::destroy()
+inline void vc::wrapgl::Texture2D::destroy()
 {
     TextureBase::destroy();
 }
  
 #ifdef VISIONCORE_HAVE_CUDA
 template<typename T>
-vc::GPUTexture2DFromOpenGL<T,vc::TargetDeviceCUDA>::GPUTexture2DFromOpenGL(wrapgl::Texture2D& gltex) : ViewT(), cuda_res(0)
+inline vc::GPUTexture2DFromOpenGL<T,vc::TargetDeviceCUDA>::GPUTexture2DFromOpenGL(wrapgl::Texture2D& gltex) : ViewT(), cuda_res(0)
 {
     cuda_res = internal::registerOpenGLTexture(GL_TEXTURE_2D, gltex.id());
     
@@ -311,7 +304,7 @@ vc::GPUTexture2DFromOpenGL<T,vc::TargetDeviceCUDA>::GPUTexture2DFromOpenGL(wrapg
 }
 
 template<typename T>
-vc::GPUTexture2DFromOpenGL<T,vc::TargetDeviceCUDA>::~GPUTexture2DFromOpenGL()
+inline vc::GPUTexture2DFromOpenGL<T,vc::TargetDeviceCUDA>::~GPUTexture2DFromOpenGL()
 {
     if(cuda_res) 
     {
@@ -329,7 +322,7 @@ vc::GPUTexture2DFromOpenGL<T,vc::TargetDeviceCUDA>::~GPUTexture2DFromOpenGL()
 }
     
 template<typename T>
-vc::Buffer2DFromOpenGLTexture<T,vc::TargetDeviceCUDA>::Buffer2DFromOpenGLTexture(wrapgl::Texture2D& gltex)
+inline vc::Buffer2DFromOpenGLTexture<T,vc::TargetDeviceCUDA>::Buffer2DFromOpenGLTexture(wrapgl::Texture2D& gltex)
   : Buffer2DManaged<T,vc::TargetDeviceCUDA>(gltex.width(),gltex.height())
 {    
     cudaArray* textPtr = nullptr;

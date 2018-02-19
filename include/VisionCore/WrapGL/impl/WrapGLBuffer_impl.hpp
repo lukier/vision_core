@@ -35,7 +35,7 @@
 #ifndef VISIONCORE_WRAPGL_BUFFER_IMPL_HPP
 #define VISIONCORE_WRAPGL_BUFFER_IMPL_HPP
 
-vc::wrapgl::Buffer::Buffer() : 
+inline vc::wrapgl::Buffer::Buffer() : 
     bufid(0), 
     buffer_type(Type::eArray), 
     num_elements(0), 
@@ -46,49 +46,19 @@ vc::wrapgl::Buffer::Buffer() :
     
 }
 
-vc::wrapgl::Buffer::Buffer(Type bt, GLuint numel, GLenum dtype, GLuint cpe, 
-                           GLenum gluse, const GLvoid* data) : bufid(0)
+inline vc::wrapgl::Buffer::Buffer(Type bt, GLuint numel, GLenum dtype, GLuint cpe, 
+                                  GLenum gluse, const GLvoid* data) : bufid(0)
 {
     create(bt, numel, dtype, cpe, gluse, data);
 }
 
-template<typename T, typename AllocatorT>
-vc::wrapgl::Buffer::Buffer(Type bt, const std::vector<T,AllocatorT>& vec, GLenum gluse) : bufid(0)
-{
-    create(bt, vec, gluse);
-}
-
-template<typename T>
-vc::wrapgl::Buffer::Buffer(Type bt, GLuint numel, GLenum gluse, const T* data) : bufid(0)
-{
-    create<T>(bt, numel, gluse, data);
-}
-
-template<typename T>
-vc::wrapgl::Buffer::Buffer(Type bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse) : bufid(0)
-{
-    create(bt, buf, gluse);
-}
-
-template<typename T>
-vc::wrapgl::Buffer::Buffer(Type bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse) : bufid(0)
-{
-    create(bt, buf, gluse);
-}
-
-template<typename T>
-vc::wrapgl::Buffer::Buffer(Type bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse) : bufid(0)
-{
-    create(bt, buf, gluse);
-}
-
-vc::wrapgl::Buffer::~Buffer()
+inline vc::wrapgl::Buffer::~Buffer()
 {
     destroy();
 }
 
 template<typename T, typename AllocatorT>
-void vc::wrapgl::Buffer::create(Type bt, const std::vector<T,AllocatorT>& vec, GLenum gluse)
+inline void vc::wrapgl::Buffer::create(Type bt, const std::vector<T,AllocatorT>& vec, GLenum gluse)
 {
     create(bt, vec.size(), 
            internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type, 
@@ -96,14 +66,14 @@ void vc::wrapgl::Buffer::create(Type bt, const std::vector<T,AllocatorT>& vec, G
 }
 
 template<typename T>
-void vc::wrapgl::Buffer::create(Type bt, GLuint numel, GLenum gluse, const T* data) 
+inline void vc::wrapgl::Buffer::create(Type bt, GLuint numel, GLenum gluse, const T* data) 
 {
     create(bt, numel, internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type, 
            type_traits<T>::ChannelCount, gluse, static_cast<const GLvoid*>(data));
 }
 
 template<typename T>
-void vc::wrapgl::Buffer::create(Type bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse) 
+inline void vc::wrapgl::Buffer::create(Type bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse) 
 {
     create(bt, buf.size(), 
            internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type, 
@@ -111,7 +81,7 @@ void vc::wrapgl::Buffer::create(Type bt, const Buffer1DView<T,TargetHost>& buf, 
 }
 
 template<typename T>
-void vc::wrapgl::Buffer::create(Type bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse) 
+inline void vc::wrapgl::Buffer::create(Type bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse) 
 {
     create(bt, buf.width() * buf.height(), 
            internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type, 
@@ -119,14 +89,14 @@ void vc::wrapgl::Buffer::create(Type bt, const Buffer2DView<T,TargetHost>& buf, 
 }
 
 template<typename T>
-void vc::wrapgl::Buffer::create(Type bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse) 
+inline void vc::wrapgl::Buffer::create(Type bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse) 
 {
     create(bt, buf.width() * buf.height() * buf.depth(), 
            internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type, 
            type_traits<T>::ChannelCount, gluse, buf.ptr());
 }
 
-void vc::wrapgl::Buffer::create(Type bt, GLuint numel, GLenum dtype, GLuint cpe, GLenum gluse, const GLvoid* data)
+inline void vc::wrapgl::Buffer::create(Type bt, GLuint numel, GLenum dtype, GLuint cpe, GLenum gluse, const GLvoid* data)
 {
     if(isValid()) { destroy(); }
     
@@ -145,7 +115,7 @@ void vc::wrapgl::Buffer::create(Type bt, GLuint numel, GLenum dtype, GLuint cpe,
     unbind();
 }
 
-void vc::wrapgl::Buffer::destroy()
+inline void vc::wrapgl::Buffer::destroy()
 {
     if(bufid != 0) 
     {
@@ -155,12 +125,12 @@ void vc::wrapgl::Buffer::destroy()
     }
 }
 
-bool vc::wrapgl::Buffer::isValid() const 
+inline bool vc::wrapgl::Buffer::isValid() const 
 { 
     return bufid != 0; 
 }
 
-void vc::wrapgl::Buffer::resize(GLuint new_num_elements, GLenum gluse)
+inline void vc::wrapgl::Buffer::resize(GLuint new_num_elements, GLenum gluse)
 {
     bind();
     glBufferData(static_cast<GLenum>(buffer_type), new_num_elements*internal::getByteSize(datatype)*count_per_element, 0, gluse);
@@ -169,19 +139,19 @@ void vc::wrapgl::Buffer::resize(GLuint new_num_elements, GLenum gluse)
     num_elements = new_num_elements;
 }
 
-void vc::wrapgl::Buffer::bind() const
+inline void vc::wrapgl::Buffer::bind() const
 {
     glBindBuffer(static_cast<GLenum>(buffer_type), bufid);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Buffer::unbind() const
+inline void vc::wrapgl::Buffer::unbind() const
 {
     glBindBuffer(static_cast<GLenum>(buffer_type), 0);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Buffer::upload(const GLvoid* data, GLsizeiptr size_bytes, GLintptr offset)
+inline void vc::wrapgl::Buffer::upload(const GLvoid* data, GLsizeiptr size_bytes, GLintptr offset)
 {
     bind();
     glBufferSubData(static_cast<GLenum>(buffer_type),offset,size_bytes, data);
@@ -190,30 +160,30 @@ void vc::wrapgl::Buffer::upload(const GLvoid* data, GLsizeiptr size_bytes, GLint
 }
 
 template<typename T, typename AllocatorT>
-void vc::wrapgl::Buffer::upload(const std::vector<T,AllocatorT>& vec, GLintptr offset)
+inline void vc::wrapgl::Buffer::upload(const std::vector<T,AllocatorT>& vec, GLintptr offset)
 {
     upload(vec.data(), vec.size() * sizeof(T), offset * sizeof(T));
 }
 
 template<typename T>
-void vc::wrapgl::Buffer::upload(const Buffer1DView<T,TargetHost>& buf, GLintptr offset)
+inline void vc::wrapgl::Buffer::upload(const Buffer1DView<T,TargetHost>& buf, GLintptr offset)
 {
     upload(buf.ptr(), buf.size() * sizeof(T), offset * sizeof(T));
 }
 
 template<typename T>
-void vc::wrapgl::Buffer::upload(const Buffer2DView<T,TargetHost>& buf, GLintptr offset)
+inline void vc::wrapgl::Buffer::upload(const Buffer2DView<T,TargetHost>& buf, GLintptr offset)
 {
     upload(buf.ptr(), buf.width() * buf.height() * sizeof(T), offset * sizeof(T));
 }
 
 template<typename T>
-void vc::wrapgl::Buffer::upload(const Buffer3DView<T,TargetHost>& buf, GLintptr offset)
+inline void vc::wrapgl::Buffer::upload(const Buffer3DView<T,TargetHost>& buf, GLintptr offset)
 {
     upload(buf.ptr(), buf.width() * buf.height() * buf.depth() * sizeof(T), offset * sizeof(T));
 }
 
-void vc::wrapgl::Buffer::download(GLvoid* data, GLsizeiptr size_bytes, GLintptr offset)
+inline void vc::wrapgl::Buffer::download(GLvoid* data, GLsizeiptr size_bytes, GLintptr offset)
 {
     bind();
     glGetBufferSubData(static_cast<GLenum>(buffer_type),offset,size_bytes, data);
@@ -222,61 +192,61 @@ void vc::wrapgl::Buffer::download(GLvoid* data, GLsizeiptr size_bytes, GLintptr 
 }
 
 template<typename T, typename AllocatorT>
-void vc::wrapgl::Buffer::download(std::vector<T,AllocatorT>& vec, GLintptr offset)
+inline void vc::wrapgl::Buffer::download(std::vector<T,AllocatorT>& vec, GLintptr offset)
 {
     download(vec.data(), vec.size() * sizeof(T), offset * sizeof(T));
 }
 
 template<typename T>
-void vc::wrapgl::Buffer::download(Buffer1DView<T,TargetHost>& buf, GLintptr offset)
+inline void vc::wrapgl::Buffer::download(Buffer1DView<T,TargetHost>& buf, GLintptr offset)
 {
     download(buf.ptr(), buf.size() * sizeof(T), offset * sizeof(T));
 }
 
 template<typename T>
-void vc::wrapgl::Buffer::download(Buffer2DView<T,TargetHost>& buf, GLintptr offset)
+inline void vc::wrapgl::Buffer::download(Buffer2DView<T,TargetHost>& buf, GLintptr offset)
 {
     download(buf.ptr(), buf.width() * buf.height() * sizeof(T), offset * sizeof(T));
 }
 
 template<typename T>
-void vc::wrapgl::Buffer::download(Buffer3DView<T,TargetHost>& buf, GLintptr offset)
+inline void vc::wrapgl::Buffer::download(Buffer3DView<T,TargetHost>& buf, GLintptr offset)
 {
     download(buf.ptr(), buf.width() * buf.height() * buf.depth() * sizeof(T), offset * sizeof(T));
 }
 
-GLuint vc::wrapgl::Buffer::id() const 
+inline GLuint vc::wrapgl::Buffer::id() const 
 { 
     return bufid; 
 }
 
-vc::wrapgl::Buffer::Type vc::wrapgl::Buffer::type() const 
+inline vc::wrapgl::Buffer::Type vc::wrapgl::Buffer::type() const 
 { 
     return buffer_type; 
 }
 
-GLuint vc::wrapgl::Buffer::size() const 
+inline GLuint vc::wrapgl::Buffer::size() const 
 {   
     return num_elements; 
 }
 
-GLuint vc::wrapgl::Buffer::sizeBytes() const 
+inline GLuint vc::wrapgl::Buffer::sizeBytes() const 
 { 
     return num_elements * count_per_element * internal::getByteSize(datatype); 
 }
 
-GLenum vc::wrapgl::Buffer::dataType() const 
+inline GLenum vc::wrapgl::Buffer::dataType() const 
 { 
     return datatype; 
 }
 
-GLuint vc::wrapgl::Buffer::countPerElement() const 
+inline GLuint vc::wrapgl::Buffer::countPerElement() const 
 { 
     return count_per_element; 
 }
 
 template<typename T>
-vc::Buffer1DFromOpenGL<T,vc::TargetHost>::Buffer1DFromOpenGL(wrapgl::Buffer& glbuf, GLenum acc) : buf(glbuf)
+inline vc::Buffer1DFromOpenGL<T,vc::TargetHost>::Buffer1DFromOpenGL(wrapgl::Buffer& glbuf, GLenum acc) : buf(glbuf)
 {
     if((wrapgl::internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type != glbuf.dataType()) 
       || (type_traits<T>::ChannelCount != glbuf.countPerElement()))
@@ -290,7 +260,7 @@ vc::Buffer1DFromOpenGL<T,vc::TargetHost>::Buffer1DFromOpenGL(wrapgl::Buffer& glb
 }
 
 template<typename T>
-vc::Buffer1DFromOpenGL<T,vc::TargetHost>::~Buffer1DFromOpenGL()
+inline vc::Buffer1DFromOpenGL<T,vc::TargetHost>::~Buffer1DFromOpenGL()
 {
     if(ViewT::ptr != nullptr) 
     {   
@@ -300,7 +270,7 @@ vc::Buffer1DFromOpenGL<T,vc::TargetHost>::~Buffer1DFromOpenGL()
 }
 
 template<typename T>
-vc::Buffer2DFromOpenGL<T,vc::TargetHost>::Buffer2DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height, GLenum acc) : buf(glbuf)
+inline vc::Buffer2DFromOpenGL<T,vc::TargetHost>::Buffer2DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height, GLenum acc) : buf(glbuf)
 {
     if((wrapgl::internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type != glbuf.dataType()) 
       || (type_traits<T>::ChannelCount != glbuf.countPerElement()))
@@ -316,7 +286,7 @@ vc::Buffer2DFromOpenGL<T,vc::TargetHost>::Buffer2DFromOpenGL(wrapgl::Buffer& glb
 }
 
 template<typename T>
-vc::Buffer2DFromOpenGL<T,vc::TargetHost>::~Buffer2DFromOpenGL()
+inline vc::Buffer2DFromOpenGL<T,vc::TargetHost>::~Buffer2DFromOpenGL()
 {
     if(ViewT::ptr != nullptr) 
     {   
@@ -326,8 +296,8 @@ vc::Buffer2DFromOpenGL<T,vc::TargetHost>::~Buffer2DFromOpenGL()
 }
 
 template<typename T>
-vc::Buffer3DFromOpenGL<T,vc::TargetHost>::Buffer3DFromOpenGL(wrapgl::Buffer& glbuf, 
-                                                             std::size_t height, std::size_t depth, GLenum acc) : buf(glbuf)
+inline vc::Buffer3DFromOpenGL<T,vc::TargetHost>::Buffer3DFromOpenGL(wrapgl::Buffer& glbuf, 
+                                                                    std::size_t height, std::size_t depth, GLenum acc) : buf(glbuf)
 {
     if((wrapgl::internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type != glbuf.dataType()) 
     || (type_traits<T>::ChannelCount != glbuf.countPerElement()))
@@ -345,7 +315,7 @@ vc::Buffer3DFromOpenGL<T,vc::TargetHost>::Buffer3DFromOpenGL(wrapgl::Buffer& glb
 }
 
 template<typename T>
-vc::Buffer3DFromOpenGL<T,vc::TargetHost>::~Buffer3DFromOpenGL()
+inline vc::Buffer3DFromOpenGL<T,vc::TargetHost>::~Buffer3DFromOpenGL()
 {
     if(ViewT::ptr != nullptr) 
     {   
@@ -356,7 +326,7 @@ vc::Buffer3DFromOpenGL<T,vc::TargetHost>::~Buffer3DFromOpenGL()
 
 #ifdef VISIONCORE_HAVE_CUDA
 template<typename T>
-vc::Buffer1DFromOpenGL<T,vc::TargetDeviceCUDA>::Buffer1DFromOpenGL(wrapgl::Buffer& glbuf) : cuda_res(0)
+inline vc::Buffer1DFromOpenGL<T,vc::TargetDeviceCUDA>::Buffer1DFromOpenGL(wrapgl::Buffer& glbuf) : cuda_res(0)
 {
     if((wrapgl::internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type != glbuf.dataType()) 
       || (type_traits<T>::ChannelCount != glbuf.countPerElement()))
@@ -374,7 +344,7 @@ vc::Buffer1DFromOpenGL<T,vc::TargetDeviceCUDA>::Buffer1DFromOpenGL(wrapgl::Buffe
 }
 
 template<typename T>
-vc::Buffer1DFromOpenGL<T,vc::TargetDeviceCUDA>::~Buffer1DFromOpenGL()
+inline vc::Buffer1DFromOpenGL<T,vc::TargetDeviceCUDA>::~Buffer1DFromOpenGL()
 {
     if(cuda_res) 
     {   
@@ -387,7 +357,7 @@ vc::Buffer1DFromOpenGL<T,vc::TargetDeviceCUDA>::~Buffer1DFromOpenGL()
 }
 
 template<typename T>
-vc::Buffer2DFromOpenGL<T,vc::TargetDeviceCUDA>::Buffer2DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height) : cuda_res(0)
+inline vc::Buffer2DFromOpenGL<T,vc::TargetDeviceCUDA>::Buffer2DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height) : cuda_res(0)
 {
     if((wrapgl::internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type != glbuf.dataType()) 
       || (type_traits<T>::ChannelCount != glbuf.countPerElement()))
@@ -410,7 +380,7 @@ vc::Buffer2DFromOpenGL<T,vc::TargetDeviceCUDA>::Buffer2DFromOpenGL(wrapgl::Buffe
 }
 
 template<typename T>
-vc::Buffer2DFromOpenGL<T,vc::TargetDeviceCUDA>::~Buffer2DFromOpenGL()
+inline vc::Buffer2DFromOpenGL<T,vc::TargetDeviceCUDA>::~Buffer2DFromOpenGL()
 {
     if(cuda_res) 
     {   
@@ -423,8 +393,8 @@ vc::Buffer2DFromOpenGL<T,vc::TargetDeviceCUDA>::~Buffer2DFromOpenGL()
 }
 
 template<typename T>
-vc::Buffer3DFromOpenGL<T,vc::TargetDeviceCUDA>::Buffer3DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height, 
-                                                                   std::size_t depth) : cuda_res(0)
+inline vc::Buffer3DFromOpenGL<T,vc::TargetDeviceCUDA>::Buffer3DFromOpenGL(wrapgl::Buffer& glbuf, std::size_t height, 
+                                                                          std::size_t depth) : cuda_res(0)
 {
     if((wrapgl::internal::GLTypeTraits<typename type_traits<T>::ChannelType>::opengl_data_type != glbuf.dataType()) 
       || (type_traits<T>::ChannelCount != glbuf.countPerElement()))
@@ -449,7 +419,7 @@ vc::Buffer3DFromOpenGL<T,vc::TargetDeviceCUDA>::Buffer3DFromOpenGL(wrapgl::Buffe
 }
 
 template<typename T>
-vc::Buffer3DFromOpenGL<T,vc::TargetDeviceCUDA>::~Buffer3DFromOpenGL()
+inline vc::Buffer3DFromOpenGL<T,vc::TargetDeviceCUDA>::~Buffer3DFromOpenGL()
 {
     if(cuda_res) 
     {   
@@ -464,15 +434,15 @@ vc::Buffer3DFromOpenGL<T,vc::TargetDeviceCUDA>::~Buffer3DFromOpenGL()
 
 #ifdef VISIONCORE_HAVE_OPENCL
 template<typename T>
-vc::Buffer1DFromOpenGL<T,vc::TargetDeviceOpenCL>::Buffer1DFromOpenGL(const cl::Context& context, cl_mem_flags flags, 
-                                                                     wrapgl::Buffer& glbuf) 
+inline vc::Buffer1DFromOpenGL<T,vc::TargetDeviceOpenCL>::Buffer1DFromOpenGL(const cl::Context& context, cl_mem_flags flags, 
+                                                                            wrapgl::Buffer& glbuf) 
 {
     ViewT::memptr = new cl::BufferGL(context, flags, glbuf.id());
     ViewT::xsize = glbuf.size();
 }
 
 template<typename T>
-vc::Buffer1DFromOpenGL<T,vc::TargetDeviceOpenCL>::~Buffer1DFromOpenGL()
+inline vc::Buffer1DFromOpenGL<T,vc::TargetDeviceOpenCL>::~Buffer1DFromOpenGL()
 {
     if(ViewT::isValid()) 
     {   
@@ -484,8 +454,8 @@ vc::Buffer1DFromOpenGL<T,vc::TargetDeviceOpenCL>::~Buffer1DFromOpenGL()
 }
 
 template<typename T>
-vc::Buffer2DFromOpenGL<T,vc::TargetDeviceOpenCL>::Buffer2DFromOpenGL(const cl::Context& context, cl_mem_flags flags, 
-                                                                     wrapgl::Buffer& glbuf, std::size_t height) 
+inline vc::Buffer2DFromOpenGL<T,vc::TargetDeviceOpenCL>::Buffer2DFromOpenGL(const cl::Context& context, cl_mem_flags flags, 
+                                                                            wrapgl::Buffer& glbuf, std::size_t height) 
 {
     ViewT::memptr = new cl::BufferGL(context, flags, glbuf.id());
     ViewT::xsize = glbuf.size() / height;
@@ -494,7 +464,7 @@ vc::Buffer2DFromOpenGL<T,vc::TargetDeviceOpenCL>::Buffer2DFromOpenGL(const cl::C
 }
 
 template<typename T>
-vc::Buffer2DFromOpenGL<T,vc::TargetDeviceOpenCL>::~Buffer2DFromOpenGL()
+inline vc::Buffer2DFromOpenGL<T,vc::TargetDeviceOpenCL>::~Buffer2DFromOpenGL()
 {
     if(ViewT::isValid()) 
     {   
@@ -508,8 +478,8 @@ vc::Buffer2DFromOpenGL<T,vc::TargetDeviceOpenCL>::~Buffer2DFromOpenGL()
 }
 
 template<typename T>
-vc::Buffer3DFromOpenGL<T,vc::TargetDeviceOpenCL>::Buffer3DFromOpenGL(const cl::Context& context, cl_mem_flags flags, 
-                                                                     wrapgl::Buffer& glbuf, std::size_t height, std::size_t depth) 
+inline vc::Buffer3DFromOpenGL<T,vc::TargetDeviceOpenCL>::Buffer3DFromOpenGL(const cl::Context& context, cl_mem_flags flags, 
+                                                                            wrapgl::Buffer& glbuf, std::size_t height, std::size_t depth) 
 {
     ViewT::memptr = new cl::BufferGL(context, flags, glbuf.id());
     ViewT::xsize = glbuf.size() / (height * depth);
@@ -520,7 +490,7 @@ vc::Buffer3DFromOpenGL<T,vc::TargetDeviceOpenCL>::Buffer3DFromOpenGL(const cl::C
 }
 
 template<typename T>    
-vc::Buffer3DFromOpenGL<T,vc::TargetDeviceOpenCL>::~Buffer3DFromOpenGL()
+inline vc::Buffer3DFromOpenGL<T,vc::TargetDeviceOpenCL>::~Buffer3DFromOpenGL()
 {
     if(ViewT::isValid()) 
     {   

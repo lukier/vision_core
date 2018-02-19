@@ -36,23 +36,22 @@
 #ifndef VISIONCORE_WRAPGL_SAMPLER_IMPL_HPP
 #define VISIONCORE_WRAPGL_SAMPLER_IMPL_HPP
 
-
-vc::wrapgl::Sampler::Sampler() : sid(0)
+inline vc::wrapgl::Sampler::Sampler() : sid(0)
 {
     create(0);
 }
 
-vc::wrapgl::Sampler::Sampler(GLuint texu) : sid(0)
+inline vc::wrapgl::Sampler::Sampler(GLuint texu) : sid(0)
 {
     create(texu);
 }
 
-vc::wrapgl::Sampler::~Sampler()
+inline vc::wrapgl::Sampler::~Sampler()
 {
     destroy();
 }
 
-void vc::wrapgl::Sampler::create(GLuint texu)
+inline void vc::wrapgl::Sampler::create(GLuint texu)
 {
     destroy();
     
@@ -61,7 +60,7 @@ void vc::wrapgl::Sampler::create(GLuint texu)
     texunit = texu;
 }
 
-void vc::wrapgl::Sampler::destroy()
+inline void vc::wrapgl::Sampler::destroy()
 {
     if(sid != 0)
     {
@@ -71,25 +70,25 @@ void vc::wrapgl::Sampler::destroy()
     }
 }
 
-bool vc::wrapgl::Sampler::isValid() const 
+inline bool vc::wrapgl::Sampler::isValid() const 
 { 
     return sid != 0; 
 }
 
-void vc::wrapgl::Sampler::bind() const
+inline void vc::wrapgl::Sampler::bind() const
 {
     glBindSampler(texunit, sid);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Sampler::unbind() const
+inline void vc::wrapgl::Sampler::unbind() const
 {
     glBindSampler(texunit, 0);
     WRAPGL_CHECK_ERROR();
 }
 
 template<typename T>
-T vc::wrapgl::Sampler::get(GLenum param)
+inline T vc::wrapgl::Sampler::get(GLenum param)
 {
     T ret;
     glGetSamplerParameterfv(sid, param, &ret);
@@ -98,13 +97,13 @@ T vc::wrapgl::Sampler::get(GLenum param)
 }
 
 template<typename T>
-void vc::wrapgl::Sampler::set(GLenum param, T val)
+inline void vc::wrapgl::Sampler::set(GLenum param, T val)
 {
     glSamplerParameterf(sid, param, val);
     WRAPGL_CHECK_ERROR();
 }
 
-GLuint vc::wrapgl::Sampler::id() const 
+inline GLuint vc::wrapgl::Sampler::id() const 
 { 
     return sid; 
 }

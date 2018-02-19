@@ -138,8 +138,6 @@ public:
     
     inline Texture2D();
     inline Texture2D(GLint w, GLint h, GLenum int_format = GL_RGBA32F, GLvoid* data = nullptr, int border = 0);
-    template<typename T>
-    inline explicit Texture2D(const Buffer2DView<T,TargetHost>& buf, GLenum int_format = GL_RGBA32F, int border = 0);
     inline ~Texture2D();
     
     template<typename T>

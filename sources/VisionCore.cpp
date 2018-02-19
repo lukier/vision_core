@@ -94,4 +94,6 @@
 #include <VisionCore/WrapGL/WrapGLTexture.hpp>
 #include <VisionCore/WrapGL/WrapGLTransformFeedback.hpp>
 #include <VisionCore/WrapGL/WrapGLVertexArrayObject.hpp>
+#include <VisionCore/WrapGL/WrapGLVertexProcessor.hpp>
+#include <VisionCore/WrapGL/WrapGLPixelProcessor.hpp>
 

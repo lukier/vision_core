@@ -36,17 +36,17 @@
 #ifndef VISIONCORE_WRAPGL_QUERY_IMPL_HPP
 #define VISIONCORE_WRAPGL_QUERY_IMPL_HPP
 
-vc::wrapgl::Query::Query() : qid(0)
+inline vc::wrapgl::Query::Query() : qid(0)
 {
     create();
 }
 
-vc::wrapgl::Query::~Query()
+inline vc::wrapgl::Query::~Query()
 {
     destroy();
 }
 
-void vc::wrapgl::Query::create()
+inline void vc::wrapgl::Query::create()
 {
     destroy();
     
@@ -54,7 +54,7 @@ void vc::wrapgl::Query::create()
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Query::destroy()
+inline void vc::wrapgl::Query::destroy()
 {
     if(qid != 0)
     {
@@ -64,36 +64,36 @@ void vc::wrapgl::Query::destroy()
     }
 }
 
-bool vc::wrapgl::Query::isValid() const 
+inline bool vc::wrapgl::Query::isValid() const 
 { 
     return qid != 0; 
 }
 
-void vc::wrapgl::Query::begin(Target target) const
+inline void vc::wrapgl::Query::begin(Target target) const
 {
     glBeginQuery(static_cast<GLenum>(target), qid);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Query::end(Target target) const
+inline void vc::wrapgl::Query::end(Target target) const
 {
     glEndQuery(static_cast<GLenum>(target));
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Query::begin(Target target, GLuint idx) const
+inline void vc::wrapgl::Query::begin(Target target, GLuint idx) const
 {
     glBeginQueryIndexed(static_cast<GLenum>(target), idx, qid);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Query::end(Target target, GLuint idx) const
+inline void vc::wrapgl::Query::end(Target target, GLuint idx) const
 {
     glEndQueryIndexed(static_cast<GLenum>(target), idx);
     WRAPGL_CHECK_ERROR();
 }
 
-GLint vc::wrapgl::Query::get(Target target, Parameter pname)
+inline GLint vc::wrapgl::Query::get(Target target, Parameter pname)
 {
     GLint ret = 0;
     glGetQueryiv(static_cast<GLenum>(target), static_cast<GLenum>(pname), &ret);
@@ -101,7 +101,7 @@ GLint vc::wrapgl::Query::get(Target target, Parameter pname)
     return ret;
 }
 
-GLint vc::wrapgl::Query::get(Target target, GLuint index, Parameter pname)
+inline GLint vc::wrapgl::Query::get(Target target, GLuint index, Parameter pname)
 {
     GLint ret = 0;
     glGetQueryIndexediv(static_cast<GLenum>(target), index, static_cast<GLenum>(pname), &ret);
@@ -126,30 +126,30 @@ template<> struct GetQueryObject<GLuint64>
 }
 
 template<typename T>
-void vc::wrapgl::Query::getObject(Parameter pname, T* params)
+inline void vc::wrapgl::Query::getObject(Parameter pname, T* params)
 {
     ::internal::GetQueryObject<T>::run(qid, static_cast<GLenum>(pname), params);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Query::queryTimestamp()
+inline void vc::wrapgl::Query::queryTimestamp()
 {
     glQueryCounter(qid, GL_TIMESTAMP);
     WRAPGL_CHECK_ERROR();
 }
 
-GLuint vc::wrapgl::Query::id() const 
+inline GLuint vc::wrapgl::Query::id() const 
 { 
     return qid; 
 }
 
-vc::wrapgl::ScopeBinder<vc::wrapgl::Query>::ScopeBinder(const vc::wrapgl::Query& aobj, 
-                                                        typename vc::wrapgl::Query::Target tgt) : obj(aobj), target(tgt)
+inline vc::wrapgl::ScopeBinder<vc::wrapgl::Query>::ScopeBinder(const vc::wrapgl::Query& aobj, 
+                                                               typename vc::wrapgl::Query::Target tgt) : obj(aobj), target(tgt)
 {
   obj.begin(target);
 }
 
-vc::wrapgl::ScopeBinder<vc::wrapgl::Query>::~ScopeBinder()
+inline vc::wrapgl::ScopeBinder<vc::wrapgl::Query>::~ScopeBinder()
 {
   obj.end(target);
 }

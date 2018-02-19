@@ -41,7 +41,7 @@
 
 #include <VisionCore/WrapGL/WrapGL.hpp>
 
-vc::wrapgl::VertexProcessor::VertexProcessor() : 
+inline vc::wrapgl::VertexProcessor::VertexProcessor() : 
     prog(std::make_shared<vc::wrapgl::Program>()), 
     feedback(), 
     query()
@@ -49,7 +49,7 @@ vc::wrapgl::VertexProcessor::VertexProcessor() :
     
 }
 
-vc::wrapgl::VertexProcessor::VertexProcessor(ProgPtr p) : 
+inline vc::wrapgl::VertexProcessor::VertexProcessor(ProgPtr p) : 
     prog(p), 
     feedback(), 
     query()
@@ -57,32 +57,32 @@ vc::wrapgl::VertexProcessor::VertexProcessor(ProgPtr p) :
   
 }
 
-vc::wrapgl::VertexProcessor::~VertexProcessor()
+inline vc::wrapgl::VertexProcessor::~VertexProcessor()
 {
 
 }
 
-vc::wrapgl::VertexProcessor::CompileRetT vc::wrapgl::VertexProcessor::addShaderFromSourceFile(vc::wrapgl::Program::Type type,
-                                                                                              const std::string& fn, 
-                                                                                              const IncPathVecT& inc_path)
+inline vc::wrapgl::VertexProcessor::CompileRetT vc::wrapgl::VertexProcessor::addShaderFromSourceFile(vc::wrapgl::Program::Type type,
+                                                                                                     const std::string& fn, 
+                                                                                                     const IncPathVecT& inc_path)
 {
     return prog->addShaderFromSourceFile(type, fn, inc_path);
 }
 
-vc::wrapgl::VertexProcessor::CompileRetT vc::wrapgl::VertexProcessor::addShaderFromSourceCode(vc::wrapgl::Program::Type type,
-                                                                                              const std::string& src, 
-                                                                                              const IncPathVecT& inc_path)
+inline vc::wrapgl::VertexProcessor::CompileRetT vc::wrapgl::VertexProcessor::addShaderFromSourceCode(vc::wrapgl::Program::Type type,
+                                                                                                     const std::string& src, 
+                                                                                                     const IncPathVecT& inc_path)
 {
     return prog->addShaderFromSourceCode(type, src, inc_path);
 }
 
-void vc::wrapgl::VertexProcessor::runPre()
+inline void vc::wrapgl::VertexProcessor::runPre()
 {
     glEnable(GL_RASTERIZER_DISCARD); 
     WRAPGL_CHECK_ERROR();
 }
 
-std::size_t vc::wrapgl::VertexProcessor::runPost(std::size_t count)
+inline std::size_t vc::wrapgl::VertexProcessor::runPost(std::size_t count)
 {
     feedback.begin(GL_POINTS);
     

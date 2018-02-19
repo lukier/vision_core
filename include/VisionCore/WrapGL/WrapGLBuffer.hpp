@@ -87,21 +87,6 @@ public:
     inline Buffer(Type bt, GLuint numel, GLenum dtype, GLuint cpe, 
                   GLenum gluse = GL_DYNAMIC_DRAW, const GLvoid* data = nullptr);
     
-    template<typename T, typename AllocatorT>
-    inline Buffer(Type bt, const std::vector<T,AllocatorT>& vec, GLenum gluse = GL_DYNAMIC_DRAW);
-    
-    template<typename T>
-    inline Buffer(Type bt, GLuint numel, GLenum gluse = GL_DYNAMIC_DRAW, const T* data = nullptr);
-    
-    template<typename T>
-    inline Buffer(Type bt, const Buffer1DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
-    
-    template<typename T>
-    inline Buffer(Type bt, const Buffer2DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
-    
-    template<typename T>
-    inline Buffer(Type bt, const Buffer3DView<T,TargetHost>& buf, GLenum gluse = GL_DYNAMIC_DRAW);
-    
     inline ~Buffer();
     
     template<typename T, typename AllocatorT>

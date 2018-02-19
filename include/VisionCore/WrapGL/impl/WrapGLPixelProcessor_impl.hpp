@@ -41,7 +41,7 @@
 
 #include <VisionCore/WrapGL/WrapGL.hpp>
 
-vc::wrapgl::PixelProcessor::PixelProcessor(std::size_t w, std::size_t h) : 
+inline vc::wrapgl::PixelProcessor::PixelProcessor(std::size_t w, std::size_t h) : 
     width(w), height(h),
     prog(std::make_shared<vc::wrapgl::Program>()),
     rb(width,height)
@@ -49,7 +49,7 @@ vc::wrapgl::PixelProcessor::PixelProcessor(std::size_t w, std::size_t h) :
     addDefaultShaders();
 }
 
-vc::wrapgl::PixelProcessor::PixelProcessor(ProgPtr p, std::size_t w, std::size_t h) : 
+inline vc::wrapgl::PixelProcessor::PixelProcessor(ProgPtr p, std::size_t w, std::size_t h) : 
     width(w), height(h),
     prog(p),
     rb(width,height)
@@ -57,24 +57,24 @@ vc::wrapgl::PixelProcessor::PixelProcessor(ProgPtr p, std::size_t w, std::size_t
     addDefaultShaders();
 }
 
-vc::wrapgl::PixelProcessor::~PixelProcessor()
+inline vc::wrapgl::PixelProcessor::~PixelProcessor()
 {
 
 }
 
-vc::wrapgl::PixelProcessor::CompileRetT vc::wrapgl::PixelProcessor::addShaderFromSourceFile(const std::string& fn, 
-                                                                                            const IncPathVecT& inc_path)
+inline vc::wrapgl::PixelProcessor::CompileRetT vc::wrapgl::PixelProcessor::addShaderFromSourceFile(const std::string& fn, 
+                                                                                                   const IncPathVecT& inc_path)
 {
     return prog->addShaderFromSourceFile(vc::wrapgl::Program::Type::Fragment, fn, inc_path);
 }
 
-vc::wrapgl::PixelProcessor::CompileRetT vc::wrapgl::PixelProcessor::addShaderFromSourceCode(const std::string& src, 
-                                                                                            const IncPathVecT& inc_path)
+inline vc::wrapgl::PixelProcessor::CompileRetT vc::wrapgl::PixelProcessor::addShaderFromSourceCode(const std::string& src, 
+                                                                                                   const IncPathVecT& inc_path)
 {
     return prog->addShaderFromSourceCode(vc::wrapgl::Program::Type::Fragment, src, inc_path);
 }
 
-void vc::wrapgl::PixelProcessor::runPre()
+inline void vc::wrapgl::PixelProcessor::runPre()
 {
     glPushAttrib(GL_VIEWPORT_BIT);
     WRAPGL_CHECK_ERROR();
@@ -89,7 +89,7 @@ void vc::wrapgl::PixelProcessor::runPre()
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::PixelProcessor::runPost()
+inline void vc::wrapgl::PixelProcessor::runPost()
 {
     glDrawArrays(GL_POINTS, 0, 1);
     WRAPGL_CHECK_ERROR();
@@ -101,7 +101,7 @@ void vc::wrapgl::PixelProcessor::runPost()
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::PixelProcessor::addDefaultShaders()
+inline void vc::wrapgl::PixelProcessor::addDefaultShaders()
 {
     auto r1 = prog->addShaderFromSourceCode(vc::wrapgl::Program::Type::Vertex,"#version 330\nvoid main() { }\n");
     if(!r1.first) { throw std::runtime_error(r1.second); }

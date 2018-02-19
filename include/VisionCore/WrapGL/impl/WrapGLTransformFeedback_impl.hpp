@@ -36,17 +36,17 @@
 #ifndef VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_IMPL_HPP
 #define VISIONCORE_WRAPGL_TRANSFORM_FEEDBACK_IMPL_HPP
     
-vc::wrapgl::TransformFeedback::TransformFeedback() : tbid(0)
+inline vc::wrapgl::TransformFeedback::TransformFeedback() : tbid(0)
 {
     create();
 }
 
-vc::wrapgl::TransformFeedback::~TransformFeedback() 
+inline vc::wrapgl::TransformFeedback::~TransformFeedback() 
 {
     destroy();
 }
     
-void vc::wrapgl::TransformFeedback::create()
+inline void vc::wrapgl::TransformFeedback::create()
 {
     destroy();
     
@@ -54,7 +54,7 @@ void vc::wrapgl::TransformFeedback::create()
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::TransformFeedback::destroy()
+inline void vc::wrapgl::TransformFeedback::destroy()
 {
     if(tbid != 0)
     {
@@ -64,60 +64,60 @@ void vc::wrapgl::TransformFeedback::destroy()
     }
 }
 
-bool vc::wrapgl::TransformFeedback::isValid() const 
+inline bool vc::wrapgl::TransformFeedback::isValid() const 
 { 
     return tbid != 0; 
 }
 
-void vc::wrapgl::TransformFeedback::bind() const
+inline void vc::wrapgl::TransformFeedback::bind() const
 {
     glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tbid);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::TransformFeedback::unbind() const
+inline void vc::wrapgl::TransformFeedback::unbind() const
 {
     glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tbid);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::TransformFeedback::draw(GLenum mode) const
+inline void vc::wrapgl::TransformFeedback::draw(GLenum mode) const
 {
     glDrawTransformFeedback(mode, tbid);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::TransformFeedback::draw(GLenum mode, GLsizei instcnt) const
+inline void vc::wrapgl::TransformFeedback::draw(GLenum mode, GLsizei instcnt) const
 {
     glDrawTransformFeedbackInstanced(mode, tbid, instcnt);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::TransformFeedback::begin(GLenum primode)
+inline void vc::wrapgl::TransformFeedback::begin(GLenum primode)
 {
     glBeginTransformFeedback(primode);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::TransformFeedback::end()
+inline void vc::wrapgl::TransformFeedback::end()
 {
     glEndTransformFeedback();
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::TransformFeedback::pause()
+inline void vc::wrapgl::TransformFeedback::pause()
 {
     glPauseTransformFeedback();
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::TransformFeedback::resume()
+inline void vc::wrapgl::TransformFeedback::resume()
 {
     glPauseTransformFeedback();
     WRAPGL_CHECK_ERROR();
 }
 
-GLuint vc::wrapgl::TransformFeedback::id() const 
+inline GLuint vc::wrapgl::TransformFeedback::id() const 
 { 
     return tbid; 
 }

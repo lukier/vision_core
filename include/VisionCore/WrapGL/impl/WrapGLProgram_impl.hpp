@@ -39,17 +39,17 @@
 #include <regex>
 #include <experimental/filesystem>
 
-vc::wrapgl::Program::Program() : progid(0), linked(false)
+inline vc::wrapgl::Program::Program() : progid(0), linked(false)
 {
     create();
 }
 
-vc::wrapgl::Program::~Program()
+inline vc::wrapgl::Program::~Program()
 {
     destroy();
 }
 
-vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addPreprocessedShader(Type type, const std::string& source)
+inline vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addPreprocessedShader(Type type, const std::string& source)
 {
     bool was_ok = false;
     std::string err_log;
@@ -88,8 +88,8 @@ vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addPreprocessedShader(Type
     return std::make_pair(was_ok,err_log);
 }
 
-vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addShaderFromSourceCode(Type type, const std::string& source, 
-                                                                              const IncPathVecT& inc_path)
+inline vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addShaderFromSourceCode(Type type, const std::string& source, 
+                                                                                     const IncPathVecT& inc_path)
 {
     std::stringstream buf_in(source);
     std::stringstream buf_out;
@@ -104,8 +104,8 @@ vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addShaderFromSourceCode(Ty
     return addPreprocessedShader(type, buf_out.str());
 }
 
-vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addShaderFromSourceFile(Type type, const std::string& fn, 
-                                                                              const IncPathVecT& inc_path)
+inline vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addShaderFromSourceFile(Type type, const std::string& fn, 
+                                                                                     const IncPathVecT& inc_path)
 {
     std::ifstream ifs(fn);
     if(ifs)
@@ -130,8 +130,8 @@ vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::addShaderFromSourceFile(Ty
     }
 }
 
-bool vc::wrapgl::Program::parseShader(std::istream& buf_in, std::ostream& buf_out,
-                                      const IncPathVecT& inc_path, std::string& errout)
+inline bool vc::wrapgl::Program::parseShader(std::istream& buf_in, std::ostream& buf_out,
+                                             const IncPathVecT& inc_path, std::string& errout)
 {
     std::string line;
     
@@ -183,7 +183,7 @@ bool vc::wrapgl::Program::parseShader(std::istream& buf_in, std::ostream& buf_ou
     return true;
 }
 
-void vc::wrapgl::Program::removeAllShaders()
+inline void vc::wrapgl::Program::removeAllShaders()
 {
     if(progid != 0)
     {
@@ -199,7 +199,7 @@ void vc::wrapgl::Program::removeAllShaders()
     }
 }
 
-vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::link()
+inline vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::link()
 {
     bool was_ok = false;
     std::string err_log;
@@ -228,17 +228,17 @@ vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::link()
     return std::make_pair(was_ok,err_log);
 }
 
-bool vc::wrapgl::Program::isLinked() const 
+inline bool vc::wrapgl::Program::isLinked() const 
 { 
     return linked; 
 }
 
-bool vc::wrapgl::Program::isValid() const 
+inline bool vc::wrapgl::Program::isValid() const 
 { 
     return progid != 0; 
 }
 
-vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::validate()
+inline vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::validate()
 {
     bool was_ok = false;
     std::string err_log;
@@ -267,19 +267,19 @@ vc::wrapgl::Program::CompileRetT vc::wrapgl::Program::validate()
     return std::make_pair(was_ok,err_log);
 }
     
-void vc::wrapgl::Program::bind() const
+inline void vc::wrapgl::Program::bind() const
 {
     glUseProgram(progid);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::unbind() const
+inline void vc::wrapgl::Program::unbind() const
 {
     glUseProgram(0);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::create()
+inline void vc::wrapgl::Program::create()
 {
     if(isValid()) { destroy(); }
     
@@ -288,7 +288,7 @@ void vc::wrapgl::Program::create()
     linked = false;
 }
 
-void vc::wrapgl::Program::destroy()
+inline void vc::wrapgl::Program::destroy()
 {
     if(progid != 0) 
     {
@@ -299,143 +299,143 @@ void vc::wrapgl::Program::destroy()
     }
 }
 
-void vc::wrapgl::Program::dispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z) const
+inline void vc::wrapgl::Program::dispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z) const
 {
     glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::memoryBarrier(MemoryBarrierMask mbm)
+inline void vc::wrapgl::Program::memoryBarrier(MemoryBarrierMask mbm)
 {
     glMemoryBarrier(mbm);
     WRAPGL_CHECK_ERROR();
 }
 
-GLuint vc::wrapgl::Program::id() const 
+inline GLuint vc::wrapgl::Program::id() const 
 { 
     return progid; 
 }
 
-void vc::wrapgl::Program::bindAttributeLocation(const std::string& name, int location)
+inline void vc::wrapgl::Program::bindAttributeLocation(const std::string& name, int location)
 {
     glBindAttribLocation(progid, location, name.c_str());
     WRAPGL_CHECK_ERROR();
     linked = false;
 }
 
-GLint vc::wrapgl::Program::attributeLocation(const std::string& name) const 
+inline GLint vc::wrapgl::Program::attributeLocation(const std::string& name) const 
 { 
     const GLint ret = glGetAttribLocation(progid, name.c_str()); 
     WRAPGL_CHECK_ERROR();
     return ret;
 }
 
-void vc::wrapgl::Program::setAttributeValue(int location, GLfloat value)
+inline void vc::wrapgl::Program::setAttributeValue(int location, GLfloat value)
 {
     glVertexAttrib1f(location, value);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setAttributeValue(int location, GLfloat x, GLfloat y)
+inline void vc::wrapgl::Program::setAttributeValue(int location, GLfloat x, GLfloat y)
 {
     glVertexAttrib2f(location, x, y);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setAttributeValue(int location, GLfloat x, GLfloat y, GLfloat z)
+inline void vc::wrapgl::Program::setAttributeValue(int location, GLfloat x, GLfloat y, GLfloat z)
 {
     glVertexAttrib3f(location, x, y, z);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setAttributeValue(int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
+inline void vc::wrapgl::Program::setAttributeValue(int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
     glVertexAttrib4f(location, x, y, z, w);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setAttributeValue(int location, const Eigen::Matrix<float,2,1>& value) 
+inline void vc::wrapgl::Program::setAttributeValue(int location, const Eigen::Matrix<float,2,1>& value) 
 { 
     setAttributeValue(location, value(0), value(1)); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(int location, const Eigen::Matrix<float,3,1>& value) 
+inline void vc::wrapgl::Program::setAttributeValue(int location, const Eigen::Matrix<float,3,1>& value) 
 { 
     setAttributeValue(location, value(0), value(1), value(2)); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(int location, const Eigen::Matrix<float,4,1>& value) 
+inline void vc::wrapgl::Program::setAttributeValue(int location, const Eigen::Matrix<float,4,1>& value) 
 { 
     setAttributeValue(location, value(0), value(1), value(2), value(3));
 }
 
-void vc::wrapgl::Program::setAttributeValue(int location, const float2& value) 
+inline void vc::wrapgl::Program::setAttributeValue(int location, const float2& value) 
 { 
     setAttributeValue(location, value.x, value.y); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(int location, const float3& value) 
+inline void vc::wrapgl::Program::setAttributeValue(int location, const float3& value) 
 { 
     setAttributeValue(location, value.x, value.y, value.z); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(int location, const float4& value) 
+inline void vc::wrapgl::Program::setAttributeValue(int location, const float4& value) 
 { 
     setAttributeValue(location, value.x, value.y, value.z, value.w); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(const std::string& name, GLfloat value) 
+inline void vc::wrapgl::Program::setAttributeValue(const std::string& name, GLfloat value) 
 { 
     setAttributeValue(attributeLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(const std::string& name, GLfloat x, GLfloat y) 
+inline void vc::wrapgl::Program::setAttributeValue(const std::string& name, GLfloat x, GLfloat y) 
 { 
     setAttributeValue(attributeLocation(name), x, y); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(const std::string& name, GLfloat x, GLfloat y, GLfloat z) 
+inline void vc::wrapgl::Program::setAttributeValue(const std::string& name, GLfloat x, GLfloat y, GLfloat z) 
 { 
     setAttributeValue(attributeLocation(name), x, y, z); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(const std::string& name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) 
+inline void vc::wrapgl::Program::setAttributeValue(const std::string& name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) 
 { 
     setAttributeValue(attributeLocation(name), x, y, z, w); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(const std::string& name, const Eigen::Matrix<float,2,1>& value) 
+inline void vc::wrapgl::Program::setAttributeValue(const std::string& name, const Eigen::Matrix<float,2,1>& value) 
 {   
     setAttributeValue(attributeLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(const std::string& name, const Eigen::Matrix<float,3,1>& value) 
+inline void vc::wrapgl::Program::setAttributeValue(const std::string& name, const Eigen::Matrix<float,3,1>& value) 
 { 
     setAttributeValue(attributeLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(const std::string& name, const Eigen::Matrix<float,4,1>& value) 
+inline void vc::wrapgl::Program::setAttributeValue(const std::string& name, const Eigen::Matrix<float,4,1>& value) 
 { 
     setAttributeValue(attributeLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(const std::string& name, const float2& value) 
+inline void vc::wrapgl::Program::setAttributeValue(const std::string& name, const float2& value) 
 { 
     setAttributeValue(attributeLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(const std::string& name, const float3& value) 
+inline void vc::wrapgl::Program::setAttributeValue(const std::string& name, const float3& value) 
 { 
     setAttributeValue(attributeLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setAttributeValue(const std::string& name, const float4& value) 
+inline void vc::wrapgl::Program::setAttributeValue(const std::string& name, const float4& value) 
 { 
     setAttributeValue(attributeLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setAttributeArray(int location, int tupleSize, GLenum type, 
-                                           bool normalize, uintptr_t offset, int stride)
+inline void vc::wrapgl::Program::setAttributeArray(int location, int tupleSize, GLenum type, 
+                                                   bool normalize, uintptr_t offset, int stride)
 {
     glVertexAttribPointer(location, tupleSize, type, normalize ? GL_TRUE : GL_FALSE, 
                           stride, reinterpret_cast<const GLvoid*>(offset));
@@ -443,7 +443,7 @@ void vc::wrapgl::Program::setAttributeArray(int location, int tupleSize, GLenum 
 }
 
 template<typename T>
-void vc::wrapgl::Program::setAttributeArray(int location, bool normalize, uintptr_t offset, int stride)
+inline void vc::wrapgl::Program::setAttributeArray(int location, bool normalize, uintptr_t offset, int stride)
 {
     typedef typename vc::type_traits<T>::ChannelType cht;
     static constexpr int chcnt = vc::type_traits<T>::ChannelCount;
@@ -452,14 +452,14 @@ void vc::wrapgl::Program::setAttributeArray(int location, bool normalize, uintpt
     setAttributeArray(location, chcnt, gltype, normalize, stride, offset);
 }
 
-void vc::wrapgl::Program::setAttributeArray(const std::string& name, int tupleSize, GLenum type, 
+inline void vc::wrapgl::Program::setAttributeArray(const std::string& name, int tupleSize, GLenum type, 
                                            bool normalize, uintptr_t offset, int stride)
 {
     setAttributeArray(attributeLocation(name), tupleSize, type, normalize, stride, offset);
 }
 
 template<typename T>
-void vc::wrapgl::Program::setAttributeArray(const std::string& name, bool normalize, uintptr_t offset, int stride)
+inline void vc::wrapgl::Program::setAttributeArray(const std::string& name, bool normalize, uintptr_t offset, int stride)
 {
     typedef typename vc::type_traits<T>::ChannelType cht;
     static constexpr int chcnt = vc::type_traits<T>::ChannelCount;
@@ -468,306 +468,306 @@ void vc::wrapgl::Program::setAttributeArray(const std::string& name, bool normal
     setAttributeArray(attributeLocation(name), chcnt, gltype, normalize, stride, offset);
 }
 
-void vc::wrapgl::Program::enableAttributeArray(int location)
+inline void vc::wrapgl::Program::enableAttributeArray(int location)
 {
     glEnableVertexAttribArray(location);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::enableAttributeArray(const std::string& name) 
+inline void vc::wrapgl::Program::enableAttributeArray(const std::string& name) 
 { 
     enableAttributeArray(attributeLocation(name)); 
 }
 
-void vc::wrapgl::Program::disableAttributeArray(int location)
+inline void vc::wrapgl::Program::disableAttributeArray(int location)
 {
     glDisableVertexAttribArray(location);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::disableAttributeArray(const std::string& name) 
+inline void vc::wrapgl::Program::disableAttributeArray(const std::string& name) 
 { 
     disableAttributeArray(attributeLocation(name)); 
 }
 
-GLint vc::wrapgl::Program::uniformLocation(const std::string& name) const 
+inline GLint vc::wrapgl::Program::uniformLocation(const std::string& name) const 
 { 
     const GLint ret = glGetUniformLocation(progid, name.c_str()); 
     WRAPGL_CHECK_ERROR();
     return ret;
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, GLfloat value)
+inline void vc::wrapgl::Program::setUniformValue(int location, GLfloat value)
 {
     glUniform1f(location, value);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, GLint value)
+inline void vc::wrapgl::Program::setUniformValue(int location, GLint value)
 {
     glUniform1i(location, value);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, GLuint value)
+inline void vc::wrapgl::Program::setUniformValue(int location, GLuint value)
 {
     glUniform1ui(location, value);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, GLfloat x, GLfloat y)
+inline void vc::wrapgl::Program::setUniformValue(int location, GLfloat x, GLfloat y)
 {
     glUniform2f(location, x, y);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, GLfloat x, GLfloat y, GLfloat z)
+inline void vc::wrapgl::Program::setUniformValue(int location, GLfloat x, GLfloat y, GLfloat z)
 {
     glUniform3f(location, x, y, z);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
+inline void vc::wrapgl::Program::setUniformValue(int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
     glUniform4f(location, x, y, z, w);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,1>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,1>& value) 
 { 
     setUniformValue(location, value(0), value(1)); 
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,3,1>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,3,1>& value) 
 { 
     setUniformValue(location, value(0), value(1), value(2)); 
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,4,1>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,4,1>& value) 
 { 
     setUniformValue(location, value(0), value(1), value(2), value(3)); 
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const float2& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const float2& value) 
 { 
     setUniformValue(location, value.x, value.y); 
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const float3& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const float3& value) 
 { 
     setUniformValue(location, value.x, value.y, value.z); 
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const float4& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const float4& value) 
 { 
     setUniformValue(location, value.x, value.y, value.z, value.w); 
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,2>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,2>& value) 
 { 
     glUniformMatrix2fv(location, 1, GL_FALSE, value.data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,3>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,3>& value) 
 { 
     glUniformMatrix2x3fv(location, 1, GL_FALSE, value.data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,4>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,2,4>& value) 
 { 
     glUniformMatrix2x4fv(location, 1, GL_FALSE, value.data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,3,2>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,3,2>& value) 
 { 
     glUniformMatrix3x2fv(location, 1, GL_FALSE, value.data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,3,3>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,3,3>& value) 
 { 
     glUniformMatrix3fv(location, 1, GL_FALSE, value.data());   
     WRAPGL_CHECK_ERROR();    
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,3,4>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,3,4>& value) 
 { 
     glUniformMatrix3x4fv(location, 1, GL_FALSE, value.data());
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,4,2>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,4,2>& value) 
 { 
     glUniformMatrix4x2fv(location, 1, GL_FALSE, value.data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,4,3>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,4,3>& value) 
 { 
     glUniformMatrix4x3fv(location, 1, GL_FALSE, value.data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,4,4>& value) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const Eigen::Matrix<float,4,4>& value) 
 { 
     glUniformMatrix4fv(location, 1, GL_FALSE, value.data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const GLfloat value[2][2]) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const GLfloat value[2][2]) 
 { 
     glUniformMatrix2fv(location, 1, GL_FALSE, value[0]); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const GLfloat value[3][3]) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const GLfloat value[3][3]) 
 { 
     glUniformMatrix3fv(location, 1, GL_FALSE, value[0]); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const GLfloat value[4][4]) 
+inline void vc::wrapgl::Program::setUniformValue(int location, const GLfloat value[4][4]) 
 { 
     glUniformMatrix4fv(location, 1, GL_FALSE, value[0]);       
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(int location, const Sophus::SE3f& value)
+inline void vc::wrapgl::Program::setUniformValue(int location, const Sophus::SE3f& value)
 {
     const Sophus::SE3f::Transformation m = value.matrix();
     glUniformMatrix4fv(location, 1, GL_FALSE, m.data());
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, GLfloat value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, GLfloat value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, GLint value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, GLint value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, GLuint value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, GLuint value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, GLfloat x, GLfloat y) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, GLfloat x, GLfloat y) 
 { 
     setUniformValue(uniformLocation(name), x, y); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, GLfloat x, GLfloat y, GLfloat z) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, GLfloat x, GLfloat y, GLfloat z) 
 { 
     setUniformValue(uniformLocation(name), x, y, z); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) 
 { 
     setUniformValue(uniformLocation(name), x, y, z, w); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,2,1>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,2,1>& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,3,1>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,3,1>& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,4,1>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,4,1>& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const float2& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const float2& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const float3& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const float3& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const float4& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const float4& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,2,2>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,2,2>& value) 
 {
     setUniformValue(uniformLocation(name), value);  
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,2,3>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,2,3>& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,2,4>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,2,4>& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,3,2>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,3,2>& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,3,3>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,3,3>& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,3,4>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,3,4>& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,4,2>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,4,2>& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,4,3>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,4,3>& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,4,4>& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Eigen::Matrix<float,4,4>& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const GLfloat value[2][2]) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const GLfloat value[2][2]) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const GLfloat value[3][3]) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const GLfloat value[3][3]) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const GLfloat value[4][4]) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const GLfloat value[4][4]) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValue(const std::string& name, const Sophus::SE3f& value) 
+inline void vc::wrapgl::Program::setUniformValue(const std::string& name, const Sophus::SE3f& value) 
 { 
     setUniformValue(uniformLocation(name), value); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const GLfloat* values, int count, int tupleSize)
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const GLfloat* values, int count, int tupleSize)
 {
     if (tupleSize == 1)
     {
@@ -788,178 +788,178 @@ void vc::wrapgl::Program::setUniformValueArray(int location, const GLfloat* valu
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const GLint* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const GLint* values, int count) 
 { 
     glUniform1iv(location, count, values); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const GLuint* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const GLuint* values, int count) 
 { 
     glUniform1uiv(location, count, values); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,1>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,1>* values, int count) 
 { 
     glUniform2fv(location, count, values[0].data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,1>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,1>* values, int count) 
 { 
     glUniform3fv(location, count, values[0].data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,1>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,1>* values, int count) 
 { 
     glUniform4fv(location, count, values[0].data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,2>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,2>* values, int count) 
 { 
     glUniformMatrix2fv(location, count, GL_FALSE, values[0].data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,3>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,3>* values, int count) 
 { 
     glUniformMatrix2x3fv(location, count, GL_FALSE, values[0].data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,4>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,2,4>* values, int count) 
 { 
     glUniformMatrix2x4fv(location, count, GL_FALSE, values[0].data());
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,2>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,2>* values, int count) 
 { 
     glUniformMatrix3x2fv(location, count, GL_FALSE, values[0].data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,3>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,3>* values, int count) 
 { 
     glUniformMatrix3fv(location, count, GL_FALSE, values[0].data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,4>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,3,4>* values, int count) 
 { 
     glUniformMatrix3x4fv(location, count, GL_FALSE, values[0].data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,2>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,2>* values, int count) 
 { 
     glUniformMatrix4x2fv(location, count, GL_FALSE, values[0].data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,3>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,3>* values, int count) 
 { 
     glUniformMatrix4x3fv(location, count, GL_FALSE, values[0].data()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,4>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const Eigen::Matrix<float,4,4>* values, int count) 
 { 
     glUniformMatrix4fv(location, count, GL_FALSE, values[0].data()); 
     WRAPGL_CHECK_ERROR();
 }
 
 template<typename T, std::size_t N>
-void vc::wrapgl::Program::setUniformValueArray(int location, const std::array<T,N>& values)
+inline void vc::wrapgl::Program::setUniformValueArray(int location, const std::array<T,N>& values)
 {
     setUniformValueArray(location, values.data(), N);
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const GLfloat* values, int count, int tupleSize) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const GLfloat* values, int count, int tupleSize) 
 { 
     setUniformValueArray(uniformLocation(name), values, count, tupleSize); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const GLint* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const GLint* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const GLuint* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const GLuint* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,2,1>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,2,1>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count);   
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,3,1>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,3,1>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,4,1>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,4,1>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,2,2>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,2,2>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,2,3>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,2,3>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,2,4>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,2,4>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,3,2>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,3,2>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,3,3>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,3,3>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,3,4>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,3,4>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,4,2>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,4,2>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,4,3>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,4,3>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,4,4>* values, int count) 
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const Eigen::Matrix<float,4,4>* values, int count) 
 { 
     setUniformValueArray(uniformLocation(name), values, count); 
 }
 
 template<typename T, std::size_t N>
-void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const std::array<T,N>& values)
+inline void vc::wrapgl::Program::setUniformValueArray(const std::string& name, const std::array<T,N>& values)
 {
     setUniformValueArray(uniformLocation(name),values.data(), N);
 }
 
-void vc::wrapgl::Program::bindImage(const wrapgl::Texture2D& tex, GLuint unit, GLenum access, GLenum intfmt) const 
+inline void vc::wrapgl::Program::bindImage(const wrapgl::Texture2D& tex, GLuint unit, GLenum access, GLenum intfmt) const 
 {
     glBindImageTexture(unit, /* unit, note that we're not offseting GL_TEXTURE0 */
                             tex.id(), /* a 2D texture for example */
@@ -971,45 +971,45 @@ void vc::wrapgl::Program::bindImage(const wrapgl::Texture2D& tex, GLuint unit, G
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::unbindImage(GLuint unit)
+inline void vc::wrapgl::Program::unbindImage(GLuint unit)
 {
     glBindImageTexture(unit, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
     WRAPGL_CHECK_ERROR();
 }
 
-GLuint vc::wrapgl::Program::getMaxImageUnits() const 
+inline GLuint vc::wrapgl::Program::getMaxImageUnits() const 
 { 
     const GLuint ret = internal::getParameter<GLint>(GL_MAX_IMAGE_UNITS); 
     WRAPGL_CHECK_ERROR();
     return ret;
 }
 
-GLint vc::wrapgl::Program::getFragmentDataLocation(const std::string& name) const 
+inline GLint vc::wrapgl::Program::getFragmentDataLocation(const std::string& name) const 
 { 
     const GLint ret = glGetFragDataLocation(progid, name.c_str()); 
     WRAPGL_CHECK_ERROR();
     return ret;
 }
 
-void vc::wrapgl::Program::bindFragmentDataLocation(const std::string& name, GLuint color) 
+inline void vc::wrapgl::Program::bindFragmentDataLocation(const std::string& name, GLuint color) 
 { 
     glBindFragDataLocation(progid, color, name.c_str()); 
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setTransformFeedbackVaryings(GLsizei count, const char** varyings, GLenum bufmode)
+inline void vc::wrapgl::Program::setTransformFeedbackVaryings(GLsizei count, const char** varyings, GLenum bufmode)
 {
     glTransformFeedbackVaryings(progid, count, varyings, bufmode);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setTransformFeedbackVaryings(const std::vector<const char*>& varyings, GLenum bufmode)
+inline void vc::wrapgl::Program::setTransformFeedbackVaryings(const std::vector<const char*>& varyings, GLenum bufmode)
 {
     glTransformFeedbackVaryings(progid, varyings.size(), varyings.data(), bufmode);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::setTransformFeedbackVaryings(const std::vector<std::string>& varyings, GLenum bufmode)
+inline void vc::wrapgl::Program::setTransformFeedbackVaryings(const std::vector<std::string>& varyings, GLenum bufmode)
 {
     std::vector<const char*> varyings_c;
     for(const std::string& s : varyings)
@@ -1019,49 +1019,49 @@ void vc::wrapgl::Program::setTransformFeedbackVaryings(const std::vector<std::st
     setTransformFeedbackVaryings(varyings_c, bufmode);
 }
 
-void vc::wrapgl::Program::bindShaderStorageBlock(GLuint storageBlockIndex, GLuint storageBlockBinding)
+inline void vc::wrapgl::Program::bindShaderStorageBlock(GLuint storageBlockIndex, GLuint storageBlockBinding)
 {
     glShaderStorageBlockBinding(progid, storageBlockIndex, storageBlockBinding);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::bindBufferBase(GLuint location, const Buffer& buf, typename Buffer::Type bt)
+inline void vc::wrapgl::Program::bindBufferBase(GLuint location, const Buffer& buf, typename Buffer::Type bt)
 {
     if(bt == Buffer::Type::Invalid) { bt = buf.type(); }
     glBindBufferBase(static_cast<GLenum>(bt), location, buf.id());
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::bindBufferBase(const std::string& name, const Buffer& buf, typename Buffer::Type bt)
+inline void vc::wrapgl::Program::bindBufferBase(const std::string& name, const Buffer& buf, typename Buffer::Type bt)
 {
     bindBufferBase(uniformBlockLocation(name),buf,bt);
 }
 
-void vc::wrapgl::Program::bindBufferRange(GLuint location, const Buffer& buf, GLintptr offset, GLsizeiptr size)
+inline void vc::wrapgl::Program::bindBufferRange(GLuint location, const Buffer& buf, GLintptr offset, GLsizeiptr size)
 {
     glBindBufferRange(static_cast<GLenum>(buf.type()), location, buf.id(), offset, size);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::bindBufferRange(const std::string& name, const Buffer& buf, GLintptr offset, GLsizeiptr size)
+inline void vc::wrapgl::Program::bindBufferRange(const std::string& name, const Buffer& buf, GLintptr offset, GLsizeiptr size)
 {
     bindBufferRange(uniformBlockLocation(name), buf, offset, size);
 }
 
-GLuint vc::wrapgl::Program::uniformBlockLocation(const std::string& name) const 
+inline GLuint vc::wrapgl::Program::uniformBlockLocation(const std::string& name) const 
 { 
     const GLuint ret = glGetUniformBlockIndex(progid, name.c_str()); 
     WRAPGL_CHECK_ERROR();
     return ret;
 }
 
-void vc::wrapgl::Program::bindUniformBuffer(GLuint location, GLuint uniformBlockBinding)
+inline void vc::wrapgl::Program::bindUniformBuffer(GLuint location, GLuint uniformBlockBinding)
 {
     glUniformBlockBinding(progid, location, uniformBlockBinding);
     WRAPGL_CHECK_ERROR();
 }
 
-void vc::wrapgl::Program::bindUniformBuffer(const std::string& name, GLuint uniformBlockBinding)
+inline void vc::wrapgl::Program::bindUniformBuffer(const std::string& name, GLuint uniformBlockBinding)
 {
     bindUniformBuffer(uniformBlockLocation(name),uniformBlockBinding);
 }

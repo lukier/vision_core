@@ -342,4 +342,38 @@ namespace internal
 
 #define WRAPGL_CHECK_ERROR() do { if(WRAPGL_CHECK_ERROR_SWITCH) { vc::wrapgl::internal::checkError(__FILE__,__LINE__); } } while (0)
 
+namespace vc
+{
+    
+namespace wrapgl
+{
+    
+struct ScopeEnable
+{
+    ScopeEnable() = delete;
+    ScopeEnable(const ScopeEnable&) = delete;
+    ScopeEnable(ScopeEnable&&) = delete;
+    ScopeEnable& operator=(const ScopeEnable&) = delete;
+    ScopeEnable& operator=(ScopeEnable&&) = delete;
+    
+    ScopeEnable(GLenum v) : flag(v) 
+    {
+        glEnable(flag);
+        WRAPGL_CHECK_ERROR();
+    }
+    
+    ~ScopeEnable()
+    {
+        glDisable(flag);
+        WRAPGL_CHECK_ERROR();
+    }
+    
+private:
+    const GLenum flag;
+};
+    
+}
+    
+}
+
 #endif // VISIONCORE_WRAPGL_COMMON_HPP

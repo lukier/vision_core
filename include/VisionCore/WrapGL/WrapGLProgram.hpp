@@ -76,6 +76,14 @@ namespace vc
 namespace wrapgl
 {
     
+class ShaderException : public std::runtime_error
+{
+public:
+    ShaderException(const std::string& build_err) : std::runtime_error(build_err)
+    {
+    }
+};
+    
 class Program
 {
 public:    

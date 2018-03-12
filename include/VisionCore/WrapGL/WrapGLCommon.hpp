@@ -371,6 +371,18 @@ struct ScopeEnable
 private:
     const GLenum flag;
 };
+
+static inline void finish()
+{
+    glFinish();
+    WRAPGL_CHECK_ERROR();
+}
+
+static inline void drawArrays(GLenum mode, GLsizei count, GLint first = 0)
+{
+    glDrawArrays(mode, first, count);
+    WRAPGL_CHECK_ERROR();
+}
     
 }
     

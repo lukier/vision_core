@@ -77,7 +77,7 @@ inline void vc::wrapgl::TransformFeedback::bind() const
 
 inline void vc::wrapgl::TransformFeedback::unbind() const
 {
-    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tbid);
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
     WRAPGL_CHECK_ERROR();
 }
 

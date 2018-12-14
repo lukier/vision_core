@@ -372,12 +372,12 @@ struct CUDAPersistentFFT2D : public vc::math::PersistentFFT
 // -------------------------------------------
 
 template<typename T_INPUT, typename T_OUTPUT, typename Target>
-void vc::math::fft(const vc::Buffer1DView<T_INPUT, Target >& buf_in,
-                     vc::Buffer1DView<T_OUTPUT, Target >& buf_out, bool forward)
+void vc::math::fft(int npoint, const vc::Buffer1DView<T_INPUT, Target >& buf_in,
+                   vc::Buffer1DView<T_OUTPUT, Target >& buf_out, bool forward)
 {
     cufftHandle plan;
 
-    cufftResult res = cufftPlan1d(&plan, std::max(buf_in.size(), buf_out.size()), FFTTransformType<T_INPUT, T_OUTPUT>::CUDAType, 1);
+    cufftResult res = cufftPlan1d(&plan, npoint, FFTTransformType<T_INPUT, T_OUTPUT>::CUDAType, std::max(buf_in.size(), buf_out.size()) / npoint);
     if(res != CUFFT_SUCCESS) { throw std::runtime_error("Plan Error"); }
 
     if(FFTTransformType<T_INPUT, T_OUTPUT>::CUDAType == CUFFT_C2R) { forward = false; }
@@ -394,7 +394,7 @@ void vc::math::fft(const vc::Buffer1DView<T_INPUT, Target >& buf_in,
 
 template<typename T_INPUT, typename T_OUTPUT, typename Target>
 void vc::math::fft(const vc::Buffer2DView<T_INPUT, Target>& buf_in,
-                     vc::Buffer2DView<T_OUTPUT, Target>& buf_out, bool forward)
+                   vc::Buffer2DView<T_OUTPUT, Target>& buf_out, bool forward)
 {
     cufftHandle plan;
 
@@ -424,12 +424,12 @@ void vc::math::fft(const vc::Buffer2DView<T_INPUT, Target>& buf_in,
 }
 
 template<typename T_INPUT, typename T_OUTPUT, typename Target>
-std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT(const vc::Buffer1DView<T_INPUT, Target >& buf_in,
-                                                               vc::Buffer1DView<T_OUTPUT, Target >& buf_out, bool forward)
+std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT(int npoint, const vc::Buffer1DView<T_INPUT, Target >& buf_in,
+                                                           vc::Buffer1DView<T_OUTPUT, Target >& buf_out, bool forward)
 {
     cufftHandle plan;
 
-    cufftResult res = cufftPlan1d(&plan, std::max(buf_in.size(), buf_out.size()), FFTTransformType<T_INPUT, T_OUTPUT>::CUDAType, 1);
+    cufftResult res = cufftPlan1d(&plan, npoint, FFTTransformType<T_INPUT, T_OUTPUT>::CUDAType, std::max(buf_in.size(), buf_out.size()) / npoint);
     if(res != CUFFT_SUCCESS) { throw std::runtime_error("Plan Error"); }
 
     return std::unique_ptr<vc::math::PersistentFFT>(new CUDAPersistentFFT1D<T_INPUT,T_OUTPUT,Target>(buf_in, buf_out, plan, forward));
@@ -437,7 +437,7 @@ std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT(const vc::Buffer1DVie
 
 template<typename T_INPUT, typename T_OUTPUT, typename Target>
 std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT(const vc::Buffer2DView<T_INPUT, Target>& buf_in,
-                                                               vc::Buffer2DView<T_OUTPUT, Target>& buf_out, bool forward)
+                                                           vc::Buffer2DView<T_OUTPUT, Target>& buf_out, bool forward)
 {
     cufftHandle plan;
 
@@ -933,19 +933,19 @@ void vc::math::calculateCrossPowerSpectrum(const vc::Buffer2DView<T_COMPLEX, Tar
 }
 
 // R2C - 1D
-template void vc::math::fft<float, cufftComplex>(const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
-                                                         vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<float, Eigen::Vector2f>(const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
-                                                            vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<float, std::complex<float>>(const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
-                                                                vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<float, cufftComplex>(int npoint, const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
+                                                 vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<float, Eigen::Vector2f>(int npoint, const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
+                                                    vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<float, std::complex<float>>(int npoint, const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
+                                                        vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
 
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<float, cufftComplex>(const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
-                                                                                             vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<float, Eigen::Vector2f>(const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
-                                                                                                vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<float, std::complex<float>>(const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
-                                                                                                    vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<float, cufftComplex>(int npoint, const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
+                                                                                         vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<float, Eigen::Vector2f>(int npoint, const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
+                                                                                            vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<float, std::complex<float>>(int npoint, const vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_in,
+                                                                                                vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
 
 // R2C - 2D
 template void vc::math::fft<float, cufftComplex>(const vc::Buffer2DView<float, vc::TargetDeviceCUDA>& buf_in,
@@ -963,19 +963,19 @@ template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<float, std::
                                                                                                     vc::Buffer2DView<std::complex<float>, vc::TargetDeviceCUDA>& buf_out, bool forward);
 
 // C2R - 1D
-template void vc::math::fft<cufftComplex, float>(const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
-                                                         vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<Eigen::Vector2f, float>(const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
-                                                            vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<std::complex<float>, float>(const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
-                                                                vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<cufftComplex, float>(int npoint, const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
+                                                 vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<Eigen::Vector2f, float>(int npoint, const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
+                                                    vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<std::complex<float>, float>(int npoint, const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
+                                                        vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_out, bool forward);
 
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<cufftComplex, float>(const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
-                                                                                             vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<Eigen::Vector2f, float>(const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<cufftComplex, float>(int npoint, const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
+                                                                                         vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<Eigen::Vector2f, float>(int npoint, const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
+                                                                                            vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<std::complex<float>, float>(int npoint, const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
                                                                                                 vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<std::complex<float>, float>(const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
-                                                                                                    vc::Buffer1DView<float, vc::TargetDeviceCUDA >& buf_out, bool forward);
 
 // C2R - 2D
 template void vc::math::fft<cufftComplex, float>(const vc::Buffer2DView<cufftComplex, vc::TargetDeviceCUDA>& buf_in,
@@ -993,43 +993,43 @@ template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<std::complex
                                                                                                     vc::Buffer2DView<float, vc::TargetDeviceCUDA>& buf_out, bool forward);
 
 // C2C - 1D
-template void vc::math::fft<cufftComplex, cufftComplex>(const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
-                                                                vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<cufftComplex, Eigen::Vector2f>(const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
-                                                                   vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<cufftComplex, std::complex<float>>(const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
-                                                                       vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<Eigen::Vector2f, Eigen::Vector2f>(const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
-                                                                      vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<Eigen::Vector2f, cufftComplex>(const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
-                                                                   vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<Eigen::Vector2f, std::complex<float>>(const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
-                                                                          vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<std::complex<float>, std::complex<float>>(const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
-                                                                              vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<std::complex<float>, Eigen::Vector2f>(const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
-                                                                          vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template void vc::math::fft<std::complex<float>, cufftComplex>(const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
-                                                                       vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<cufftComplex, cufftComplex>(int npoint, const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
+                                                        vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<cufftComplex, Eigen::Vector2f>(int npoint, const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
+                                                           vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<cufftComplex, std::complex<float>>(int npoint, const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
+                                                               vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<Eigen::Vector2f, Eigen::Vector2f>(int npoint, const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
+                                                              vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<Eigen::Vector2f, cufftComplex>(int npoint, const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
+                                                           vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<Eigen::Vector2f, std::complex<float>>(int npoint, const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
+                                                                  vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<std::complex<float>, std::complex<float>>(int npoint, const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
+                                                                      vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<std::complex<float>, Eigen::Vector2f>(int npoint, const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
+                                                                  vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template void vc::math::fft<std::complex<float>, cufftComplex>(int npoint, const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
+                                                             vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
 
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<cufftComplex, cufftComplex>(const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
-                                                                                                    vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<cufftComplex, Eigen::Vector2f>(const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
-                                                                                                       vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<cufftComplex, std::complex<float>>(const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
-                                                                                                           vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<Eigen::Vector2f, Eigen::Vector2f>(const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
-                                                                                                          vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<Eigen::Vector2f, cufftComplex>(const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
-                                                                                                       vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<Eigen::Vector2f, std::complex<float>>(const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<cufftComplex, cufftComplex>(int npoint, const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
+                                                                                                vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<cufftComplex, Eigen::Vector2f>(int npoint, const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
+                                                                                                   vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<cufftComplex, std::complex<float>>(int npoint, const vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_in,
+                                                                                                       vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<Eigen::Vector2f, Eigen::Vector2f>(int npoint, const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
+                                                                                                      vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<Eigen::Vector2f, cufftComplex>(int npoint, const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
+                                                                                                   vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<Eigen::Vector2f, std::complex<float>>(int npoint, const vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_in,
+                                                                                                          vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<std::complex<float>, std::complex<float>>(int npoint, const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
                                                                                                               vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<std::complex<float>, std::complex<float>>(const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
-                                                                                                                  vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<std::complex<float>, Eigen::Vector2f>(const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
-                                                                                                              vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
-template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<std::complex<float>, cufftComplex>(const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
-                                                                                                           vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<std::complex<float>, Eigen::Vector2f>(int npoint, const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
+                                                                                                          vc::Buffer1DView<Eigen::Vector2f, vc::TargetDeviceCUDA >& buf_out, bool forward);
+template std::unique_ptr<vc::math::PersistentFFT> vc::math::makeFFT<std::complex<float>, cufftComplex>(int npoint, const vc::Buffer1DView<std::complex<float>, vc::TargetDeviceCUDA >& buf_in,
+                                                                                                       vc::Buffer1DView<cufftComplex, vc::TargetDeviceCUDA >& buf_out, bool forward);
 
 // C2C - 2D
 template void vc::math::fft<cufftComplex, cufftComplex>(const vc::Buffer2DView<cufftComplex, vc::TargetDeviceCUDA>& buf_in,

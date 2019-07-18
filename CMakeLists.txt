@@ -91,6 +91,7 @@ include(GenerateExportHeader)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts)
 
 option(USE_GLBINDING "Use glbinding & globjects instead" OFF)
+option(USE_OPENCL "Use OpenCL" ON)
 
 # ------------------------------------------------------------------------------
 # Dependencies
@@ -351,7 +352,7 @@ if(CUDA_FOUND)
     endif()
 endif()
 
-if(OpenCL_FOUND)
+if(OpenCL_FOUND AND USE_OPENCL)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenCL::OpenCL)
     target_compile_definitions(${PROJECT_NAME} PUBLIC VISIONCORE_HAVE_OPENCL CL_HPP_MINIMUM_OPENCL_VERSION=120 CL_HPP_TARGET_OPENCL_VERSION=${OpenCL_VERSION_MAJOR}${OpenCL_VERSION_MINOR}0 CL_HPP_ENABLE_EXCEPTIONS)
 endif()

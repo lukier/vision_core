@@ -134,6 +134,10 @@ find_package(CUDA QUIET)
 if(CUDA_FOUND)
     CUDA_SELECT_NVCC_ARCH_FLAGS(CUDA_NVCC_ARCH_FLAGS Auto)
     set(CMAKE_CUDA_FLAGS ${CUDA_NVCC_ARCH_FLAGS};--expt-relaxed-constexpr;--expt-extended-lambda;-use_fast_math)
+    # suppress NVCC warning triggered in Sophus:
+    # "__device__ annotation is ignored on a function that is explicitly defaulted on its first declaration"
+    # see: https://github.com/kokkos/kokkos/issues/1473
+    list(APPEND CMAKE_CUDA_FLAGS -Xcudafe;--diag_suppress=esa_on_defaulted_function_ignored)
     if(CMAKE_BUILD_TYPE MATCHES Debug)
         list(APPEND CMAKE_CUDA_FLAGS -G;-g;-lineinfo;-Xcompiler;-rdynamic)
     elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)

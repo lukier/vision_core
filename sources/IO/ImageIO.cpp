@@ -67,7 +67,7 @@ struct ImageIOProxy<cv::Mat,OpenCVBackend>
 {
     static inline cv::Mat load(const std::string& fn)
     {
-        cv::Mat ret = cv::imread(fn, CV_LOAD_IMAGE_ANYDEPTH);
+        cv::Mat ret = cv::imread(fn, cv::IMREAD_ANYDEPTH);
         
         if(!ret.data)
         {
@@ -157,11 +157,11 @@ struct ImageIOProxy<vc::Image2DManaged<T, vc::TargetHost>,OpenCVBackend>
         int flag = 0;
         if(vc::type_traits<T>::ChannelCount == 1)
         {
-            flag = CV_LOAD_IMAGE_GRAYSCALE;
+            flag = cv::IMREAD_GRAYSCALE;
         }
         else
         {
-            flag = CV_LOAD_IMAGE_COLOR;
+            flag = cv::IMREAD_COLOR;
         }
         
         cv::Mat cv_tmp = cv::imread(fn, flag | cv::IMREAD_ANYDEPTH);
@@ -210,11 +210,11 @@ struct ImageIOProxy<vc::Buffer2DManaged<T, vc::TargetHost>,OpenCVBackend>
         int flag = 0;
         if(vc::type_traits<T>::ChannelCount == 1)
         {
-            flag = CV_LOAD_IMAGE_GRAYSCALE;
+            flag = cv::IMREAD_GRAYSCALE;
         }
         else
         {
-            flag = CV_LOAD_IMAGE_COLOR;
+            flag = cv::IMREAD_COLOR;
         }
         cv::Mat cv_tmp = cv::imread(fn, flag | cv::IMREAD_ANYDEPTH);
         

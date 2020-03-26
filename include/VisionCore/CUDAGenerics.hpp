@@ -11,7 +11,7 @@
 #ifdef VISIONCORE_HAVE_CUDA
 #ifdef VISIONCORE_CUDA_COMPILER
 
-#include <device_functions.h>
+#include <cuda_runtime.h>
 
 namespace vc
 {
